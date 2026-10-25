@@ -65,6 +65,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         try? FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
         try? FileManager.default.createDirectory(at: logDir, withIntermediateDirectories: true)
         buildMainMenu()
+        applyTheme()
         // The timer runs in the panel's page, which is hidden most of the time: keep macOS from napping the app.
         activity = ProcessInfo.processInfo.beginActivity(options: .userInitiatedAllowingIdleSystemSleep, reason: "Focus timer")
         buildPanel()
@@ -91,7 +92,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         let json = String(data: try! JSONSerialization.data(withJSONObject: saved), encoding: .utf8)!
         let content = WKUserContentController()
         content.add(self, name: "native")
-        content.addUserScript(WKUserScript(source: "window.__NATIVE = true; window.__STORE = \(json); \(extra)",
+        content.addUserScript(WKUserScript(source: "window.__NATIVE = true; window.__STORE = \(json); window.__THEME = \(self.json(theme)); \(extra)",
                                            injectionTime: .atDocumentStart, forMainFrameOnly: true))
         let config = WKWebViewConfiguration()
         config.userContentController = content
@@ -99,6 +100,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         // Keep pages running while their window is hidden, so the timer and radio don't stop when the panel closes.
         if #available(macOS 14.0, *) { config.preferences.inactiveSchedulingPolicy = .none }
         return config
+    }
+
+    // Theme: "system" follows the Mac; "light" or "dark" fixes every window of the app.
+    var theme: String { UserDefaults.standard.string(forKey: "theme") ?? "system" }
+    func applyTheme() {
+        NSApp.appearance = theme == "light" ? NSAppearance(named: .aqua) : theme == "dark" ? NSAppearance(named: .darkAqua) : nil
     }
 
     func loadPage(_ name: String, into view: WKWebView) {
@@ -315,6 +322,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
             }
         case "openDashboard":
             openDashboard(tab: body["tab"] as? String ?? "stats")
+        case "theme":
+            if let value = body["value"] as? String, ["system", "light", "dark"].contains(value) {
+                UserDefaults.standard.set(value, forKey: "theme")
+                applyTheme()
+            }
         case "quit":
             NSApp.terminate(nil)
         case "copy":
