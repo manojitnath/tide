@@ -388,8 +388,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         window.titlebarAppearsTransparent = true
         window.backgroundColor = NSColor(name: nil) { appearance in
             appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-                ? NSColor(srgbRed: 0.110, green: 0.110, blue: 0.118, alpha: 1)
-                : NSColor(srgbRed: 0.961, green: 0.961, blue: 0.957, alpha: 1)
+                ? NSColor(srgbRed: 0x12 / 255.0, green: 0x12 / 255.0, blue: 0x12 / 255.0, alpha: 1)   // --bg, dark
+                : NSColor(srgbRed: 0xea / 255.0, green: 0xee / 255.0, blue: 0xf6 / 255.0, alpha: 1)   // --bg, light
         }
         window.isReleasedWhenClosed = false
         window.minSize = NSSize(width: 640, height: 520)
