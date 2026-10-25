@@ -90,9 +90,9 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .progmeta #note,.progmeta.noted span{display:none}
 .progmeta.noted #note{display:block;color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis}
 
-/* the radio: a compact card like a music player. The station's cover art (its stream thumbnail) sits in a small square,
+/* the radio: a compact card like a music player, the cover on the left and the station and controls beside it. The cover art (its stream thumbnail) sits in a square,
    and a blurred copy of it tints the card. The YouTube player only provides the sound; its video is never shown. */
-.player{position:relative;overflow:hidden;isolation:isolate;padding:12px 14px 8px;border-radius:24px;color:#fff;background:#1c1c1c;box-shadow:var(--bevel)}
+.player{position:relative;isolation:isolate;display:flex;gap:12px;padding:10px;border-radius:24px;color:#fff;background:#1c1c1c;box-shadow:var(--bevel)}
 /* WebKit lets a blurred layer spill past rounded corners, so the blur sits in its own clipped box. */
 .bgclip{position:absolute;inset:0;z-index:-2;border-radius:inherit;overflow:hidden;clip-path:inset(0 round 24px)}
 .bgart{position:absolute;inset:-40px;background-position:center;background-size:cover,auto 136%;opacity:.32;filter:blur(30px) saturate(1.2) brightness(.7)}
@@ -104,42 +104,47 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
   .bgart{opacity:.22;filter:blur(34px) saturate(1.2)}
   .player::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.6) 55%,rgba(240,244,252,.7))}
 }
-.prow{display:flex;align-items:center;gap:11px}
-.art{position:relative;width:48px;height:48px;border-radius:12px;overflow:hidden;flex:none;background:#333;box-shadow:0 6px 14px -4px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12)}
+.pmain{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
+.prow{display:flex;align-items:center;gap:8px}
+.art{position:relative;width:68px;height:68px;border-radius:14px;overflow:hidden;flex:none;background:#333;box-shadow:0 6px 14px -4px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12)}
 @media (prefers-color-scheme: light){.art{box-shadow:0 6px 14px -5px rgba(20,40,90,.45),inset 0 0 0 1px rgba(0,0,0,.06)}}
 .cover{position:absolute;inset:0;transition:opacity .6s;background-position:center;background-repeat:no-repeat;background-size:cover,auto 136%}
 .ytbox{position:absolute;inset:0;opacity:0;overflow:hidden}
 /* YouTube won't play in a tiny player, so it keeps a normal size, hidden. */
 .ytbox iframe{position:absolute;left:0;top:0;width:470px;height:264px;border:0;pointer-events:none}
 .ptxt{flex:1;min-width:0;text-align:left;color:inherit}
-.marq{width:100%;overflow:hidden;white-space:nowrap;font:600 15px/1.2 var(--font)}
+.marq{width:100%;overflow:hidden;white-space:nowrap;font:600 14px/1.2 var(--font)}
 .marq span{display:inline-block}
 .marq.scroll span{padding-left:100%;animation:marq 9s linear infinite}
 @keyframes marq{to{transform:translateX(-100%)}}
 .ptxt:hover .marq{text-decoration:underline;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent)}
-.ptxt small{display:flex;align-items:center;gap:5px;margin-top:1px;font-size:12px;font-weight:580;opacity:.7}
+.ptxt small{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:580;opacity:.7}
 .ptxt small i{width:6px;height:6px;border-radius:50%;background:#ff453a;display:none}
 .playing .ptxt small i{display:block}
 /* little level bars that bounce while the radio plays */
-.eq{display:flex;align-items:center;gap:2.5px;height:18px;flex:none}
+.eq{display:flex;align-items:center;gap:2.5px;height:15px;flex:none}
 .eq i{width:3px;height:40%;border-radius:2px;background:#fff;opacity:.9}
 @media (prefers-color-scheme: light){.eq i{background:var(--accent)}}
 .eq i:nth-child(2){height:80%}.eq i:nth-child(3){height:100%}.eq i:nth-child(4){height:65%}.eq i:nth-child(5){height:35%}
 .playing .eq i{animation:eq 1s ease-in-out infinite alternate}
 .playing .eq i:nth-child(2){animation-delay:-.3s}.playing .eq i:nth-child(3){animation-delay:-.6s}.playing .eq i:nth-child(4){animation-delay:-.15s}.playing .eq i:nth-child(5){animation-delay:-.45s}
 @keyframes eq{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
-.volrow{display:flex;align-items:center;gap:9px;margin-top:10px}
-.volrow svg{width:15px;height:15px;opacity:.8;flex:none}
-.vbar{flex:1;height:18px;display:flex;align-items:center;cursor:pointer;touch-action:none}
-.vbar div{width:100%;height:5px;border-radius:9px;background:rgba(255,255,255,.3);overflow:hidden}
-.vbar i{display:block;height:100%;border-radius:9px;background:#fff}
-@media (prefers-color-scheme: light){.vbar div{background:rgba(20,40,90,.14)}.vbar i{background:var(--ink)}}
-.ctrls{display:flex;justify-content:space-between;align-items:center;margin-top:2px}
-.ctrls button{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:inherit}
-.ctrls button svg{width:19px;height:19px}
-.ctrls .play svg{width:26px;height:26px}
+/* volume: a button that opens a small vertical slider above it */
+.volwrap{position:relative;display:grid}
+.volpop{position:absolute;left:50%;bottom:calc(100% + 8px);z-index:6;transform:translateX(-50%);width:34px;padding:12px 0;border-radius:17px;background:#232323;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 0 .5px rgba(255,255,255,.1),0 12px 28px -6px rgba(0,0,0,.7)}
+@media (prefers-color-scheme: light){.volpop{background:linear-gradient(#fff,#f4f6fb);box-shadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(20,40,90,.12),0 12px 28px -6px rgba(20,40,90,.35)}}
+.vbar{height:96px;display:flex;justify-content:center;cursor:pointer;touch-action:none}
+.vbar div{position:relative;width:5px;height:100%;border-radius:9px;background:rgba(255,255,255,.18);overflow:hidden}
+.vbar i{position:absolute;left:0;right:0;bottom:0;border-radius:9px;background:#fff}
+@media (prefers-color-scheme: light){.vbar div{background:rgba(20,40,90,.14)}.vbar i{background:var(--accent)}}
+.ctrls{display:flex;justify-content:space-between;align-items:center;margin:0 -4px}
+.ctrls button{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:inherit}
+.ctrls button svg{width:16px;height:16px}
+.ctrls .play svg{width:22px;height:22px}
 .ctrls .side{opacity:.7}
-.ctrls .side svg{width:16px;height:16px}
+.ctrls .side svg{width:15px;height:15px}
+#stopRadio svg{width:13px;height:13px}
 .ctrls button:hover{background:rgba(255,255,255,.12);opacity:1}
 @media (prefers-color-scheme: light){.ctrls button:hover{background:rgba(20,40,90,.07)}}
 .stations{position:absolute;left:22px;right:22px;z-index:5;border-radius:16px;padding:6px;max-height:260px;overflow:auto;background:var(--card);box-shadow:var(--bevel),0 14px 34px rgba(0,0,0,.25)}
@@ -206,18 +211,20 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 
   <div class="player" id="disc">
     <div class="bgclip"><div class="bgart"></div></div>
-    <div class="prow">
-      <div class="art"><div class="cover"></div><div class="ytbox"><div id="ytFrame"></div></div></div>
-      <button class="ptxt" id="stationBtn" type="button" title="Choose a station"><div class="marq" id="marq"><span id="stName">Lofi Girl: Study</span></div><small><i></i><span id="stSub">FM 88.6</span></small></button>
-      <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-    </div>
-    <div class="volrow"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h4l5-4v14l-5-4H4z"/></svg><div class="vbar" id="vol" title="Volume"><div><i id="volFill"></i></div></div><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h4l5-4v14l-5-4H4zm12.5-1.5a6 6 0 0 1 0 9l-1.2-1.2a4.3 4.3 0 0 0 0-6.6zM19 5a9.5 9.5 0 0 1 0 14l-1.2-1.2a7.8 7.8 0 0 0 0-11.6z"/></svg></div>
-    <div class="ctrls">
-      <button class="side" id="listSt" type="button" title="Stations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor"/></svg></button>
-      <button id="prevSt" type="button" title="Previous station"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5h2.6v14H5zm3.8 7L19 5.2v13.6z"/></svg></button>
-      <button class="play" id="radioBtn" type="button" title="Play or pause the radio"></button>
-      <button id="nextSt" type="button" title="Next station"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 5H19v14h-2.6zM5 5.2 15.2 12 5 18.8z"/></svg></button>
-      <button class="side" id="stopRadio" type="button" title="Stop the radio"><svg viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="2" fill="currentColor"/></svg></button>
+    <div class="art"><div class="cover"></div><div class="ytbox"><div id="ytFrame"></div></div></div>
+    <div class="pmain">
+      <div class="prow">
+        <button class="ptxt" id="stationBtn" type="button" title="Choose a station"><div class="marq" id="marq"><span id="stName">Lofi Girl: Study</span></div><small><i></i><span id="stSub">FM 88.6</span></small></button>
+        <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="ctrls">
+        <div class="volwrap"><button class="side" id="volBtn" type="button" title="Volume"></button>
+          <div class="volpop" id="volPop" hidden><div class="vbar" id="vol" title="Volume"><div><i id="volFill"></i></div></div></div></div>
+        <button id="prevSt" type="button" title="Previous station"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5h2.6v14H5zm3.8 7L19 5.2v13.6z"/></svg></button>
+        <button class="play" id="radioBtn" type="button" title="Play or pause the radio"></button>
+        <button id="nextSt" type="button" title="Next station"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 5H19v14h-2.6zM5 5.2 15.2 12 5 18.8z"/></svg></button>
+        <button class="side" id="stopRadio" type="button" title="Stop the radio"><svg viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="2" fill="currentColor"/></svg></button>
+      </div>
     </div>
   </div>
   <div class="stations" id="stations" hidden role="menu"></div>
@@ -607,7 +614,6 @@ function stopRadio() { radioOn = false; radioPaused = false; if (yt && yt.stopVi
 function playStation(i) { radioOn = true; tuneTo(i); }
 $('#radioBtn').onclick = playPause;
 $('#stopRadio').onclick = stopRadio;
-$('#listSt').onclick = e => $('#stationBtn').onclick(e);
 $('#prevSt').onclick = () => playStation(S.station - 1);
 $('#nextSt').onclick = () => playStation(S.station + 1);
 $('#stationBtn').onclick = e => {
@@ -620,17 +626,24 @@ $('#stationBtn').onclick = e => {
 $('#stations').onclick = e => { const b = e.target.closest('button'); if (b) { $('#stations').hidden = true; playStation(+b.dataset.i); } };
 addEventListener('click', e => { if (!e.target.closest('#stations, #stationBtn')) $('#stations').hidden = true; });
 
-// Volume: a bar along the bottom of the player, silent on the left, full on the right.
-function drawVol() { $('#volFill').style.width = (S.vol * 100).toFixed(1) + '%'; }
-function volFrom(e) {
-  const r = $('#vol').getBoundingClientRect();
-  S.vol = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
-  if (yt && yt.setVolume) yt.setVolume(Math.round(S.vol * 100));
-  drawVol();
+// Volume: a button that opens a small vertical slider above it, like YouTube's. Scrolling over either also changes it.
+const VOL_ICONS = ['<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="m16 9.5 5 5m0-5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  '<path d="M4 9h4l5-4v14l-5-4H4zm12.5-1.5a6 6 0 0 1 0 9l-1.2-1.2a4.3 4.3 0 0 0 0-6.6z"/>',
+  '<path d="M4 9h4l5-4v14l-5-4H4zm12.5-1.5a6 6 0 0 1 0 9l-1.2-1.2a4.3 4.3 0 0 0 0-6.6zM19 5a9.5 9.5 0 0 1 0 14l-1.2-1.2a7.8 7.8 0 0 0 0-11.6z"/>'];
+function drawVol() {
+  $('#volFill').style.height = (S.vol * 100).toFixed(1) + '%';
+  $('#volBtn').innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor">${VOL_ICONS[S.vol < .01 ? 0 : S.vol < .5 ? 1 : 2]}</svg>`;
+  $('#volBtn').title = `Volume ${Math.round(S.vol * 100)}%`;
 }
+function setVol(v) { S.vol = Math.min(1, Math.max(0, v)); if (yt && yt.setVolume) yt.setVolume(Math.round(S.vol * 100)); drawVol(); }
+const volFrom = e => { const r = $('#vol div').getBoundingClientRect(); setVol(1 - (e.clientY - r.top) / r.height); };
 $('#vol').addEventListener('pointerdown', e => { e.currentTarget.setPointerCapture(e.pointerId); volFrom(e); });
 $('#vol').addEventListener('pointermove', e => { if (e.buttons) volFrom(e); });
 $('#vol').addEventListener('pointerup', saveState);
+$('#volBtn').onclick = e => { e.stopPropagation(); $('#volPop').hidden = !$('#volPop').hidden; };
+$('.volwrap').addEventListener('wheel', e => { e.preventDefault(); setVol(S.vol - e.deltaY / 400); clearTimeout(volSave); volSave = setTimeout(saveState, 400); }, {passive: false});
+let volSave;
+addEventListener('click', e => { if (!e.target.closest('.volwrap')) $('#volPop').hidden = true; });
 
 /* ---------- controls ---------- */
 $('#time').onclick = cycleMode;
@@ -652,7 +665,7 @@ addEventListener('click', e => { if (!e.target.closest('#menu')) menu(false); })
 addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
   if (e.code === 'Space') { e.preventDefault(); start(); }
-  if (e.key === 'Escape') { if ($('#menu').classList.contains('open')) menu(false); else native({type: 'hidePanel'}); }
+  if (e.key === 'Escape') { if (!$('#volPop').hidden) $('#volPop').hidden = true; else if ($('#menu').classList.contains('open')) menu(false); else native({type: 'hidePanel'}); }
 });
 // The app's window follows the panel's height.
 new ResizeObserver(() => native({type: 'resize', h: Math.ceil($('#panel').getBoundingClientRect().height)})).observe($('#panel'));
