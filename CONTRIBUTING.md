@@ -10,6 +10,7 @@
 | `src/main.swift` | The native app: menu bar item, the panel window, the dashboard window, file storage, YouTube stream lookup, notifications, the global shortcut, open at login, the update check. |
 | `src/AppIcon.icns` | The app icon, made by `docs/icon/make-icns.sh` from `docs/icon/icon.html`. |
 | `build.sh` | Builds `build.noindex/Focus MN.app`. `--install` copies it to `/Applications` and opens it; `--zip` makes the release zip. |
+| `src/fonts/` | Manrope, the bundled font, and its licence. |
 | `docs/screenshots/` | README images, rendered from the pages' `?demo` modes. |
 
 ## How it fits together
@@ -28,7 +29,7 @@
 
 ## Timer rules
 
-- Look: light mode is a soft blue-grey; the clock card is bright blue (`#1f5cf2`, purple on a break) with rings in the corner. Dark mode is near-black (`#161616`), the clock card black with a soft glow of the state's colour. The radio is a compact card: the station's cover art (its YouTube thumbnail) in a small square, with a blurred copy of it tinting the card. The YouTube player only plays the sound: it stays a normal size but hidden, since YouTube won't play in a tiny player. Every gap between cards is 12px. Both use the same bevel: a lit top edge, a soft lower edge and a shadow below each card. Big numbers use the rounded system font (`ui-rounded`).
+- Look: light mode is a soft blue-grey; the clock card is bright blue (`#1f5cf2`) with rings in the corner; the state shows in its pill, progress line and a soft glow (none when ready, light blue focusing, amber paused, green on a break). Dark mode is near-black (`#161616`), the clock card black with a soft glow of the state's colour. The radio is a compact card: the station's cover art (its YouTube thumbnail) in a small square, with a blurred copy of it tinting the card. The YouTube player only plays the sound: it stays a normal size but hidden, since YouTube won't play in a tiny player. Every gap between cards is 12px. Both use the same bevel: a lit top edge, a soft lower edge and a shadow below each card. Big text, numbers, titles and buttons use Manrope (`--round`); small text uses the system font.
 - Clicking the time cycles count up → Pomodoro 30 → 60 → 90. Breaks: 5, 15 and 20 minutes (`BREAK_FOR`); a break started from count up is 5 minutes. Naming: **the Island** is the card that drops from the notch; **notifications** are macOS's own (the idle nudge, updates).
 - Buttons by state: idle *Start Focus*; focusing *Pause*; paused *Resume, End focus*; break *Pause, Skip break*; break paused *Resume, Start Focus*. There is no manual break: breaks aren't logged, so ending focus and starting again later does the same. A break is only offered after a finished Pomodoro block.
 - Buttons sit side by side (`.duo`): the main action solid blue, a second one a raised pill.
@@ -44,7 +45,8 @@ Each station in `STATIONS` (in `panel.html`) stores a channel, title words to ma
 
 ## Design
 
-- Apple's system font, light and dark mode through `prefers-color-scheme`, native-looking controls. Keep the panel short: it should fit under the menu bar on a small laptop screen.
+- Manrope for big text, Apple's system font for small text; light and dark mode through `prefers-color-scheme`.
+- Manrope is bundled (`src/fonts/Manrope.ttf`, SIL Open Font License in `src/fonts/OFL.txt`, shipped with the app as `Manrope-OFL.txt`). Pages are loaded from a web address and can't read files, so the app adds the font as data at page start (`fontScript` in `main.swift`); the pages' own `@font-face` ("Manrope Preview") is only for the browser preview. Keep the panel short: it should fit under the menu bar on a small laptop screen.
 - Show a mockup (a PNG rendered with headless Chrome) before building a new screen.
 
 ## Testing

@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Focus MN</title>
 <style>
+/* Manrope (bundled, SIL Open Font License) for the big text. In the app it is added from the bundle; this rule is for the browser preview. */
+@font-face{font-family:"Manrope Preview";src:url(fonts/Manrope.ttf) format("truetype");font-weight:200 800}
 /* Light: soft blue-grey with pastel cards. Dark: near-black. Both use the same bevel: a lit top edge, a soft lower edge and depth below. */
-:root{--round:ui-rounded,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+:root{--round:Manrope,"Manrope Preview",ui-rounded,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   --bg:linear-gradient(#f7f8fc,#eceff6);--ink:#16181d;--muted:#6b7183;--card:linear-gradient(#fff,#f6f7fb);--line:rgba(20,40,90,.08);--field:#eef2fb;
   --accent:#1f5cf2;
   --pReady:#fbf0d9;--pFocus:#d6e6fd;--pBreak:#e5f5cd;--tReady:#4c3b19;--tFocus:#0f2b4f;--tBreak:#21400f;--tagInk:#fff;--timeInk:var(--tag);

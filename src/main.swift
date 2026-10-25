@@ -102,6 +102,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         content.add(self, name: "native")
         content.addUserScript(WKUserScript(source: "window.__NATIVE = true; window.__STORE = \(json); window.__THEME = \(self.json(theme)); \(extra)",
                                            injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        content.addUserScript(WKUserScript(source: fontScript, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         let config = WKWebViewConfiguration()
         config.userContentController = content
         config.mediaTypesRequiringUserActionForPlayback = []
@@ -115,6 +116,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     func applyTheme() {
         NSApp.appearance = theme == "light" ? NSAppearance(named: .aqua) : theme == "dark" ? NSAppearance(named: .darkAqua) : nil
     }
+
+    // Pages are loaded from a web address, so they can't read the bundled font file: it goes in as data instead.
+    lazy var fontScript: String = {
+        guard let url = Bundle.main.url(forResource: "Manrope", withExtension: "ttf"), let data = try? Data(contentsOf: url) else { return "" }
+        return "document.fonts.add(new FontFace('Manrope', 'url(data:font/ttf;base64,\(data.base64EncodedString()))', {weight: '200 800'}));"
+    }()
 
     func loadPage(_ name: String, into view: WKWebView) {
         let html = Bundle.main.url(forResource: name, withExtension: "html")!
