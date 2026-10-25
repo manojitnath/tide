@@ -1,8 +1,8 @@
-# Focus MN
+# Tide
 
 A focus timer and lofi radio that lives in your Mac's menu bar. Click the time in the menu bar to open the timer: Pomodoro or count-up, a live lofi station, and today's focus at a glance. Every session is logged by topic, and a dashboard shows where your time went.
 
-**[Download Focus MN for macOS](https://github.com/manojitnath/focus-mn/releases/latest/download/Focus-MN.zip)** (macOS 13 or later, see [Install](#install))
+**[Download Tide for macOS](https://github.com/manojitnath/tide/releases/latest/download/Tide.zip)** (macOS 13 or later, see [Install](#install))
 
 <p>
   <img src="docs/screenshots/panel-focus.png" width="32%" alt="The menu bar panel while focusing: the timer card, the radio player with the live video, and Pause">
@@ -22,7 +22,7 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
   - *Focus complete:* **Log it** (type the topic right there, then choose a break or another block) or **Keep going** (30 more minutes, logged together).
   - *Break complete:* **Start Focus** or **+5 min**.
   (System *notifications* in Notification Center are only used for the idle nudge below and app updates.)
-- **A nudge when you're idle:** after 30 minutes with no timer or break running, a macOS notification (with a sound) suggests starting a session. Hover over it and press **Let's start** to start counting up without opening the panel. Notifications use the **Alerts** style, so they stay on screen until you answer; you can change that in System Settings → Notifications → Focus MN.
+- **A nudge when you're idle:** after 30 minutes with no timer or break running, a macOS notification (with a sound) suggests starting a session. Hover over it and press **Let's start** to start counting up without opening the panel. Notifications use the **Alerts** style, so they stay on screen until you answer; you can change that in System Settings → Notifications → Tide.
 - **Fair logging:** a Pomodoro you end early isn't counted, and neither is under a minute of counting up.
 - **Radio:** ten lofi live streams (Lofi Girl, Chillhop and others) in a compact player: the station's cover art, play/pause, previous and next, stop, a volume button that slides a slider open, and the station list when you click the station's name. It keeps playing when the panel is closed.
 - **Study log:** every counted session is saved with its topic. Recent topics are one click away.
@@ -37,23 +37,23 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 
 ## Install
 
-1. [Download `Focus-MN.zip`](https://github.com/manojitnath/focus-mn/releases/latest/download/Focus-MN.zip) and unzip it.
-2. Move `Focus MN.app` to your Applications folder.
+1. [Download `Tide.zip`](https://github.com/manojitnath/tide/releases/latest/download/Tide.zip) and unzip it.
+2. Move `Tide.app` to your Applications folder.
 3. The app isn't notarized by Apple, so the first time, right-click it and choose **Open**, then **Open** again. If macOS still refuses, run this once:
 
    ```bash
-   xattr -cr "/Applications/Focus MN.app"
+   xattr -cr "/Applications/Tide.app"
    ```
 
-Focus MN has no Dock icon: look for the timer icon in the menu bar. Right-click it for a small menu (Dashboard, Settings, Check for Updates, Quit); in the panel, the round button at the top right opens Dashboard, Settings, the theme (match the Mac, light or dark) and Quit.
+Tide has no Dock icon: look for the timer icon in the menu bar. Right-click it for a small menu (Dashboard, Settings, Check for Updates, Quit); in the panel, the round button at the top right opens Dashboard, Settings, the theme (match the Mac, light or dark) and Quit.
 
 ## Updates
 
-Focus MN checks for a new release when it opens and once a day, and tells you with a notification. **Check for Updates…** is in the right-click menu and in Settings. To update, quit Focus MN, replace the app in Applications and open it again. Your log and settings are kept.
+Tide checks for a new release when it opens and once a day, and tells you with a notification. **Check for Updates…** is in the right-click menu and in Settings. To update, quit Tide, replace the app in Applications and open it again. Your log and settings are kept.
 
 ## Where your data lives
 
-Everything is in `~/Library/Application Support/Focus MN/`:
+Everything is in `~/Library/Application Support/Tide/` (the app was called Focus MN before; on first launch Tide copies your data from the old `Focus MN` folder and leaves that folder as a backup):
 
 - `Study Log.json`: your sessions
 - `studyradio.state.json`: timer mode, station, volume
@@ -69,12 +69,12 @@ The radio plays public YouTube live streams through YouTube's official embedded 
 Needs the Xcode Command Line Tools (`xcode-select --install`).
 
 ```bash
-git clone https://github.com/manojitnath/focus-mn.git
-cd focus-mn
+git clone https://github.com/manojitnath/tide.git
+cd tide
 ./build.sh --install
 ```
 
-This builds the app and copies it to `/Applications`. `./build.sh --zip` also makes `build.noindex/Focus-MN.zip` for a release. See [CONTRIBUTING.md](CONTRIBUTING.md) for how it fits together.
+This builds the app and copies it to `/Applications`. `./build.sh --zip` also makes `build.noindex/Tide.zip` for a release. See [CONTRIBUTING.md](CONTRIBUTING.md) for how it fits together.
 
 ## License
 

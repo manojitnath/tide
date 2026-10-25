@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Focus MN</title>
+<title>Tide</title>
 <style>
 /* Manrope (bundled, SIL Open Font License) for all text. In the app it is added from the bundle; this rule is for the browser preview. */
 @font-face{font-family:"Manrope Preview";src:url(fonts/Manrope.ttf) format("truetype");font-weight:200 800}
@@ -190,9 +190,9 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
   </section>
 
   <section id="settings" hidden>
-    <div class="title"><div><h1>Settings</h1><p>Focus MN lives in the menu bar. Click its time to open the timer.</p></div></div>
+    <div class="title"><div><h1>Settings</h1><p>Tide lives in the menu bar. Click its time to open the timer.</p></div></div>
     <div class="group"><h3>General</h3>
-      <div class="set"><div><b>Open at login</b><span>Start Focus MN when you log in to your Mac.</span></div><button class="switch" id="loginSw" role="switch" aria-checked="false" type="button"></button></div>
+      <div class="set"><div><b>Open at login</b><span>Start Tide when you log in to your Mac.</span></div><button class="switch" id="loginSw" role="switch" aria-checked="false" type="button"></button></div>
       <div class="set"><div><b>Start or pause from anywhere</b><span>Works in any app.</span></div><kbd>⌃ ⌥ Space</kbd></div>
     </div>
     <div class="group"><h3>Your log</h3>
@@ -200,7 +200,7 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
       <div class="set"><div><b>Export</b><span>Save every session as a CSV file in the log folder.</span></div><button class="btn" type="button" data-export>Export CSV</button></div>
     </div>
     <div class="group"><h3>About</h3>
-      <div class="set"><div><b>Focus MN <span id="ver"></span></b><span>A focus timer and lofi radio for your menu bar.</span></div><button class="btn" id="updates" type="button">Check for Updates</button></div>
+      <div class="set"><div><b>Tide <span id="ver"></span></b><span>A focus timer and lofi radio for your menu bar.</span></div><button class="btn" id="updates" type="button">Check for Updates</button></div>
     </div>
   </section>
 </div>
@@ -215,7 +215,7 @@ const store = {
   set(k, v) { const s = JSON.stringify(v); if (NATIVE) { native({type: 'store', key: k, value: s}); return; } try { localStorage.setItem(k, s); } catch (e) {} },
 };
 let logs = store.get('studyradio.logs', []);
-let settings = Object.assign({launchAtLogin: false, logFolder: '~/Library/Application Support/Focus MN', version: ''}, window.__SETTINGS || {});
+let settings = Object.assign({launchAtLogin: false, logFolder: '~/Library/Application Support/Tide', version: ''}, window.__SETTINGS || {});
 // The panel sends the log here whenever it saves a session.
 window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderAll(); };
 window.settingsChanged = s => { settings = Object.assign(settings, s); renderSettings(); };

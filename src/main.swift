@@ -1,6 +1,6 @@
-// Focus MN: a focus timer and lofi radio in the menu bar.
+// Tide: a focus timer and lofi radio in the menu bar.
 // Clicking the menu bar time opens a panel (panel.html); Open Log and Settings open the dashboard (dashboard.html).
-// The study log and the timer and radio settings are saved in ~/Library/Application Support/Focus MN.
+// The study log and the timer and radio settings are saved in ~/Library/Application Support/Tide.
 // To keep the log somewhere else, choose a folder in Settings, or:
 //   defaults write local.focusmn.app LogFolder ~/path/to/folder
 import Cocoa
@@ -36,7 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     var activity: NSObjectProtocol?
     let panelWidth: CGFloat = 320
     let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-    lazy var stateDir = supportDir.appendingPathComponent("Focus MN")
+    lazy var stateDir = supportDir.appendingPathComponent("Tide")
     var logDir: URL {
         guard let folder = UserDefaults.standard.string(forKey: "LogFolder"), !folder.isEmpty else { return stateDir }
         return URL(fileURLWithPath: (folder as NSString).expandingTildeInPath, isDirectory: true)
@@ -49,11 +49,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
             : stateDir.appendingPathComponent(key + ".json")
     }
 
-    // Earlier builds (called Mono FM, and before that Study Radio) kept settings elsewhere; bring them over once.
+    // Earlier builds (called Focus MN, Mono FM and Study Radio) kept their data in a folder of that name; copy it over once.
+    // The old folder is left in place as a backup.
     func moveOldSettings() {
         let fm = FileManager.default
         guard !fm.fileExists(atPath: stateDir.path) else { return }
-        for name in ["Mono FM", "Study Radio"] {
+        for name in ["Focus MN", "Mono FM", "Study Radio"] {
             let old = supportDir.appendingPathComponent(name)
             if fm.fileExists(atPath: old.path) { try? fm.copyItem(at: old, to: stateDir); return }
         }
@@ -79,7 +80,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         // Look for a newer release now and once a day.
         checkForUpdate()
         Timer.scheduledTimer(withTimeInterval: 24 * 60 * 60, repeats: true) { [weak self] _ in self?.checkForUpdate() }
-        // Testing: `open -a "Focus MN" --args --test-island done` (or break, topic) shows that question in the Island.
+        // Testing: `open -a "Tide" --args --test-island done` (or break, topic) shows that question in the Island.
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--test-island") {
             let kind = i + 1 < args.count ? args[i + 1] : "done"
@@ -326,7 +327,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
                 UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "nudge", content: content, trigger: nil))
             }
         case "notify":
-            notify(title: body["title"] as? String ?? "Focus MN", body: body["body"] as? String ?? "")
+            notify(title: body["title"] as? String ?? "Tide", body: body["body"] as? String ?? "")
             if body["show"] as? Bool ?? false { showPanel() }
         case "resolve":
             if let i = body["i"] as? Int, let channel = body["ch"] as? String, let match = body["match"] as? [String] {
@@ -390,7 +391,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1000, height: 760),
                               styleMask: [.titled, .closable, .miniaturizable, .resizable],
                               backing: .buffered, defer: false)
-        window.title = "Focus MN"
+        window.title = "Tide"
         // The title bar takes the page's colour and stays draggable.
         window.titlebarAppearsTransparent = true
         window.backgroundColor = NSColor(name: nil) { appearance in
@@ -408,8 +409,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         loadPage("dashboard", into: view)
         dashWeb = view
         dashWindow = window
-        if !window.setFrameUsingName("FocusMNDashboard") { window.center() }
-        window.setFrameAutosaveName("FocusMNDashboard")
+        if !window.setFrameUsingName("TideDashboard") { window.center() }
+        window.setFrameAutosaveName("TideDashboard")
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -432,7 +433,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         open.canChooseFiles = false
         open.canCreateDirectories = true
         open.prompt = "Use This Folder"
-        open.message = "Choose where Focus MN keeps Study Log.json"
+        open.message = "Choose where Tide keeps Study Log.json"
         NSApp.activate(ignoringOtherApps: true)
         guard open.runModal() == .OK, let folder = open.url else { return }
         let current = fileURL(for: "studyradio.logs")
@@ -453,7 +454,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     // Click opens the panel; right-click (or Control-click) shows a small menu.
     func buildStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "timer", accessibilityDescription: "Focus MN")?
+        statusItem.button?.image = NSImage(systemSymbolName: "timer", accessibilityDescription: "Tide")?
             .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 16, weight: .medium))
         statusItem.button?.imagePosition = .imageLeft
         statusItem.button?.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .medium)
@@ -461,13 +462,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         statusItem.button?.action = #selector(statusClicked)
         statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
 
-        rightMenu.addItem(NSMenuItem(title: "Open Focus MN", action: #selector(togglePanel), keyEquivalent: ""))
+        rightMenu.addItem(NSMenuItem(title: "Open Tide", action: #selector(togglePanel), keyEquivalent: ""))
         rightMenu.addItem(NSMenuItem(title: "Open Log", action: #selector(openLog), keyEquivalent: ""))
         rightMenu.addItem(NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ","))
         rightMenu.addItem(.separator())
         rightMenu.addItem(NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdatesNow), keyEquivalent: ""))
         rightMenu.items.forEach { $0.target = self }
-        rightMenu.addItem(NSMenuItem(title: "Quit Focus MN", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        rightMenu.addItem(NSMenuItem(title: "Quit Tide", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
     }
 
     @objc func statusClicked() {
@@ -489,7 +490,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         main.addItem(appItem)
         main.addItem(editItem)
         let appMenu = NSMenu()
-        appMenu.addItem(NSMenuItem(title: "Quit Focus MN", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        appMenu.addItem(NSMenuItem(title: "Quit Tide", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         appItem.submenu = appMenu
         let edit = NSMenu(title: "Edit")
         edit.addItem(NSMenuItem(title: "Undo", action: Selector(("undo:")), keyEquivalent: "z"))
@@ -535,7 +536,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
     }
 
-    // Show notification banners even while Focus MN is the active app.
+    // Show notification banners even while Tide is the active app.
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .list])
@@ -594,7 +595,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     // Updates: ask GitHub for the latest release and compare it with this build's version.
     // Nothing is downloaded or installed; the menu and a notification point to the release page.
     func checkForUpdate(manual: Bool = false) {
-        var request = URLRequest(url: URL(string: "https://api.github.com/repos/manojitnath/focus-mn/releases/latest")!, timeoutInterval: 20)
+        var request = URLRequest(url: URL(string: "https://api.github.com/repos/manojitnath/tide/releases/latest")!, timeoutInterval: 20)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         URLSession.shared.dataTask(with: request) { data, _, _ in
             let release = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
@@ -610,7 +611,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         }
         let latest = tag.trimmingCharacters(in: CharacterSet(charactersIn: "vV"))
         guard isVersion(latest, newerThan: current) else {
-            if manual { notify(title: "Focus MN is up to date", body: "You have the latest version, \(current).") }
+            if manual { notify(title: "Tide is up to date", body: "You have the latest version, \(current).") }
             return
         }
         updateURL = page
@@ -626,7 +627,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         // Each new version is announced once; a manual check always answers.
         if manual || UserDefaults.standard.string(forKey: "NotifiedVersion") != latest {
             UserDefaults.standard.set(latest, forKey: "NotifiedVersion")
-            notify(title: "Focus MN \(latest) is out", body: "Click to download it. Your log and settings are kept.", url: page)
+            notify(title: "Tide \(latest) is out", body: "Click to download it. Your log and settings are kept.", url: page)
         }
     }
 

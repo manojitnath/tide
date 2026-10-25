@@ -1,4 +1,4 @@
-# Contributing to Focus MN
+# Contributing to Tide
 
 ## Files
 
@@ -9,7 +9,7 @@
 | `src/island.html` | **The Island**: a card that drops from the notch at the top of the screen, blue in light mode and near-black in dark mode. It only displays what the panel sends and reports button presses back. |
 | `src/main.swift` | The native app: menu bar item, the panel window, the dashboard window, file storage, YouTube stream lookup, notifications, the global shortcut, open at login, the update check. |
 | `src/AppIcon.icns` | The app icon, made by `docs/icon/make-icns.sh` from `docs/icon/icon.html`. |
-| `build.sh` | Builds `build.noindex/Focus MN.app`. `--install` copies it to `/Applications` and opens it; `--zip` makes the release zip. |
+| `build.sh` | Builds `build.noindex/Tide.app`. `--install` copies it to `/Applications` and opens it; `--zip` makes the release zip. |
 | `src/fonts/` | Manrope, the bundled font, and its licence. |
 | `docs/screenshots/` | README images, rendered from the pages' `?demo` modes. |
 
@@ -56,7 +56,7 @@ Each station in `STATIONS` (in `panel.html`) stores a channel, title words to ma
   - `island.html?demo=break`, `?demo=done`, `?demo=topic`
 - The real Island, without a real session: restart the app with a test question. It waits for the old copy to exit and retries `open`, which fails with error -600 while macOS is still closing the app. Any button just closes the Island; nothing is logged and the timer isn't touched.
   ```bash
-  osascript -e 'quit app "Focus MN"'; while pgrep -xq "Focus MN"; do sleep 0.2; done; until open -a "Focus MN" --args --test-island done 2>/dev/null; do sleep 0.5; done    # or break, topic
+  osascript -e 'quit app "Tide"'; while pgrep -xq "Tide"; do sleep 0.2; done; until open -a "Tide" --args --test-island done 2>/dev/null; do sleep 0.5; done    # or break, topic
   ```
   - `dashboard.html?demo` (two weeks of sample sessions), `&tab=sessions`, `&tab=settings`
 - In a browser, data is kept in localStorage, not in your real log.
