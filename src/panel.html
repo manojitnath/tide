@@ -397,6 +397,7 @@ function renderAsk() {
 }
 // Answers come from the panel's buttons or, through the app, from the Island.
 window.noticeAction = (id, topic) => {
+  if (testingIsland) { testingIsland = false; present(null); return; }
   switch (id) {
     case 'log': present(N.topic()); break;
     case 'keep': keepGoing(); break;
@@ -412,6 +413,15 @@ window.noticeAction = (id, topic) => {
     case 'focus': present(null); beginFocus(); break;
     case 'plus5': present(null); Object.assign(S, {status: 'break', breakEnds: Date.now() + 5 * MIN, breakTotal: 5 * MIN}); saveState(); render(); break;
   }
+};
+// Test the Island without a real session: the app calls this when started with --test-island done|break|topic.
+// Any button just closes it; nothing is logged and the timer isn't touched.
+let testingIsland = false;
+window.testIsland = kind => {
+  const ms = 30 * MIN, saved = pending;
+  pending = {start: Date.now() - ms, end: Date.now(), ms};
+  const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : N.done(ms);
+  pending = saved; testingIsland = true; present(n);
 };
 function askPress(id) {
   const topic = $('#askInput').value.trim();

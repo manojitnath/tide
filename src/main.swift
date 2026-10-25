@@ -79,6 +79,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         // Look for a newer release now and once a day.
         checkForUpdate()
         Timer.scheduledTimer(withTimeInterval: 24 * 60 * 60, repeats: true) { [weak self] _ in self?.checkForUpdate() }
+        // Testing: `open -a "Focus MN" --args --test-island done` (or break, topic) shows that question in the Island.
+        let args = CommandLine.arguments
+        if let i = args.firstIndex(of: "--test-island") {
+            let kind = i + 1 < args.count ? args[i + 1] : "done"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                self?.web.evaluateJavaScript("testIsland(\(self?.json(kind) ?? "\"done\""))")
+            }
+        }
     }
 
     // MARK: pages
