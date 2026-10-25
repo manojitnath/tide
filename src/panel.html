@@ -123,12 +123,19 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .playing .ptxt small i{display:block}
 /* little level bars that bounce while the radio plays */
 .eq{display:flex;align-items:center;gap:2.5px;height:15px;flex:none}
-.eq i{width:3px;height:40%;border-radius:2px;background:#fff;opacity:.9}
+.eq i{width:3px;height:100%;border-radius:2px;background:#fff;opacity:.9;transform:scaleY(var(--rest));will-change:transform}
 @media (prefers-color-scheme: light){.eq i{background:var(--accent)}}
-.eq i:nth-child(2){height:80%}.eq i:nth-child(3){height:100%}.eq i:nth-child(4){height:65%}.eq i:nth-child(5){height:35%}
-.playing .eq i{animation:eq 1s ease-in-out infinite alternate}
-.playing .eq i:nth-child(2){animation-delay:-.3s}.playing .eq i:nth-child(3){animation-delay:-.6s}.playing .eq i:nth-child(4){animation-delay:-.15s}.playing .eq i:nth-child(5){animation-delay:-.45s}
-@keyframes eq{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+.eq i:nth-child(1){--rest:.4}.eq i:nth-child(2){--rest:.8}.eq i:nth-child(3){--rest:1}.eq i:nth-child(4){--rest:.65}.eq i:nth-child(5){--rest:.35}
+/* While playing, each bar jumps between levels on its own short loop, so together they pulse like a music meter.
+   Only the transform changes, which the GPU animates smoothly at full frame rate. */
+.playing .eq i{animation:eq1 .62s ease-in-out infinite}
+.playing .eq i:nth-child(2){animation-name:eq2;animation-duration:.5s}
+.playing .eq i:nth-child(3){animation-name:eq3;animation-duration:.7s}
+.playing .eq i:nth-child(4){animation-name:eq2;animation-duration:.56s;animation-delay:-.2s}
+.playing .eq i:nth-child(5){animation-name:eq1;animation-duration:.66s;animation-delay:-.3s}
+@keyframes eq1{0%,100%{transform:scaleY(.3)}25%{transform:scaleY(.85)}50%{transform:scaleY(.45)}75%{transform:scaleY(1)}}
+@keyframes eq2{0%,100%{transform:scaleY(.7)}30%{transform:scaleY(.25)}60%{transform:scaleY(1)}80%{transform:scaleY(.5)}}
+@keyframes eq3{0%,100%{transform:scaleY(1)}20%{transform:scaleY(.4)}45%{transform:scaleY(.75)}70%{transform:scaleY(.3)}}
 /* volume: the button slides a short slider open beside it, pushing the other controls to the right */
 .volwrap{display:flex;align-items:center;flex:none}
 .volslide{width:0;overflow:hidden;opacity:0;transition:width .3s ease-in-out,opacity .3s ease-in-out}
