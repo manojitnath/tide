@@ -89,7 +89,7 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .progmeta.noted #note{display:block;color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis}
 
 /* the radio: a compact card like a music player. The station's cover art (its stream thumbnail) sits in a small square,
-   and the live video replaces it there while playing. Behind the card, a blurred copy of the cover gives it a tint. */
+   and a blurred copy of it tints the card. The YouTube player only provides the sound; its video is never shown. */
 .player{position:relative;overflow:hidden;isolation:isolate;padding:12px 14px 8px;border-radius:24px;color:#fff;background:#1c1c1c;box-shadow:var(--bevel)}
 .bgart{position:absolute;inset:-40px;z-index:-2;background-position:center;background-size:cover,auto 136%;opacity:.32;filter:blur(30px) saturate(1.2) brightness(.7)}
 /* a thin light edge, so the dark card doesn't melt into the background */
@@ -104,11 +104,9 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .art{position:relative;width:48px;height:48px;border-radius:12px;overflow:hidden;flex:none;background:#333;box-shadow:0 6px 14px -4px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12)}
 @media (prefers-color-scheme: light){.art{box-shadow:0 6px 14px -5px rgba(20,40,90,.45),inset 0 0 0 1px rgba(0,0,0,.06)}}
 .cover{position:absolute;inset:0;transition:opacity .6s;background-position:center;background-repeat:no-repeat;background-size:cover,auto 136%}
-.ytbox{position:absolute;inset:0;opacity:0;transition:opacity .6s;background:#000}
-/* YouTube won't play in a tiny player, so the video keeps its normal size and is only drawn smaller. */
-.ytbox iframe{position:absolute;left:50%;top:50%;width:470px;height:264px;transform:translate(-50%,-50%) scale(.185);border:0;pointer-events:none}
-.playing .ytbox{opacity:1}
-.playing .cover{opacity:0}
+.ytbox{position:absolute;inset:0;opacity:0;overflow:hidden}
+/* YouTube won't play in a tiny player, so it keeps a normal size, hidden. */
+.ytbox iframe{position:absolute;left:0;top:0;width:470px;height:264px;border:0;pointer-events:none}
 .ptxt{flex:1;min-width:0;text-align:left;color:inherit}
 .marq{width:100%;overflow:hidden;white-space:nowrap;font:600 15px/1.2 var(--round)}
 .marq span{display:inline-block}
@@ -526,7 +524,7 @@ function chime() {
   } catch (e) {}
 }
 
-/* ---------- radio (official YouTube embed, shown in the player's small square) ---------- */
+/* ---------- radio (official YouTube embed, hidden; it only plays the sound) ---------- */
 const playSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 const pauseSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
 let radioOn = false, radioPaused = false, yt = null, ytReady = null, ytPlayerReady = null;
