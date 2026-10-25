@@ -31,7 +31,8 @@
 - Look: light mode is a soft blue-grey with pastel cards (cream when ready, blue while focusing, green on a break) and blue accents (`#1f5cf2`); dark mode is near-black (`#161616`) with a soft glow of the state's colour. Both use the same bevel: a lit top edge, a soft lower edge and a shadow below each card. Big numbers use the rounded system font (`ui-rounded`).
 - Clicking the time cycles count up → Pomodoro 30 → 60 → 90. Breaks: 5, 15 and 20 minutes (`BREAK_FOR`); a break started from count up is 5 minutes. Naming: **the Island** is the black box with the blue card under the notch; **notifications** are macOS's own (the idle nudge, updates).
 - Buttons by state: idle *Start Focus*; focusing *Pause*; paused *Resume, End focus*; break *Pause, Skip break*; break paused *Resume, Start Focus*. There is no manual break: breaks aren't logged, so ending focus and starting again later does the same. A break is only offered after a finished Pomodoro block.
-- Buttons are one capsule (`.duo`): the main action is the filled part, a second action is a pill inside it.
+- Buttons sit side by side (`.duo`): the main action solid blue, a second one a raised pill.
+- Short notes ("Under 1 min, so not logged.") replace the line under the clock for a few seconds (`say()`). Dashboard, Settings and Quit are in the round-button menu at the top right of the timer card.
 - A finished block asks *Log it / Keep going*. Log it asks the topic, then *Take break / Start Focus*. Keep going adds a 30-minute block, logged as one session with the first; ending it early asks *Log it / Keep going* again.
 - Ending a Pomodoro early isn't logged; count-up under a minute isn't logged; breaks aren't logged. A finished break asks *Start Focus / +5 min*.
 - A session running when the app quits comes back paused, counting time up to the last save.

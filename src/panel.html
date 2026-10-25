@@ -13,8 +13,6 @@
   --sheen:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,0) 55%);
   --bevel:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(20,40,90,.06),0 0 0 .5px rgba(20,40,90,.08),0 1px 2px rgba(20,40,90,.06),0 10px 24px -8px rgba(20,40,90,.16);
   --player:#1f5cf2;--playerIcon:#1f5cf2;--playerShadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 .5px rgba(20,40,90,.15),0 16px 30px -12px rgba(31,92,242,.55);
-  --cap:#1f5cf2;--capInk:#fff;--capIn:linear-gradient(#fff,#f2f5fc);--capInInk:#1f5cf2;
-  --capShadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,0,40,.15),0 8px 18px -6px rgba(31,92,242,.55);--capInShadow:inset 0 1px 0 #fff,0 1px 3px rgba(0,0,40,.18);
   --chip:linear-gradient(#fff,#f1f3f8);--chipShadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(20,40,90,.1),0 2px 6px rgba(20,40,90,.1);--trackBg:rgba(255,255,255,.7);--track:inset 0 1px 2px rgba(20,40,90,.12)}
 @media (prefers-color-scheme: dark){:root{
   --bg:#161616;--ink:#f2f2f2;--muted:#8a8a8a;--card:linear-gradient(#222,#1c1c1c);--line:rgba(255,255,255,.08);--field:#2a2a2a;
@@ -23,9 +21,7 @@
   --sheen:linear-gradient(rgba(255,255,255,.03),rgba(255,255,255,0) 55%);
   --bevel:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.4),0 0 0 .5px rgba(255,255,255,.09),0 1px 2px rgba(0,0,0,.4),0 10px 24px -8px rgba(0,0,0,.6);
   --player:#1f1f1f;--playerIcon:#161616;--playerShadow:var(--bevel);
-  --cap:#f2f2f2;--capInk:#121212;--capIn:linear-gradient(#1f1f1f,#141414);--capInInk:#f2f2f2;
-  --capShadow:inset 0 1px 0 #fff,inset 0 -1px 0 rgba(0,0,0,.25),0 8px 18px -8px rgba(0,0,0,.8);--capInShadow:inset 0 1px 0 rgba(255,255,255,.08),0 1px 3px rgba(0,0,0,.5);
-  --chip:linear-gradient(#2a2a2a,#222);--chipShadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 0 .5px rgba(255,255,255,.08);--trackBg:rgba(255,255,255,.08);--track:inset 0 1px 2px rgba(0,0,0,.5)}}
+  --chip:linear-gradient(#333,#272727);--chipShadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 0 .5px rgba(255,255,255,.08);--trackBg:rgba(255,255,255,.08);--track:inset 0 1px 2px rgba(0,0,0,.5)}}
 *{box-sizing:border-box}
 html,body{margin:0;background:transparent;color:var(--ink);font:13px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;cursor:default}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
@@ -44,20 +40,33 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .break .timecard,.breakPaused .timecard{background-color:var(--pBreak);--tag:var(--tBreak);--glow:120,200,80}
 .head{display:flex;justify-content:space-between;align-items:flex-start}
 .state{display:inline-flex;align-items:center;background:var(--tag);color:var(--tagInk);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:600}
-.paused .state,.breakPaused .state{animation:blink 1.2s steps(2) infinite}
-@keyframes blink{50%{opacity:.45}}
+.paused .state,.breakPaused .state{animation:pulse 1.4s ease-in-out infinite alternate;will-change:opacity}
+@keyframes pulse{from{opacity:1}to{opacity:.4}}
 .time{display:block;text-align:left;font:600 52px/1.05 var(--round);letter-spacing:-.01em;font-variant-numeric:tabular-nums;margin-top:10px;color:var(--timeInk);border-radius:10px}
 .time.long{font-size:44px}
 .idle .time{cursor:pointer}
 .idle .time:hover{opacity:.75}
-.icon{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--muted);background:var(--chip);box-shadow:var(--chipShadow)}
-.icon:hover{color:var(--ink)}
-.icon svg{width:15px;height:15px}
+.icon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:var(--chip);box-shadow:var(--chipShadow)}
+.icon:hover{color:var(--accent)}
+.icon svg{width:17px;height:17px}
+/* the menu: the corner button turns into a close button and the others drop down under it */
+.menu{position:relative;z-index:10}
+.menu .x,.menu.open .dots{display:none}
+.menu.open .x{display:block}
+.menu.open #gear{box-shadow:var(--chipShadow),0 0 0 1.5px var(--accent)}
+.mlist{position:absolute;right:-6px;top:40px;display:flex;flex-direction:column;gap:8px;padding:6px;border-radius:99px;visibility:hidden;opacity:0;transform:translateY(-6px);transition:opacity .18s,transform .18s,visibility 0s .18s;
+  background:#eef1f7;box-shadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(20,40,90,.12),0 14px 30px -8px rgba(20,40,90,.35)}
+@media (prefers-color-scheme: dark){.mlist{background:#161616;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 .5px rgba(255,255,255,.1),0 14px 30px -8px rgba(0,0,0,.8)}}
+.menu.open .mlist{opacity:1;transform:none;transition:opacity .18s,transform .18s}
+.menu.open .mlist{visibility:visible}
+#quit:hover{color:#ff453a}
 #progWrap{margin-top:10px}
 .prog{height:6px;border-radius:9px;background:var(--trackBg);box-shadow:var(--track);overflow:hidden}
 .prog i{display:block;height:100%;width:0;border-radius:9px;background:var(--tag);transition:width .25s linear}
 /* Always one line tall, even when empty, so nothing below moves when the text comes and goes. */
 .progmeta{display:flex;justify-content:space-between;font-size:11.5px;line-height:15px;height:15px;color:var(--muted);font-weight:500;margin-top:6px;white-space:nowrap}
+.progmeta #note,.progmeta.noted span{display:none}
+.progmeta.noted #note{display:block;color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis}
 
 /* the radio: a rounded square; the live video fills it, the controls float on top */
 .player{position:relative;height:244px;border-radius:24px;overflow:hidden;color:#fff;background:var(--player);box-shadow:var(--playerShadow)}
@@ -106,24 +115,19 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .stations button span{color:var(--muted);font-variant-numeric:tabular-nums}
 .stations button[aria-current="true"]{font-weight:700;color:var(--accent)}
 
-/* message, buttons, stats */
-.msg{font-family:var(--round);font-size:14px;color:var(--muted);text-align:center;margin:4px 4px 0;min-height:19px;font-weight:500}
-/* One capsule: the main action is the filled part, a second action is a pill inside it. */
-.duo{display:flex;border-radius:99px;padding:3px;background:var(--cap);box-shadow:var(--capShadow);
-  background-image:linear-gradient(rgba(255,255,255,.2),rgba(255,255,255,0) 55%)}
-.duo button{flex:1;min-width:0;height:46px;border-radius:99px;font:600 16px var(--round);letter-spacing:-.01em}
-.duo .primary{color:var(--capInk)}
-.duo .secondary{background:var(--capIn);color:var(--capInInk);box-shadow:var(--capInShadow)}
+/* buttons: the main action solid blue, a second action a raised card-coloured pill beside it */
+.duo{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px}
+.duo button{min-width:0;height:46px;border-radius:99px;font:600 16px var(--round);letter-spacing:-.01em}
+.duo .primary{color:#fff;background:linear-gradient(#3a72ff,#1f5cf2);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,40,.15),0 8px 18px -8px rgba(31,92,242,.7)}
+.duo .secondary{color:var(--ink);background:var(--card);box-shadow:var(--bevel)}
+.duo .primary:hover{filter:brightness(1.06)}
+.duo .secondary:hover{color:var(--accent)}
 .duo button:active{transform:scale(.985)}
-.duo .primary:hover{opacity:.85}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .stat{border-radius:16px;padding:10px 12px;background:var(--card);box-shadow:var(--bevel)}
 .stat small{display:block;font-size:11px;color:var(--muted);font-weight:500}
 .stat b{display:block;font:600 19px var(--round);margin:2px 0 1px;font-variant-numeric:tabular-nums}
 .stat span{font-size:10.5px;color:var(--muted)}
-.foot{display:grid;grid-template-columns:1fr auto 1fr;font-size:12px;color:var(--muted);padding:2px 6px 2px}
-.foot button:hover{color:var(--ink)}
-.foot button:first-child{justify-self:start}.foot button:last-child{justify-self:end}
 
 /* questions (end of a block or break), shown here when the panel is open, otherwise in the Island under the notch */
 .ask{display:flex;flex-direction:column;gap:9px;border-radius:20px;padding:13px;background:var(--card);box-shadow:var(--bevel)}
@@ -145,9 +149,16 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
   <div class="head">
     <div><div class="state"><i></i><span id="state">Pomodoro</span></div>
       <button class="time" id="time" type="button" title="Click to switch: Count up, 30, 60 or 90 minutes">30:00</button></div>
-    <button class="icon" id="gear" type="button" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    <div class="menu" id="menu">
+      <button class="icon" id="gear" type="button" title="Menu"><svg class="dots" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg><svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <div class="mlist">
+        <button class="icon" id="openLog" type="button" title="Dashboard"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="11" width="3.4" height="8" rx="1"/><rect x="10.3" y="5" width="3.4" height="14" rx="1"/><rect x="16.6" y="8" width="3.4" height="11" rx="1"/></svg></button>
+        <button class="icon" id="openSettings" type="button" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+        <button class="icon" id="quit" type="button" title="Quit Focus MN"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3.5v8"/><path d="M7 6.3a7.5 7.5 0 1 0 10 0"/></svg></button>
+      </div>
+    </div>
   </div>
-  <div id="progWrap"><div class="prog"><i id="prog"></i></div><div class="progmeta"><span id="progA"></span><span id="progB"></span></div></div>
+  <div id="progWrap"><div class="prog"><i id="prog"></i></div><div class="progmeta" id="progmeta"><span id="progA"></span><span id="progB"></span><span id="note"></span></div></div>
   </div>
 
   <div class="player" id="disc">
@@ -169,7 +180,6 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
   </div>
   <div class="stations" id="stations" hidden role="menu"></div>
 
-  <div class="msg" id="msg"></div>
   <div class="actions" id="actions"></div>
   <div class="ask" id="ask" hidden>
     <h2 id="askTitle"></h2><p id="askText"></p>
@@ -183,7 +193,6 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
     <div class="stat"><small>Streak</small><b id="tStreak">0</b><span>days</span></div>
     <div class="stat"><small>This week</small><b id="tWeek">0m</b><span id="tWeekN">0 sessions</span></div>
   </div>
-  <div class="foot"><button type="button" id="openLog">Dashboard</button><button type="button" id="openSettings">Settings</button><button type="button" id="quit">Quit</button></div>
 </div>
 
 <script>
@@ -207,7 +216,6 @@ const MIN_LOG = 60e3, DAY = 864e5, MIN = 60e3;
 // Pomodoro blocks and the break that follows each.
 const BLOCKS = [30, 60, 90], BREAK_FOR = {30: 5, 60: 15, 90: 20}, KEEP_GOING = 30;
 const breakFor = min => (BREAK_FOR[min] || 5) * MIN;
-const STATUS = {idle: 'Ready when you are.', running: 'Time for deep work!', paused: 'Paused. Resume when you’re back.', break: 'Take a short break.', breakPaused: 'Break paused.'};
 
 // In the app, data lives in files the app reads and writes; in a browser it uses localStorage.
 const NATIVE = !!window.__NATIVE;
@@ -248,7 +256,8 @@ const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 let noteTimer = 0, note = '';
 // A short note replaces the status line for a few seconds.
 function say(text, hold = 5000) { note = text; clearTimeout(noteTimer); noteTimer = setTimeout(() => { note = ''; renderMsg(); }, hold); renderMsg(); }
-function renderMsg() { $('#msg').textContent = note || STATUS[S.status]; }
+// Short notes replace the line under the clock for a few seconds.
+function renderMsg() { $('#note').textContent = note; $('#progmeta').classList.toggle('noted', !!note); }
 
 /* ---------- focus and breaks ---------- */
 function beginFocus() {
@@ -265,8 +274,8 @@ function endFocus() {
   Object.assign(S, {status: 'idle', acc: 0, carry: 0, chained: false, segStart: 0, startedAt: 0});
   saveState(); render();
   if (pomo && chained) { pending = {start: st, end: Date.now(), ms: total}; afterTopic = 'next'; present(N.chainEnd()); return; }
-  if (pomo) say('Pomodoro ended early, so it wasn’t logged.');
-  else if (total < MIN_LOG) say('Under a minute, so it wasn’t logged.');
+  if (pomo) say('Ended early, so not logged.');
+  else if (total < MIN_LOG) say('Under 1 min, so not logged.');
   else { pending = {start: st, end: Date.now(), ms: total}; afterTopic = ''; present(N.topic()); return; }
 }
 function startBreak(len) {
@@ -349,7 +358,7 @@ function present(n) {
   renderAsk();
   native({type: 'notice', notice});
 }
-window.panelVisible = open => { panelOpen = open; renderAsk(); if (!open && notice) native({type: 'notice', notice}); };
+window.panelVisible = open => { panelOpen = open; if (!open) menu(false); renderAsk(); if (!open && notice) native({type: 'notice', notice}); };
 function renderAsk() {
   const show = !!notice && panelOpen;
   $('#ask').hidden = !show; $('#actions').hidden = show;
@@ -371,7 +380,7 @@ window.noticeAction = (id, topic) => {
       if (id === 'save') { saveLogs(); renderStats(); }
       pending = null;
       if (afterTopic === 'next') present(N.next());
-      else { present(null); say(id === 'save' ? 'Good job!' : 'Session discarded.', 3500); }
+      else { present(null); say(id === 'save' ? 'Saved. Good job!' : 'Discarded.', 3500); }
       break;
     case 'break': present(null); startBreak(breakFor(S.pomoMin)); break;
     case 'focus': present(null); beginFocus(); break;
@@ -434,7 +443,6 @@ function render() {
     break: [['Pause', pauseBreak, 1], ['Skip break', skipBreak]],
     breakPaused: [['Resume', resumeBreak, 1], ['Start Focus', beginFocus]],
   }[st];
-  // One capsule: the main action filled, a second action as a pill inside it.
   $('#actions').innerHTML = `<div class="duo">${B.map((b, i) => `<button type="button" class="${i ? 'secondary' : 'primary'}" data-i="${i}">${b[0]}</button>`).join('')}</div>`;
   $('#actions').onclick = e => { const b = e.target.closest('button'); if (b) B[+b.dataset.i][1](); };
   native({type: 'status', status: st});
@@ -507,7 +515,7 @@ function unmuteYT() { if (!yt || !yt.isMuted) return; if (yt.isMuted()) yt.unMut
 async function playYT(id) {
   const player = await makePlayer();
   if (!radioOn) return;
-  if (!player) { say('YouTube didn’t load. Check your connection.'); return; }
+  if (!player) { say('Radio didn’t load. Check your connection.'); return; }
   player.unMute(); player.setVolume(Math.round(S.vol * 100)); player.loadVideoById(id);
 }
 function resolveStation(i) { const st = STATIONS[i]; if (st.ch) native({type: 'resolve', i, ch: st.ch, match: st.match}); }
@@ -519,8 +527,8 @@ function ytResolved(i, id) {
 }
 function ytFailed() {
   const st = STATIONS[S.station];
-  if (NATIVE && st.ch && !retried[st.name]) { retried[st.name] = true; say(`Finding ${st.name}’s live stream…`); resolveStation(S.station); }
-  else say(`${st.name} isn’t live right now. Try another station.`);
+  if (NATIVE && st.ch && !retried[st.name]) { retried[st.name] = true; say('Finding the live stream…'); resolveStation(S.station); }
+  else say('Station offline. Try another.');
 }
 function showStation() {
   const st = STATIONS[S.station];
@@ -571,20 +579,24 @@ $('#vol').addEventListener('pointerup', saveState);
 
 /* ---------- controls ---------- */
 $('#time').onclick = cycleMode;
-$('#gear').onclick = $('#openSettings').onclick = () => native({type: 'openDashboard', tab: 'settings'});
-$('#openLog').onclick = () => native({type: 'openDashboard', tab: 'stats'});
+// The menu: round buttons that drop down under the corner button.
+const menu = open => $('#menu').classList.toggle('open', open);
+$('#gear').onclick = e => { e.stopPropagation(); menu(!$('#menu').classList.contains('open')); };
+$('#openSettings').onclick = () => { menu(false); native({type: 'openDashboard', tab: 'settings'}); };
+$('#openLog').onclick = () => { menu(false); native({type: 'openDashboard', tab: 'stats'}); };
 $('#quit').onclick = () => native({type: 'quit'});
+addEventListener('click', e => { if (!e.target.closest('#menu')) menu(false); });
 addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
   if (e.code === 'Space') { e.preventDefault(); start(); }
-  if (e.key === 'Escape') native({type: 'hidePanel'});
+  if (e.key === 'Escape') { if ($('#menu').classList.contains('open')) menu(false); else native({type: 'hidePanel'}); }
 });
 // The app's window follows the panel's height.
 new ResizeObserver(() => native({type: 'resize', h: Math.ceil($('#panel').getBoundingClientRect().height)})).observe($('#panel'));
 
 /* ---------- boot ---------- */
 showStation(); drawVol(); render();
-if (restored) say('Timer paused while the app was closed. Press Resume.', 10000);
+if (restored) say('Paused while the app was closed.', 10000);
 if (NATIVE) { STATIONS.forEach((st, i) => { if (st.ch) setTimeout(() => resolveStation(i), 400 * i); }); makePlayer(); }
 setInterval(tick, 250);
 setInterval(() => { if (S.status === 'running') saveState(); }, 5000);
