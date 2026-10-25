@@ -128,11 +128,11 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .eq i:nth-child(1){--rest:.4}.eq i:nth-child(2){--rest:.8}.eq i:nth-child(3){--rest:1}.eq i:nth-child(4){--rest:.65}.eq i:nth-child(5){--rest:.35}
 /* While playing, each bar jumps between levels on its own short loop, so together they pulse like a music meter.
    Only the transform changes, which the GPU animates smoothly at full frame rate. */
-.playing .eq i{animation:eq1 .62s ease-in-out infinite}
-.playing .eq i:nth-child(2){animation-name:eq2;animation-duration:.5s}
-.playing .eq i:nth-child(3){animation-name:eq3;animation-duration:.7s}
-.playing .eq i:nth-child(4){animation-name:eq2;animation-duration:.56s;animation-delay:-.2s}
-.playing .eq i:nth-child(5){animation-name:eq1;animation-duration:.66s;animation-delay:-.3s}
+.playing .eq i{animation:eq1 .9s ease-in-out infinite}
+.playing .eq i:nth-child(2){animation-name:eq2;animation-duration:.72s}
+.playing .eq i:nth-child(3){animation-name:eq3;animation-duration:1s}
+.playing .eq i:nth-child(4){animation-name:eq2;animation-duration:.8s;animation-delay:-.28s}
+.playing .eq i:nth-child(5){animation-name:eq1;animation-duration:.94s;animation-delay:-.42s}
 @keyframes eq1{0%,100%{transform:scaleY(.3)}25%{transform:scaleY(.85)}50%{transform:scaleY(.45)}75%{transform:scaleY(1)}}
 @keyframes eq2{0%,100%{transform:scaleY(.7)}30%{transform:scaleY(.25)}60%{transform:scaleY(1)}80%{transform:scaleY(.5)}}
 @keyframes eq3{0%,100%{transform:scaleY(1)}20%{transform:scaleY(.4)}45%{transform:scaleY(.75)}70%{transform:scaleY(.3)}}
