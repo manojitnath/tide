@@ -52,9 +52,9 @@ Each station in `STATIONS` (in `panel.html`) stores a channel, title words to ma
 - Browser previews: `python3 -m http.server 8765 --directory src`, then:
   - `panel.html?demo` (focusing), `?demo=idle`, `?demo=paused`, `?demo=break`, `?demo=done`, `?demo=topic`
   - `island.html?demo=break`, `?demo=done`, `?demo=topic`
-- The real Island, without a real session: quit the app, then start it with a test question. Any button just closes it; nothing is logged and the timer isn't touched.
+- The real Island, without a real session: restart the app with a test question (it waits for the old copy to exit, or `open` fails with error -600). Any button just closes it; nothing is logged and the timer isn't touched.
   ```bash
-  open -a "Focus MN" --args --test-island done    # or break, topic
+  osascript -e 'quit app "Focus MN"'; while pgrep -xq "Focus MN"; do sleep 0.2; done; open -a "Focus MN" --args --test-island done    # or break, topic
   ```
   - `dashboard.html?demo` (two weeks of sample sessions), `&tab=sessions`, `&tab=settings`
 - In a browser, data is kept in localStorage, not in your real log.
