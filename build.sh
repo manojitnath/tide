@@ -52,6 +52,7 @@ if (( ${@[(Ie)--install]} )); then
   while pgrep -xq "Focus MN"; do sleep 0.2; done
   rm -rf "/Applications/Focus MN.app"
   ditto "$out" "/Applications/Focus MN.app"
-  open "/Applications/Focus MN.app"
+  # macOS can still be closing the old copy; retry until it opens (error -600 otherwise).
+  for i in {1..20}; do open "/Applications/Focus MN.app" 2>/dev/null && break; sleep 0.5; done
   echo "Installed: /Applications/Focus MN.app"
 fi
