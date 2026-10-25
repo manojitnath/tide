@@ -131,20 +131,23 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 @keyframes eq{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
 /* volume: the button slides a short slider open beside it, pushing the other controls to the right */
 .volwrap{display:flex;align-items:center;flex:none}
-.volslide{width:0;overflow:hidden;opacity:0;transition:width .3s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.volslide{width:0;overflow:hidden;opacity:0;transition:width .3s ease-in-out,opacity .3s ease-in-out}
 .volwrap.open .volslide{width:48px;opacity:1}
 .vbar{width:44px;height:24px;margin-left:2px;display:flex;align-items:center;cursor:pointer;touch-action:none}
 .vbar div{position:relative;width:100%;height:4px;border-radius:9px;background:rgba(255,255,255,.22);overflow:hidden}
 .vbar i{position:absolute;left:0;top:0;bottom:0;border-radius:9px;background:#fff}
 @media (prefers-color-scheme: light){.vbar div{background:rgba(20,40,90,.14)}.vbar i{background:var(--accent)}}
-.ctrls{display:flex;justify-content:space-between;align-items:center;margin:0 -4px}
+/* The gaps shrink exactly as the volume slider grows, and stop is pinned to the right edge, so only the middle buttons move. */
+.ctrls{display:flex;align-items:center;gap:12px;margin:0 -4px;transition:gap .3s ease-in-out}
+.ctrls.volopen{gap:0}
+#stopRadio{margin-left:auto}
 .ctrls button{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:inherit}
 .ctrls button svg{width:16px;height:16px}
 .ctrls .play svg{width:22px;height:22px}
 .ctrls .side{opacity:.7}
 .ctrls .side svg{width:15px;height:15px}
 #stopRadio svg{width:13px;height:13px}
-#volBtn{opacity:1}
+#volBtn,#stopRadio{opacity:1}
 .ctrls button:hover{background:rgba(255,255,255,.12);opacity:1}
 @media (prefers-color-scheme: light){.ctrls button:hover{background:rgba(20,40,90,.07)}}
 .stations{position:absolute;left:22px;right:22px;z-index:5;border-radius:16px;padding:6px;max-height:260px;overflow:auto;background:var(--card);box-shadow:var(--bevel),0 14px 34px rgba(0,0,0,.25)}
@@ -640,10 +643,11 @@ const volFrom = e => { const r = $('#vol div').getBoundingClientRect(); setVol((
 $('#vol').addEventListener('pointerdown', e => { e.currentTarget.setPointerCapture(e.pointerId); volFrom(e); });
 $('#vol').addEventListener('pointermove', e => { if (e.buttons) volFrom(e); });
 $('#vol').addEventListener('pointerup', saveState);
-$('#volBtn').onclick = e => { e.stopPropagation(); $('#volWrap').classList.toggle('open'); };
+const volOpen = open => { $('#volWrap').classList.toggle('open', open); $('.ctrls').classList.toggle('volopen', open); };
+$('#volBtn').onclick = e => { e.stopPropagation(); volOpen(!$('#volWrap').classList.contains('open')); };
 $('.volwrap').addEventListener('wheel', e => { e.preventDefault(); setVol(S.vol - e.deltaY / 400); clearTimeout(volSave); volSave = setTimeout(saveState, 400); }, {passive: false});
 let volSave;
-addEventListener('click', e => { if (!e.target.closest('.volwrap')) $('#volWrap').classList.remove('open'); });
+addEventListener('click', e => { if (!e.target.closest('.volwrap')) volOpen(false); });
 
 /* ---------- controls ---------- */
 $('#time').onclick = cycleMode;
@@ -665,7 +669,7 @@ addEventListener('click', e => { if (!e.target.closest('#menu')) menu(false); })
 addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
   if (e.code === 'Space') { e.preventDefault(); start(); }
-  if (e.key === 'Escape') { if ($('#volWrap').classList.contains('open')) $('#volWrap').classList.remove('open'); else if ($('#menu').classList.contains('open')) menu(false); else native({type: 'hidePanel'}); }
+  if (e.key === 'Escape') { if ($('#volWrap').classList.contains('open')) volOpen(false); else if ($('#menu').classList.contains('open')) menu(false); else native({type: 'hidePanel'}); }
 });
 // The app's window follows the panel's height.
 new ResizeObserver(() => native({type: 'resize', h: Math.ceil($('#panel').getBoundingClientRect().height)})).observe($('#panel'));
