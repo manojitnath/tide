@@ -1,0 +1,110 @@
+<!doctype html>
+<!-- Tide showcase image: a MacBook with the panel, the Island and the dashboard, plus floating cards.
+     Built from the real pages (iframes of src/*.html in their ?demo modes). Serve the project root and open
+     http://127.0.0.1:8765/docs/promo/promo.html, then screenshot at 1600 x 1000 (2x). -->
+<meta charset="utf-8">
+<title>Tide showcase</title>
+<style>
+@font-face{font-family:Manrope;src:url(../../src/fonts/Manrope.ttf) format("truetype");font-weight:200 800}
+*{box-sizing:border-box}
+html,body{margin:0;width:1600px;height:1000px;overflow:hidden;background:#fff;font-family:Manrope,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+iframe{border:0;background:transparent;display:block}
+.stage{position:absolute;inset:28px;border-radius:44px;overflow:hidden;background:#dfe6fb}
+.stage::before{content:"";position:absolute;right:-220px;top:-260px;width:900px;height:900px;border-radius:50%;
+  background:radial-gradient(circle,transparent 0 300px,rgba(255,255,255,.55) 300px 302px,transparent 302px 440px,rgba(255,255,255,.4) 440px 442px,transparent 442px)}
+
+/* ---------- the MacBook ---------- */
+.mac{position:absolute;left:70px;top:150px;width:980px}
+.lid{position:relative;padding:16px 16px 22px;border-radius:30px 30px 6px 6px;background:#0d0d10;box-shadow:inset 0 0 0 2px #2b2b30,0 40px 80px -30px rgba(20,40,90,.55)}
+.screen{position:relative;height:590px;border-radius:16px 16px 2px 2px;overflow:hidden;
+  background:radial-gradient(120% 90% at 20% 110%,#8fb3ff,transparent 60%),radial-gradient(90% 80% at 90% 0%,#c9b8ff,transparent 60%),linear-gradient(160deg,#eaf0ff,#b9cbf7)}
+.notch{position:absolute;left:50%;top:0;width:150px;height:22px;transform:translateX(-50%);background:#0d0d10;border-radius:0 0 12px 12px;z-index:5}
+.menubar{position:absolute;inset:0 0 auto;height:26px;display:flex;align-items:center;gap:18px;padding:0 16px;font:600 12.5px -apple-system,sans-serif;color:#1d1d1f;
+  background:rgba(255,255,255,.45);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);z-index:4}
+.menubar .r{margin-left:auto;display:flex;gap:16px;align-items:center}
+.menubar .tide{display:flex;align-items:center;gap:5px;padding:2px 7px;border-radius:6px;background:rgba(0,0,0,.1)}
+.menubar svg{width:14px;height:14px}
+.base{height:22px;margin:0 -70px;border-radius:2px 2px 26px 26px;background:linear-gradient(#d9dbe1,#a9adb7);box-shadow:0 30px 50px -20px rgba(20,40,90,.45)}
+.base::before{content:"";display:block;width:160px;height:8px;margin:0 auto;border-radius:0 0 10px 10px;background:#b8bcc6}
+
+/* windows on the screen */
+.dash{position:absolute;left:40px;top:70px;width:560px;height:420px;border-radius:12px;overflow:hidden;box-shadow:0 0 0 .5px rgba(0,0,0,.2),0 24px 50px -10px rgba(20,40,90,.45);background:#eaeef6}
+.dash .tb{height:26px;display:flex;align-items:center;gap:7px;padding:0 11px}
+.dash .tb i{width:11px;height:11px;border-radius:50%;background:#ff5f57}.dash .tb i+i{background:#febc2e}.dash .tb i+i+i{background:#28c840}
+.dash iframe{width:1000px;height:720px;transform:scale(.56);transform-origin:0 0}
+.panelwin{position:absolute;right:30px;top:30px;width:240px;height:420px;overflow:hidden;border-radius:15px;box-shadow:0 0 0 .5px rgba(0,0,0,.15),0 24px 50px -10px rgba(20,40,90,.5)}
+.panelwin iframe{width:320px;height:560px;transform:scale(.75);transform-origin:0 0}
+.islandwin{position:absolute;left:50%;top:26px;width:290px;height:120px;transform:translateX(-50%);z-index:3}
+.islandwin iframe{width:360px;height:150px;transform:scale(.8);transform-origin:0 0}
+
+/* ---------- floating cards ---------- */
+.float{position:absolute;filter:drop-shadow(0 30px 40px rgba(20,40,90,.28))}
+.float iframe{transform-origin:0 0}
+.f-clock{left:1080px;top:110px;transform:rotate(-4deg)}
+.f-clock iframe{width:380px;height:240px;transform:scale(1.25)}
+.f-player{left:1110px;top:430px;transform:rotate(3deg)}
+.f-player iframe{width:390px;height:170px;transform:scale(1.18)}
+.f-stats{left:1060px;top:650px;transform:rotate(-2deg)}
+.f-stats iframe{width:380px;height:140px;transform:scale(1.2)}
+
+.brand{position:absolute;left:80px;top:62px;display:flex;align-items:center;gap:16px}
+.brand img{width:62px;height:62px}
+.brand b{display:block;font-size:34px;font-weight:800;color:#0f1a3a;letter-spacing:-.02em}
+.brand span{font-size:16px;font-weight:600;color:#56607a}
+</style>
+<body>
+<div class="stage">
+  <div class="brand"><img src="../icon/icon-6.png" alt=""><div><b>Tide</b><span>Focus timer and lofi radio for your Mac's menu bar</span></div></div>
+
+  <div class="mac">
+    <div class="lid"><div class="screen">
+      <div class="notch"></div>
+      <div class="menubar"><b></b><b>Tide</b><span>File</span><span>Edit</span><span>View</span><span>Window</span>
+        <div class="r"><span class="tide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>36:12</span>
+          <span>Mon 9:41 AM</span></div></div>
+      <div class="dash"><div class="tb"><i></i><i></i><i></i></div><iframe id="dash" src="../../src/dashboard.html?demo"></iframe></div>
+      <div class="islandwin"><iframe id="island" src="../../src/island.html?demo=done"></iframe></div>
+      <div class="panelwin"><iframe id="panel" src="../../src/panel.html?demo=focus"></iframe></div>
+    </div></div>
+    <div class="base"></div>
+  </div>
+
+  <div class="float f-clock"><iframe id="fclock" src="../../src/panel.html?demo=paused"></iframe></div>
+  <div class="float f-player"><iframe id="fplayer" src="../../src/panel.html?demo=focus"></iframe></div>
+  <div class="float f-stats"><iframe id="fstats" src="../../src/panel.html?demo=idle"></iframe></div>
+</div>
+<script>
+// An original "tide at dusk" cover, used instead of a station's real artwork.
+const cover = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb38a"/><stop offset=".55" stop-color="#c58cff"/><stop offset="1" stop-color="#6b7bff"/></linearGradient></defs>
+  <rect width="200" height="200" fill="url(#s)"/><circle cx="130" cy="78" r="30" fill="#fff4dc"/>
+  <path d="M0 120 Q25 108 50 120 T100 120 T150 120 T200 120 V200 H0Z" fill="#5b6cf0"/>
+  <path d="M0 140 Q25 128 50 140 T100 140 T150 140 T200 140 V200 H0Z" fill="#3f50d8"/>
+  <path d="M0 162 Q25 150 50 162 T100 162 T150 162 T200 162 V200 H0Z" fill="#2b39b5"/></svg>`);
+const css = {
+  base: `html,body{background:transparent!important}body{padding:0!important;min-height:0!important}`,
+  only: sel => `.panel{width:350px!important;background:transparent!important;box-shadow:none!important;padding:16px 38px 40px 16px!important}.panel>*:not(${sel}){display:none!important}`,
+};
+function prep(id, extra) {
+  const f = document.getElementById(id), d = f.contentDocument;
+  if (!d || !d.body) return;
+  d.body.classList.remove('preview');
+  const st = d.createElement('style'); st.textContent = css.base + (extra || ''); d.head.append(st);
+  d.querySelectorAll('.cover, .bgart').forEach(e => e.style.backgroundImage = `url("${cover}")`);
+}
+addEventListener('load', () => setTimeout(() => {
+  prep('panel', '.panel{border-radius:0}');
+  prep('dash');
+  // Monday's 7-day view only has today, so show the last 30 days.
+  const dd = document.getElementById('dash').contentDocument;
+  dd.querySelector('#stats [data-r="menu"]').click(); dd.querySelector('[data-span="30"]').click();
+  // The panel window is as tall as the panel.
+  const pf = document.getElementById('panel'), ph = pf.contentDocument.querySelector('.panel').getBoundingClientRect().height;
+  pf.style.height = ph + 'px'; pf.parentNode.style.height = (ph * .75) + 'px';
+  prep('island', '.island{padding-top:8px}');
+  prep('fclock', css.only('.timecard'));
+  prep('fplayer', css.only('#disc'));
+  prep('fstats', css.only('.stats'));
+}, 400));
+</script>
+</body>
