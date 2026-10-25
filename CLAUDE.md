@@ -13,7 +13,7 @@ A focus timer and lofi radio in the macOS menu bar. How it fits together, the ti
 
 ## Rules from the owner
 - Keep it simple. This is a personal tool: no skins, no game features.
-- Fonts: Manrope (bundled in `src/fonts/`) for big text, numbers, titles and buttons; Apple's system font for small text. Light and dark mode, short and clear text.
+- Font: Manrope (bundled in `src/fonts/`) for all text. Light and dark mode, short and clear text.
 - Show a PNG mockup before building any new screen.
 
 ## Working style

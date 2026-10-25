@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Focus MN</title>
 <style>
-/* Manrope (bundled, SIL Open Font License) for the big text. In the app it is added from the bundle; this rule is for the browser preview. */
+/* Manrope (bundled, SIL Open Font License) for all text. In the app it is added from the bundle; this rule is for the browser preview. */
 @font-face{font-family:"Manrope Preview";src:url(fonts/Manrope.ttf) format("truetype");font-weight:200 800}
 /* Light: soft blue-grey with pastel cards. Dark: near-black. Both use the same bevel: a lit top edge, a soft lower edge and depth below. */
-:root{--round:Manrope,"Manrope Preview",ui-rounded,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+:root{--font:Manrope,"Manrope Preview",ui-rounded,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   --bg:linear-gradient(#f7f8fc,#eceff6);--ink:#16181d;--muted:#6b7183;--card:linear-gradient(#fff,#f6f7fb);--line:rgba(20,40,90,.08);--field:#eef2fb;
   --accent:#1f5cf2;
   --pReady:#fbf0d9;--pFocus:#d6e6fd;--pBreak:#e5f5cd;--tReady:#4c3b19;--tFocus:#0f2b4f;--tBreak:#21400f;--tagInk:#fff;--timeInk:var(--tag);
@@ -23,7 +23,7 @@
   --bevel:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.4),0 0 0 .5px rgba(255,255,255,.09),0 1px 2px rgba(0,0,0,.4),0 10px 24px -8px rgba(0,0,0,.6);
   --chip:linear-gradient(#333,#272727);--chipShadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 0 .5px rgba(255,255,255,.08);--trackBg:rgba(255,255,255,.08);--track:inset 0 1px 2px rgba(0,0,0,.5)}}
 *{box-sizing:border-box}
-html,body{margin:0;background:transparent;color:var(--ink);font:13px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;cursor:default}
+html,body{margin:0;background:transparent;color:var(--ink);font:500 13px/1.35 var(--font);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;cursor:default}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
 input{font:inherit;color:inherit;-webkit-user-select:text;user-select:text}
 [hidden]{display:none!important}
@@ -62,7 +62,7 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .state{display:inline-flex;align-items:center;background:var(--tag);color:var(--tagInk);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:600}
 .paused .state,.breakPaused .state{animation:pulse 1.4s ease-in-out infinite alternate;will-change:opacity}
 @keyframes pulse{from{opacity:1}to{opacity:.4}}
-.time{display:block;text-align:left;font:600 52px/1.05 var(--round);letter-spacing:-.01em;font-variant-numeric:tabular-nums;margin-top:10px;color:var(--timeInk);border-radius:10px}
+.time{display:block;text-align:left;font:600 52px/1.05 var(--font);letter-spacing:-.01em;font-variant-numeric:tabular-nums;margin-top:10px;color:var(--timeInk);border-radius:10px}
 .time.long{font-size:44px}
 .idle .time{cursor:pointer}
 .idle .time:hover{opacity:.75}
@@ -112,7 +112,7 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 /* YouTube won't play in a tiny player, so it keeps a normal size, hidden. */
 .ytbox iframe{position:absolute;left:0;top:0;width:470px;height:264px;border:0;pointer-events:none}
 .ptxt{flex:1;min-width:0;text-align:left;color:inherit}
-.marq{width:100%;overflow:hidden;white-space:nowrap;font:600 15px/1.2 var(--round)}
+.marq{width:100%;overflow:hidden;white-space:nowrap;font:600 15px/1.2 var(--font)}
 .marq span{display:inline-block}
 .marq.scroll span{padding-left:100%;animation:marq 9s linear infinite}
 @keyframes marq{to{transform:translateX(-100%)}}
@@ -151,7 +151,7 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 
 /* buttons: the main action solid blue, a second action a raised card-coloured pill beside it */
 .duo{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:12px}
-.duo button{min-width:0;height:46px;border-radius:99px;font:600 16px var(--round);letter-spacing:-.01em}
+.duo button{min-width:0;height:46px;border-radius:99px;font:600 16px var(--font);letter-spacing:-.01em}
 .duo .primary{color:#fff;background:linear-gradient(#3a72ff,#1f5cf2);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,40,.15),0 8px 18px -8px rgba(31,92,242,.7)}
 .duo .secondary{color:var(--ink);background:var(--card);box-shadow:var(--bevel)}
 .duo .primary:hover{filter:brightness(1.06)}
@@ -160,7 +160,7 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .stat{border-radius:16px;padding:10px 10px;background:var(--card);box-shadow:var(--bevel)}
 .stat small{display:block;font-size:11px;color:var(--muted);font-weight:500}
-.stat b{display:block;white-space:nowrap;font:600 18px var(--round);margin:2px 0 1px;font-variant-numeric:tabular-nums}
+.stat b{display:block;white-space:nowrap;font:600 18px var(--font);margin:2px 0 1px;font-variant-numeric:tabular-nums}
 .stat span{font-size:10.5px;color:var(--muted)}
 
 /* hover and press: a small lift and a quick press-in, on every button */
@@ -172,7 +172,7 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 
 /* questions (end of a block or break), shown here when the panel is open, otherwise in the Island under the notch */
 .ask{display:flex;flex-direction:column;gap:9px;border-radius:20px;padding:13px;background:var(--card);box-shadow:var(--bevel)}
-.ask h2{margin:0;font:600 16px var(--round);text-align:center}
+.ask h2{margin:0;font:600 16px var(--font);text-align:center}
 .ask p{margin:-4px 0 2px;color:var(--muted);text-align:center}
 .ask input::-webkit-calendar-picker-indicator{display:none!important}
 .ask input{width:100%;padding:9px 11px;border-radius:12px;border:0;background:var(--field);box-shadow:var(--track);outline:none;font-size:14px}
