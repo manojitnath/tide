@@ -5,8 +5,8 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 **[Download Focus MN for macOS](https://github.com/manojitnath/focus-mn/releases/latest/download/Focus-MN.zip)** (macOS 13 or later, see [Install](#install))
 
 <p>
-  <img src="docs/screenshots/panel-focus.png" width="32%" alt="The menu bar panel while focusing: time left, progress, the round radio player, and Pause">
-  <img src="docs/screenshots/panel-paused.png" width="32%" alt="The panel when paused: Resume, Take break and End focus">
+  <img src="docs/screenshots/panel-focus.png" width="32%" alt="The menu bar panel while focusing: the timer card, the radio player with the live video, and Pause">
+  <img src="docs/screenshots/panel-paused.png" width="32%" alt="The panel when paused: Resume and End focus">
   <img src="docs/screenshots/panel-break.png" width="32%" alt="The panel in dark mode during a break">
 </p>
 
@@ -17,14 +17,14 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 ## Features
 
 - **Lives in the menu bar.** The running time sits next to a timer icon, with a filling circle (◔ ◑ ◕) for Pomodoro blocks. Click it to open the panel; click anywhere else to close it.
-- **Timer:** click the big time to switch between count up and Pomodoro blocks of 30, 60 or 90 minutes (with a 5, 15 or 20 minute break). Pause to see **Resume**, **Take break** and **End focus**.
-- **When a block or break ends** with the panel closed, **the Island**, a black box hanging from the notch, drops down with a sound and stays until you answer:
+- **Timer:** click the big time to switch between count up and Pomodoro blocks of 30, 60 or 90 minutes (with a 5, 15 or 20 minute break). Pause to see **Resume** and **End focus**. Need a break? End focus and start again when you're back; breaks aren't logged.
+- **When a block or break ends** with the panel closed, **the Island**, a blue card hanging from the notch, drops down with a sound and stays until you answer:
   - *Focus complete:* **Log it** (type the topic right there, then choose a break or another block) or **Keep going** (30 more minutes, logged together).
   - *Break complete:* **Start Focus** or **+5 min**.
   (System *notifications* in Notification Center are only used for the idle nudge below and app updates.)
 - **A nudge when you're idle:** after 30 minutes with no timer or break running, a macOS notification (with a sound) suggests starting a session. Hover over it and press **Let's start** to start counting up without opening the panel. Notifications use the **Alerts** style, so they stay on screen until you answer; you can change that in System Settings → Notifications → Focus MN.
 - **Fair logging:** a Pomodoro you end early isn't counted, and neither is under a minute of counting up.
-- **Radio:** ten lofi live streams (Lofi Girl, Chillhop and others) in a round player with the live video blurred behind it: play/pause, stop, previous and next, a curved volume line, and a station list when you click the name. It keeps playing when the panel is closed.
+- **Radio:** ten lofi live streams (Lofi Girl, Chillhop and others) in a square player with the live video filling it: play/pause, stop, previous and next, a volume bar, and a station list when you click the name. It keeps playing when the panel is closed.
 - **Study log:** every counted session is saved with its topic. Recent topics are one click away.
 - **Dashboard:** focus time, sessions, streak and top topic for today, 7 days, 30 to 360 days or a custom date range; a focused-time chart; time by topic; the hours you focus best; and a full session list you can tidy up. Export to CSV, or copy today's hours.
 - **Shortcut:** ⌃⌥Space (Control-Option-Space) starts or pauses the timer from any app.

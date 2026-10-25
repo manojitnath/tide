@@ -5,8 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Focus MN</title>
 <style>
-:root{--bg:#f5f5f4;--card:#fff;--ink:#1d1d1f;--muted:#6e6e73;--line:rgba(0,0,0,.08);--soft:rgba(0,0,0,.04);--accent:#2f6fdb;--pill:#1d1d1f;--pillInk:#fff;--shadow:0 1px 2px rgba(0,0,0,.04),0 0 0 .5px rgba(0,0,0,.06)}
-@media (prefers-color-scheme: dark){:root{--bg:#1c1c1e;--card:#2c2c2e;--ink:#f5f5f7;--muted:#98989d;--line:rgba(255,255,255,.1);--soft:rgba(255,255,255,.05);--pill:#f5f5f7;--pillInk:#1d1d1f;--shadow:0 0 0 .5px rgba(255,255,255,.08)}}
+:root{--round:ui-rounded,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --bg:#eaeef6;--card:#fff;--cardFill:linear-gradient(#fff,#f6f7fb);--ink:#16181d;--muted:#6b7183;--line:rgba(20,40,90,.08);--soft:#eef2fb;
+  --accent:#1f5cf2;--accentFill:linear-gradient(#3a72ff,#1f5cf2);--purpleFill:linear-gradient(#a07dff,#8a5cf6);--pill:#1f5cf2;--pillInk:#fff;
+  --pBlue:#d6e6fd;--pGreen:#e5f5cd;--pCream:#fbf0d9;--tBlue:#0f2b4f;--tGreen:#21400f;--tCream:#4c3b19;--tagInk:#fff;
+  --sheen:linear-gradient(rgba(255,255,255,.5),rgba(255,255,255,0) 55%);--blue:#1f5cf2;
+  --shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(20,40,90,.05),0 0 0 .5px rgba(20,40,90,.08),0 1px 2px rgba(20,40,90,.05),0 12px 28px -10px rgba(20,40,90,.16);
+  --blueShadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 .5px rgba(20,40,90,.12),0 14px 28px -10px rgba(31,92,242,.55);--track:inset 0 1px 2px rgba(20,40,90,.1)}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121212;--card:#1c1c1c;--cardFill:linear-gradient(#202020,#1a1a1a);--ink:#f2f2f2;--muted:#8a8a8a;--line:rgba(255,255,255,.07);--soft:#262626;
+  --accent:#3a73ff;--accentFill:linear-gradient(#4a7fff,#2f66f0);--purpleFill:linear-gradient(#a888ff,#8f68f5);--pill:#3a73ff;--pillInk:#fff;
+  --pBlue:#1c1c1c;--pGreen:#1c1c1c;--pCream:#1c1c1c;--tBlue:#9ec2ff;--tGreen:#b4e38a;--tCream:#f4d38f;--tagInk:#121212;
+  --sheen:linear-gradient(rgba(255,255,255,.03),rgba(255,255,255,0) 55%);--blue:#2f66f0;
+  --shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.4),0 0 0 .5px rgba(255,255,255,.08),0 1px 2px rgba(0,0,0,.4),0 12px 28px -10px rgba(0,0,0,.6);
+  --blueShadow:inset 0 1px 0 rgba(255,255,255,.25),0 0 0 .5px rgba(255,255,255,.08),0 14px 28px -10px rgba(0,0,0,.7);--track:inset 0 1px 2px rgba(0,0,0,.5)}}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.4 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 button,select,input{font:inherit;color:inherit}
@@ -39,7 +51,7 @@ h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em}
 .menu .apply:hover{background:var(--pill);opacity:.9}
 .round{width:36px;height:36px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center}
 .round svg{width:16px;height:16px}
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:14px}
 .card{background:var(--card);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow)}
 .card small{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .card b{display:block;font-size:24px;font-weight:700;margin:6px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -90,6 +102,39 @@ select{background:var(--card);border:0;border-radius:99px;padding:7px 12px;box-s
 kbd{font:600 12px -apple-system,system-ui;background:var(--soft);border-radius:6px;padding:3px 7px;box-shadow:inset 0 0 0 .5px var(--line)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--pill);color:var(--pillInk);border-radius:99px;padding:9px 16px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.2)}
 .toast button{font-weight:700;color:var(--accent)}
+/* ---------- look: bevelled cards (a lit top edge, a soft lower edge, depth below), the same in light and dark ---------- */
+h1{font:600 30px/1.1 var(--round);letter-spacing:-.01em}
+.ph h2{font:600 18px var(--round)}
+.tabs div,.range,.round,select,.btn,.panel,.group,.menu{background:var(--cardFill);box-shadow:var(--shadow)}
+.menu{box-shadow:var(--shadow),0 14px 34px rgba(0,0,0,.18)}
+.tabs button[aria-pressed="true"],.range button[aria-pressed="true"],.btn.dark,.menu .apply,.menu .apply:hover{background:var(--accentFill);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 8px -2px rgba(31,92,242,.5)}
+.round{width:40px;height:40px}
+/* the four numbers: one blue card, then pastel cards (black with a coloured glow in dark) with dark tags */
+.card{border-radius:24px;padding:16px 18px 14px;--tag:var(--tBlue);--glow:58,115,255;box-shadow:var(--shadow);background-image:var(--sheen),radial-gradient(120% 90% at 50% 125%,rgba(var(--glow),.22),transparent 70%)}
+.card small{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500;color:var(--tag);opacity:.85}
+.card b{font:600 34px/1.1 var(--round);margin:10px 0 10px;color:var(--tag)}
+@media (prefers-color-scheme: dark){.card b{color:var(--ink)}}
+.card span{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top;background:var(--tag);color:var(--tagInk);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:600}
+.card span:empty{display:none}
+.card:nth-child(1){background-color:var(--blue);--tag:#fff;box-shadow:var(--blueShadow);
+  background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,0) 50%),radial-gradient(circle at 100% 0,transparent 0 44px,rgba(255,255,255,.16) 44px 45px,transparent 45px 78px,rgba(255,255,255,.12) 78px 79px,transparent 79px),radial-gradient(circle at 100% 0,rgba(255,255,255,.07) 0 78px,transparent 78px)}
+.card:nth-child(1) small,.card:nth-child(1) b{color:#fff}
+.card:nth-child(1) span{background:rgba(255,255,255,.2);color:#fff}
+.card:nth-child(2){background-color:var(--pBlue);--tag:var(--tBlue);--glow:58,115,255}
+.card:nth-child(3){background-color:var(--pGreen);--tag:var(--tGreen);--glow:120,200,80}
+.card:nth-child(4){background-color:var(--pCream);--tag:var(--tCream);--glow:244,211,143}
+.panel,.group{border-radius:24px}
+.bars i{border-radius:9px 9px 3px 3px;background:var(--accentFill);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.bars div:last-child i{background:var(--purpleFill)}
+.track{height:9px;background:var(--soft);box-shadow:var(--track)}
+.trow:nth-child(4n+1) .track i{background:var(--accent)}
+.trow:nth-child(4n+2) .track i{background:#8a5cf6}
+.trow:nth-child(4n+3) .track i{background:#3e8a1c}
+.trow:nth-child(4n+4) .track i{background:#e0a23a}
+.hours i{background:var(--purpleFill);border-radius:5px 5px 2px 2px;opacity:1}
+.switch[aria-checked="true"]{background:var(--accent)}
+.group h3{text-transform:none;letter-spacing:0;font:600 14px var(--round);color:var(--ink)}
+.toast{background:#1d1d1f;color:#fff}.toast button{color:#9ec2ff}
 @media (max-width:760px){.cards{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}}
 </style>
 </head>

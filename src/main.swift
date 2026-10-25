@@ -132,14 +132,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         blur.material = .popover
         blur.blendingMode = .behindWindow
         blur.state = .active
-        blur.maskImage = roundedMask(14)
+        blur.maskImage = roundedMask(20)
         panel.contentView = blur
 
         web = WKWebView(frame: blur.bounds, configuration: pageConfig())
         web.autoresizingMask = [.width, .height]
         web.setValue(false, forKey: "drawsBackground")
         web.wantsLayer = true
-        web.layer?.cornerRadius = 14
+        web.layer?.cornerRadius = 20
         web.layer?.masksToBounds = true
         blur.addSubview(web)
         loadPage("panel", into: web)
