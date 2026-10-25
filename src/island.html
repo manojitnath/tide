@@ -7,9 +7,9 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:transparent;font:13px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;cursor:default}
 body.preview{background:linear-gradient(#6cc4f7,#9bd6f8);min-height:100vh}
-/* A black island hanging from the notch, holding a blue card. */
+/* A card dropping from the notch: bright blue in light mode, near-black in dark mode, like the panel's clock card. */
 /* --top is the menu bar's height (the notch on newer Macs), so the card starts below it. */
-.island{width:360px;margin:0 auto;background:#000;border-radius:0 0 30px 30px;padding:calc(var(--top, 0px) + 6px) 6px 6px}
+.island{width:360px;margin:0 auto;padding:calc(var(--top, 0px) + 8px) 8px 8px}
 .card{position:relative;overflow:hidden;color:#fff;background:#1f5cf2;border-radius:24px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,40,.2);
   background-image:linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,0) 45%),
@@ -27,14 +27,32 @@ input.shake{animation:shake .3s}
 @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips:empty{display:none}
-.chips button{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:99px;padding:5px 11px;font:500 12px -apple-system,system-ui;cursor:pointer;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.chips button{transition:background .15s,transform .15s;background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:99px;padding:5px 11px;font:500 12px -apple-system,system-ui;cursor:pointer;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
 .chips button:hover{background:rgba(255,255,255,.26)}
 /* Two buttons: the main action a white pill, the other an outlined pill. */
 .btns{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px;margin-top:2px}
 .btns button{border:0;border-radius:99px;height:42px;font:600 15px ui-rounded,-apple-system,system-ui;cursor:pointer;background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5)}
 .btns .primary{background:linear-gradient(#fff,#eef3ff);color:#1f5cf2;box-shadow:inset 0 -1px 0 rgba(0,0,40,.1),0 6px 14px -6px rgba(0,0,40,.45)}
-.btns button:active{transform:scale(.97)}
-.handle{width:32px;height:4px;border-radius:9px;background:#3a3a3c;margin:6px auto 0}
+.btns button{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,background-color .18s,filter .18s}
+.btns button:hover{transform:translateY(-1px);background-color:rgba(255,255,255,.12)}
+.btns .primary:hover{filter:brightness(1.05);box-shadow:inset 0 -1px 0 rgba(0,0,40,.1),0 10px 20px -6px rgba(0,0,40,.5)}
+.btns button:active{transform:scale(.97);transition-duration:.08s}
+.chips button:active{transform:scale(.96)}
+/* dark mode last, so it wins over the light rules above */
+@media (prefers-color-scheme: dark){
+  .card{background-color:#1c1c1c;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.08);
+    background-image:linear-gradient(rgba(255,255,255,.04),rgba(255,255,255,0) 45%),
+      radial-gradient(circle at 100% 0,transparent 0 70px,rgba(255,255,255,.06) 70px 71px,transparent 71px 112px,rgba(255,255,255,.045) 112px 113px,transparent 113px),
+      radial-gradient(120% 90% at 50% 125%,rgba(58,115,255,.28),transparent 70%)}
+  .logo{color:#161616}
+  p{color:rgba(255,255,255,.65)}
+  input{background:rgba(255,255,255,.07);box-shadow:inset 0 1px 2px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1)}
+  .chips button{background:rgba(255,255,255,.08)}
+  .chips button:hover{background:rgba(255,255,255,.15)}
+  .btns button{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.22)}
+  .btns .primary{background:linear-gradient(#3a72ff,#1f5cf2);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 18px -8px rgba(31,92,242,.8)}
+  .btns .primary:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 22px -8px rgba(31,92,242,.9)}
+}
 </style>
 </head>
 <body>
@@ -46,7 +64,6 @@ input.shake{animation:shake .3s}
     <div class="chips" id="chips"></div>
     <div class="btns" id="btns"></div>
   </div>
-  <div class="handle"></div>
 </div>
 <script>
 const $ = s => document.querySelector(s);

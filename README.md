@@ -18,7 +18,7 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 
 - **Lives in the menu bar.** The running time sits next to a timer icon, with a filling circle (◔ ◑ ◕) for Pomodoro blocks. Click it to open the panel; click anywhere else to close it.
 - **Timer:** click the big time to switch between count up and Pomodoro blocks of 30, 60 or 90 minutes (with a 5, 15 or 20 minute break). Pause to see **Resume** and **End focus**. Need a break? End focus and start again when you're back; breaks aren't logged.
-- **When a block or break ends** with the panel closed, **the Island**, a blue card hanging from the notch, drops down with a sound and stays until you answer:
+- **When a block or break ends** with the panel closed, **the Island**, a card dropping from the notch, drops down with a sound and stays until you answer:
   - *Focus complete:* **Log it** (type the topic right there, then choose a break or another block) or **Keep going** (30 more minutes, logged together).
   - *Break complete:* **Start Focus** or **+5 min**.
   (System *notifications* in Notification Center are only used for the idle nudge below and app updates.)

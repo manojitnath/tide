@@ -6,7 +6,7 @@
 |---|---|
 | `src/panel.html` | The menu bar panel: timer, radio, today's stats, and the end-of-session questions. Markup, styles and script in one file. |
 | `src/dashboard.html` | The dashboard window: Stats, Sessions and Settings tabs. |
-| `src/island.html` | **The Island**: a black box hanging from the notch at the top of the screen, holding a blue card. It only displays what the panel sends and reports button presses back. |
+| `src/island.html` | **The Island**: a card that drops from the notch at the top of the screen, blue in light mode and near-black in dark mode. It only displays what the panel sends and reports button presses back. |
 | `src/main.swift` | The native app: menu bar item, the panel window, the dashboard window, file storage, YouTube stream lookup, notifications, the global shortcut, open at login, the update check. |
 | `src/AppIcon.icns` | The app icon, made by `docs/icon/make-icns.sh` from `docs/icon/icon.html`. |
 | `build.sh` | Builds `build.noindex/Focus MN.app`. `--install` copies it to `/Applications` and opens it; `--zip` makes the release zip. |
@@ -29,7 +29,7 @@
 ## Timer rules
 
 - Look: light mode is a soft blue-grey; the clock card is bright blue (`#1f5cf2`, purple on a break) with rings in the corner. Dark mode is near-black (`#161616`), the clock card black with a soft glow of the state's colour. The radio card shows the station's cover art (its YouTube thumbnail) until the live video plays. Both use the same bevel: a lit top edge, a soft lower edge and a shadow below each card. Big numbers use the rounded system font (`ui-rounded`).
-- Clicking the time cycles count up → Pomodoro 30 → 60 → 90. Breaks: 5, 15 and 20 minutes (`BREAK_FOR`); a break started from count up is 5 minutes. Naming: **the Island** is the black box with the blue card under the notch; **notifications** are macOS's own (the idle nudge, updates).
+- Clicking the time cycles count up → Pomodoro 30 → 60 → 90. Breaks: 5, 15 and 20 minutes (`BREAK_FOR`); a break started from count up is 5 minutes. Naming: **the Island** is the card that drops from the notch; **notifications** are macOS's own (the idle nudge, updates).
 - Buttons by state: idle *Start Focus*; focusing *Pause*; paused *Resume, End focus*; break *Pause, Skip break*; break paused *Resume, Start Focus*. There is no manual break: breaks aren't logged, so ending focus and starting again later does the same. A break is only offered after a finished Pomodoro block.
 - Buttons sit side by side (`.duo`): the main action solid blue, a second one a raised pill.
 - Short notes ("Under 1 min, so not logged.") replace the line under the clock for a few seconds (`say()`). Dashboard, Settings, Theme and Quit are in the round-button menu at the top right of the timer card. Theme cycles Match the Mac → Light → Dark; the app saves it (`theme` in UserDefaults) and sets `NSApp.appearance`, so every window follows.
