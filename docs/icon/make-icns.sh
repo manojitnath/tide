@@ -1,10 +1,10 @@
 #!/bin/zsh
 # Renders the chosen design from icon.html and writes src/AppIcon.icns. Needs Google Chrome.
-#   docs/icon/make-icns.sh        uses design 2 (Timer wedge)
+#   docs/icon/make-icns.sh        uses design 6 (Island face: blue tile, white clock face, blue ring and wedge)
 #   docs/icon/make-icns.sh 3      uses another design
 set -e
 here="${0:A:h}"; root="$here/../.."
-design="${1:-2}"
+design="${1:-6}"
 tmp=$(mktemp -d); set=$tmp/AppIcon.iconset; mkdir "$set"
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --hide-scrollbars \
   --default-background-color=00000000 --window-size=1024,1024 --virtual-time-budget=3000 \

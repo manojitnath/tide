@@ -36,6 +36,24 @@ const designs = {
     ${[17, 29].map(r => { const d = (r * .7071).toFixed(2);
       return `<path d="M${50 + +d} ${50 - d} A${r} ${r} 0 0 1 ${50 + +d} ${50 + +d}" fill="none" stroke="#fff" stroke-width="6.5" stroke-linecap="round"/>
               <path d="M${50 - d} ${50 - d} A${r} ${r} 0 0 0 ${50 - d} ${50 + +d}" fill="none" stroke="#fff" stroke-width="6.5" stroke-linecap="round"/>`; }).join('')}`),
+  // 5: the timer wedge in white on the app's blue
+  5: tile('url(#g5)', `
+    <circle cx="50" cy="50" r="30" fill="none" stroke="#fff" stroke-width="6"/>
+    <path d="M50 50 L50 26 A24 24 0 0 1 70.8 62 Z" fill="#fff"/>`),
+  // 6: a white clock face on the blue, with a blue ring and wedge (the Island's logo, larger)
+  6: tile('url(#g5)', `
+    <circle cx="50" cy="50" r="34" fill="#fff"/>
+    <circle cx="50" cy="50" r="25" fill="none" stroke="url(#g5)" stroke-width="5.5"/>
+    <path d="M50 50 L50 31 A19 19 0 0 1 69 50 Z" fill="url(#g5)"/>`),
+  // 7: white ring on the blue, the wedge in a lighter blue
+  7: tile('url(#g5)', `
+    <circle cx="50" cy="50" r="30" fill="#fff" fill-opacity=".16" stroke="#fff" stroke-width="6"/>
+    <path d="M50 50 L50 26 A24 24 0 0 1 74 50 Z" fill="#9ec2ff"/>`),
+  // 8: the Island's logo flipped: a blue clock face on a white tile, with a white ring and wedge
+  8: tile('url(#g4)', `
+    <circle cx="50" cy="50" r="34" fill="url(#g5)"/>
+    <circle cx="50" cy="50" r="25" fill="none" stroke="#fff" stroke-width="5.5"/>
+    <path d="M50 50 L50 31 A19 19 0 0 1 69 50 Z" fill="#fff"/>`),
   // 4: the MN monogram on an amber button
   4: tile('url(#g4)', `
     <circle cx="50" cy="50" r="32" fill="url(#amber2)"/>
@@ -45,6 +63,7 @@ const defs = `<defs>
   <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d2340"/><stop offset="1" stop-color="#15111d"/></linearGradient>
   <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb547"/><stop offset="1" stop-color="#f2545b"/></linearGradient>
   <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2a5c"/><stop offset="1" stop-color="#1b1430"/></linearGradient>
+  <linearGradient id="g5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a72ff"/><stop offset="1" stop-color="#1f5cf2"/></linearGradient>
   <linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e8e5df"/></linearGradient>
   <linearGradient id="amber" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffc861"/><stop offset="1" stop-color="#ff7a3d"/></linearGradient>
   <linearGradient id="amber2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb547"/><stop offset="1" stop-color="#ff7a3d"/></linearGradient>
@@ -58,7 +77,7 @@ const icon = (v, px) => {
 };
 const q = new URLSearchParams(location.search);
 if (q.has('v')) { document.body.className = 'one'; document.body.innerHTML = icon(q.get('v'), +(q.get('size') || 1024)); }
-else document.body.innerHTML = `<div class="sheet">${[[1, '1 · Focus ring'], [2, '2 · Timer wedge'], [3, '3 · Radio signal'], [4, '4 · MN button']].map(([v, name]) =>
+else document.body.innerHTML = `<div class="sheet">${[[8, '8 · Flipped'], [5, '5 · White on blue'], [6, '6 · Island face'], [2, '2 · Current']].map(([v, name]) =>
   `<div class="col"><h2>${name}</h2>${icon(v, 260)}
    <div class="small light">${icon(v, 96)}${icon(v, 48)}${icon(v, 32)}${icon(v, 16)}</div>
    <div class="small dark">${icon(v, 96)}${icon(v, 48)}${icon(v, 32)}${icon(v, 16)}</div></div>`).join('')}</div>`;
