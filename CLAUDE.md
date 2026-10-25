@@ -8,11 +8,12 @@ A focus timer and lofi radio in the macOS menu bar. How it fits together, the ti
 - Raise `version=` in `build.sh` for every release; the GitHub release tag must match (`v2.1` for 2.1), because the in-app update check compares them.
 
 ## Files
-- `src/panel.html`: the menu bar panel. `src/dashboard.html`: the dashboard window. `src/main.swift`: the native app.
-- User data lives in `~/Library/Application Support/Tide/` (`Study Log.json`, `studyradio.state.json`). Never overwrite it in tests; back it up first and restore it after.
+- `src/panel.html`: the menu bar panel. `src/dashboard.html`: the dashboard window. `src/game.js`: the goal, streak, level, badge and bedtime rules both use. `src/main.swift`: the native app.
+- User data lives in `~/Library/Application Support/Tide/` (`Study Log.json`, `studyradio.state.json`, `tide.game.json`, `tide.nights.json`). Never overwrite it in tests; back it up first and restore it after.
 
 ## Rules from the owner
-- Keep it simple. This is a personal tool: no skins, no game features.
+- Keep it simple. This is a personal tool: no skins. Game features stay quiet (a daily goal, streak, levels, badges), shown in one panel card and the Progress tab; no habit tracker (that lives in Notion).
+- Bedtime is a firm rule: after bedtime the timer is off and the Island reminds every 5 minutes; nothing rewards staying up late.
 - Font: Manrope (bundled in `src/fonts/`) for all text. Light and dark mode, short and clear text.
 - Show a PNG mockup before building any new screen.
 

@@ -56,6 +56,12 @@ input.shake{animation:shake .3s}
   .btns .primary{background:linear-gradient(#3a72ff,#1f5cf2);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 18px -8px rgba(31,92,242,.8)}
   .btns .primary:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 22px -8px rgba(31,92,242,.9)}
 }
+.logo.art{background:none;box-shadow:none;width:52px;height:52px}
+.logo.art svg{width:52px;height:52px;filter:drop-shadow(0 4px 8px rgba(0,0,40,.35))}
+/* bedtime: a deep night card with a moon */
+.card.bed{background-color:#2b2f6e;background-image:linear-gradient(rgba(255,255,255,.08),rgba(255,255,255,0) 45%),radial-gradient(circle at 100% 0,transparent 0 70px,rgba(255,255,255,.1) 70px 71px,transparent 71px 112px,rgba(255,255,255,.07) 112px 113px,transparent 113px),radial-gradient(120% 90% at 50% 130%,rgba(150,120,255,.45),transparent 70%)}
+.card.bed .logo{color:#2b2f6e}
+.card.bed .btns .primary{color:#2b2f6e;background:linear-gradient(#fff,#ece9ff)}
 </style>
 </head>
 <body>
@@ -74,8 +80,15 @@ const native = msg => { try { window.webkit.messageHandlers.native.postMessage(m
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 let notice = null;
 // The panel page decides what to ask; this page only shows it and reports which button was pressed.
+const LOGO = document.querySelector('.logo').innerHTML;
+const MOON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>';
 function setNotice(n) {
   notice = n;
+  // Bedtime gets the night card; a new badge shows its coin in place of the logo.
+  document.querySelector('.card').classList.toggle('bed', n.kind === 'bed');
+  const logo = document.querySelector('.logo');
+  logo.classList.toggle('art', !!n.art);
+  logo.innerHTML = n.art || (n.kind === 'bed' ? MOON : LOGO);
   $('#title').textContent = n.title || '';
   $('#text').textContent = n.text || '';
   $('#topic').hidden = !n.input;
@@ -106,6 +119,7 @@ if (!window.__NATIVE) document.body.classList.add('preview');
 if (q.has('top')) setTopInset(+q.get('top'));
 if (q.has('demo')) {
   const demos = {
+    bed: {kind: 'bed', title: 'It’s 10:30 PM. Time to sleep.', text: 'People who sleep under 6 hours are about 4 times more likely to catch a cold.', buttons: [{id: 'bedmore', label: '5 more minutes'}, {id: 'bedok', label: 'Good night', style: 'primary'}]},
     break: {title: 'Break complete', text: 'Nice reset. Focus when you’re ready.', buttons: [{id: 'focus', label: 'Start Focus', style: 'primary'}, {id: 'plus5', label: '+5 min'}]},
     done: {title: 'Focus complete', text: '30 minutes of deep work. Well done.', buttons: [{id: 'log', label: 'Log it', style: 'primary'}, {id: 'keep', label: 'Keep going'}]},
     topic: {title: 'What did you work on?', text: '30m of focus, 9:10 to 9:40 AM', input: true, needsTopic: 'save', chips: ['Security+ notes', 'Linear algebra', 'AWS AI Practitioner'],

@@ -142,13 +142,95 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
 .switch[aria-checked="true"]{background:var(--accent)}
 .group h3{text-transform:none;letter-spacing:0;font:600 14px var(--font);color:var(--ink)}
 .toast{background:#1d1d1f;color:#fff}.toast button{color:#9ec2ff}
+/* ---------- progress: level, goal, streak, week, lights out, badges ---------- */
+.bgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:18px 10px;padding-top:4px}
+.bgrid .bd{width:auto;height:auto;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bgrid .bd svg{width:86px;height:86px}
+.bgrid .bd b{font-size:12.5px;font-weight:700;text-align:center}
+.bgrid .bd.locked b{color:var(--muted);opacity:.6}
+.bgrid .bd::after{bottom:calc(100% - 2px)}
+.bgrid .bd:nth-child(7n+1)::after{left:0;transform:none}
+.bgrid .bd:nth-child(7n)::after{left:auto;right:0;transform:none}
+
+.bd{position:relative;width:76px;height:76px;transition:transform .18s ease-in-out}
+.bd svg{width:100%;height:100%;filter:drop-shadow(0 8px 10px rgba(20,40,90,.22))}
+.bd:hover{transform:translateY(-3px) scale(1.04)}
+.bd.locked svg{filter:grayscale(1) opacity(.35)}
+@media (prefers-color-scheme: dark){.bd.locked svg{filter:grayscale(1) brightness(.6) opacity(.5)}}
+.bd::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);white-space:nowrap;font-size:11.5px;font-weight:700;color:#fff;background:#16181d;padding:5px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .15s;z-index:3}
+.bd:hover::after{opacity:1}
+
+.streakc .sk{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:.5px solid var(--line)}
+.skflame{width:48px;height:48px;flex:none;filter:drop-shadow(0 0 12px rgba(255,80,40,.6))}
+.sk small{display:block;font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.sk b{font:700 26px/1.1 var(--font)}.sk b span{font-size:14px;letter-spacing:.06em;color:var(--muted)}
+.sk em{margin-left:auto;font-style:normal;font-size:12px;color:var(--muted);font-weight:600}
+.skwk{display:flex;justify-content:space-between;margin:14px 0 10px}
+.skwk .c{display:flex;flex-direction:column;align-items:center;gap:5px}
+.skwk .c i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--soft);box-shadow:var(--track)}
+.skwk .c i svg{width:15px;height:15px;color:#0e2a12}
+.skwk .c.done i{background:linear-gradient(#6ad874,#2fae5a);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 12px -2px rgba(47,174,90,.75)}
+.skwk .c.now i{background:none;box-shadow:inset 0 0 0 3px var(--soft);position:relative}
+.skwk .c.now i::after{content:"";position:absolute;inset:0;border-radius:50%;border:3px solid #2fae5a;border-left-color:transparent;border-bottom-color:transparent;transform:rotate(-20deg)}
+.skwk small{font-size:11px;color:var(--muted)}
+.vac{margin:0;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.vac i{width:8px;height:8px;border-radius:50%;background:var(--muted);opacity:.6}
+.g2{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin-bottom:14px}.g2 .panel{margin:0}
+.fbars,.nbars{display:flex;align-items:flex-end;gap:10px;height:130px}
+.fbars .b,.nbars .n{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}
+.fbars i,.nbars i{position:relative;display:block;width:100%;border-radius:10px;background:color-mix(in srgb,var(--accent) 22%,var(--soft))}
+.fbars .now i{background:linear-gradient(#5b8cff,#1f5cf2);box-shadow:0 8px 18px -6px rgba(31,92,242,.7)}
+.fbars .fut i{background:var(--soft);opacity:.6}
+.fbars i span{position:absolute;left:50%;top:-26px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:700;color:#fff;background:#16181d;padding:3px 8px;border-radius:99px}
+.fbars small,.nbars small{font-size:11px;color:var(--muted)}
+.moon{display:inline-grid;width:22px;height:22px;margin-right:8px;vertical-align:-4px;color:#8a7cff}.moon svg{width:20px}
+.bedrow{display:flex;gap:16px;align-items:flex-end}
+.bedrow b{display:block;font:700 26px var(--font)}.bedrow b span{font-size:13px;color:var(--muted);font-weight:600}
+.bedrow small{font-size:12px;color:var(--muted)}
+.nbars{flex:1;height:90px;gap:6px}
+.nbars .ok i{background:linear-gradient(#a99bff,#7a66f0)}
+.nbars .late i{background:linear-gradient(#ffb36b,#ff7a3d)}
+.nbars .fut i{background:var(--soft);opacity:.6}
+
+.streakchip{display:flex;align-items:center;gap:6px;padding:8px 16px 8px 12px;border-radius:99px;background:var(--cardFill);box-shadow:var(--shadow)}
+.streakchip .gf{width:24px;height:24px;filter:drop-shadow(0 0 6px rgba(255,90,40,.5))}
+.streakchip b{font:800 20px var(--font)}.streakchip span{color:var(--muted);font-size:12.5px;font-weight:600}
+
+.g3{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.g3 .panel{margin:0}
+.lvl{position:relative;overflow:hidden;border-radius:14px;padding:18px 20px;color:#fff;background-color:var(--blue);box-shadow:var(--blueShadow);
+  background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,0) 50%),radial-gradient(circle at 100% 0,transparent 0 50px,rgba(255,255,255,.16) 50px 51px,transparent 51px 90px,rgba(255,255,255,.12) 90px 91px,transparent 91px)}
+.lvl small{font-size:13.5px;opacity:.85}
+.lvl b{display:block;font:700 40px/1.1 var(--font);margin:6px 0 14px}
+.lvl .xpbar{height:8px;border-radius:9px;background:rgba(255,255,255,.25);overflow:hidden}
+.lvl .xpbar i{display:block;height:100%;border-radius:9px;background:#fff}
+.lvl span{display:block;font-size:12px;margin-top:8px;opacity:.85}
+.ring{transform:rotate(-90deg)}
+.ring circle{fill:none;stroke:var(--soft);stroke-width:5}
+.ring .on{stroke:var(--accent);stroke-linecap:round}
+.ring .on.full{stroke:#2fae5a}
+.big{display:flex;align-items:center;gap:14px;margin:4px 0 14px}
+.big .ring{width:64px;height:64px}
+.big b{display:block;font:700 26px var(--font)}
+.big span{color:var(--muted);font-size:12.5px}
+.bigflame{width:58px;height:58px;flex:none}
+.week{display:flex;justify-content:space-between}
+.week div{display:flex;flex-direction:column;align-items:center;gap:3px}
+.week .ring{width:26px;height:26px}
+.week small{font-size:11px;color:var(--muted)}
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.15),0 6px 14px -6px var(--c)}
+@media (prefers-color-scheme: dark){.badge.locked .medal{background:#3a3a3e}}
+.lvl em{position:absolute;right:16px;top:16px;font-style:normal;font-size:12px;font-weight:700;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:99px}
+input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:7px 12px;box-shadow:var(--shadow);font:inherit;color:inherit}
 @media (max-width:760px){.cards{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}}
 </style>
+<script>if (!window.Game) document.write('<script src="game.js"><\/script>');</script>
 </head>
 <body>
 <div class="wrap">
   <div class="tabs"><div id="tabs">
     <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="11" width="3.5" height="9" rx="1"/><rect x="10.25" y="5" width="3.5" height="15" rx="1"/><rect x="16.5" y="8" width="3.5" height="12" rx="1"/></svg>Stats</button>
+    <button type="button" data-tab="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/></svg>Progress</button>
     <button type="button" data-tab="sessions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".6"/><circle cx="4" cy="12" r=".6"/><circle cx="4" cy="18" r=".6"/></svg>Sessions</button>
     <button type="button" data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
   </div></div>
@@ -178,6 +260,22 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
     </div>
   </section>
 
+  <section id="progress" hidden>
+    <div class="title"><div class="hello"><h1 id="pHello"></h1><p id="pSub"></p></div><div class="streakchip"><svg class="gf" viewBox="0 0 24 24"><defs><linearGradient id="pcf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d2e"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#pcf)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#fff3c4"/></svg><b id="pChip">0</b><span>day streak</span></div></div>
+    <div class="g3">
+      <div class="lvl"><small id="lvN"></small><b id="lvName"></b><div class="xpbar"><i id="lvBar"></i></div><span id="lvXp"></span><em id="lvNext"></em></div>
+      <div class="panel goalc"><div class="ph"><h2>Daily goal</h2><span id="gGoal"></span></div>
+        <div class="big"><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on" id="gRing" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="0 100"/></svg><div><b id="gNow"></b><span id="gLeft"></span></div></div><div class="week" id="gWeek"></div></div>
+      <div class="panel streakc"><div class="sk"><svg class="skflame" viewBox="0 0 24 24"><defs><linearGradient id="skf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d2e"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#skf)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#fff3c4"/></svg><div><small>STREAK</small><b><span id="sN">0</span> <span>DAYS</span></b></div><em id="sBest"></em></div>
+        <div class="skwk" id="sWeek"></div><p class="vac"><i></i><span id="sVac"></span></p></div>
+    </div>
+    <div class="g2">
+      <div class="panel wkc"><div class="ph"><h2>This week</h2><span id="wTotal"></span></div><div class="fbars" id="wBars"></div></div>
+      <div class="panel bedc"><div class="ph"><h2><span class="moon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg></span>Lights out</h2><span id="lBy"></span></div>
+        <div class="bedrow"><div><b id="lN"></b><small id="lAvg"></small></div><div class="nbars" id="lBars"></div></div></div>
+    </div>
+    <div class="panel"><div class="ph"><h2>Badges</h2><span id="bCount"></span></div><div class="bgrid" id="bGrid"></div></div>
+  </section>
   <section id="sessions" hidden>
     <div class="title">
       <div><h1>Sessions</h1><p>Every logged focus session.</p></div>
@@ -194,6 +292,16 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
     <div class="group"><h3>General</h3>
       <div class="set"><div><b>Open at login</b><span>Start Tide when you log in to your Mac.</span></div><button class="switch" id="loginSw" role="switch" aria-checked="false" type="button"></button></div>
       <div class="set"><div><b>Start or pause from anywhere</b><span>Works in any app.</span></div><kbd>⌃ ⌥ Space</kbd></div>
+    </div>
+    <div class="group"><h3>Bedtime</h3>
+      <div class="set"><div><b>Bedtime reminders</b><span>While you're using the Mac after bedtime, the Island reminds you every 5 minutes to close the laptop.</span></div><button class="switch" id="bedSw" role="switch"></button></div>
+      <div class="set"><div><b>Bedtime</b><span>Reminders start, and the timer turns off until 5 AM.</span></div><input type="time" id="bedAt"></div>
+      <div class="set"><div><b>Sleep facts from</b><span>Each reminder adds a short fact about why sleep matters.</span></div><input type="time" id="factsAt"></div>
+      <div class="set"><div><b>Night off</b><span id="offText">For movie nights and parties: no reminders tonight, back tomorrow.</span></div><button class="btn" id="offBtn">Take tonight off</button></div>
+    </div>
+    <div class="group"><h3>Streaks and goals</h3>
+      <div class="set"><div><b>Daily focus goal</b><span>Reach it to keep your streak going.</span></div><select id="goalSel"><option value="30">30 minutes</option><option value="60">1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option></select></div>
+      <div class="set"><div><b>Vacation mode</b><span>Pauses your streak while you're away; missed days won't break it.</span></div><button class="switch" id="vacSw" role="switch"></button></div>
     </div>
     <div class="group"><h3>Your log</h3>
       <div class="set"><div><b>Log folder</b><code id="folder"></code></div><div style="display:flex;gap:8px;flex:none"><button class="btn" id="reveal" type="button">Show in Finder</button><button class="btn" id="chooseFolder" type="button">Choose…</button></div></div>
@@ -220,9 +328,14 @@ let settings = Object.assign({launchAtLogin: false, logFolder: '~/Library/Applic
 window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderAll(); };
 window.settingsChanged = s => { settings = Object.assign(settings, s); renderSettings(); };
 window.showTab = tab => setTab(tab);
+// The game (game.js): its settings are shared with the panel; the app records the nights the Mac was last used.
+let G = Game.settings(store.get('tide.game', {})), nights = store.get('tide.nights', {});
+window.__syncGame = data => { G = Game.settings(data); renderAll(); };
+window.__syncNights = data => { nights = data || {}; renderProgress(); };
+function saveGame() { store.set('tide.game', G); renderAll(); }
 
 const pad = n => String(n).padStart(2, '0');
-const dur = ms => { const m = Math.round(ms / 60e3), h = Math.floor(m / 60); return h ? `${h}h ${m % 60}m` : `${m}m`; };
+const dur = ms => { const m = Math.round(ms / 60e3), h = Math.floor(m / 60); return h ? `${h}h${m % 60 ? ` ${m % 60}m` : ''}` : `${m}m`; };
 const dayStart = d => { d = new Date(d); return +new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
 const fmtDate = ts => new Date(ts).toLocaleDateString(undefined, {weekday: 'short', day: 'numeric', month: 'short'});
 const fmtTime = ts => new Date(ts).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'});
@@ -232,9 +345,10 @@ const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
 /* ---------- tabs and range ---------- */
 function setTab(tab) {
-  if (!['stats', 'sessions', 'settings'].includes(tab)) tab = 'stats';
+  const TABS = ['stats', 'progress', 'sessions', 'settings'];
+  if (!TABS.includes(tab)) tab = 'stats';
   $$('#tabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === tab));
-  ['stats', 'sessions', 'settings'].forEach(id => $('#' + id).hidden = id !== tab);
+  TABS.forEach(id => $('#' + id).hidden = id !== tab);
 }
 $('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); };
 // Today and 7D are buttons; Range opens a menu of longer spans and a custom date range.
@@ -284,12 +398,7 @@ function bounds() {
 function inRange() { const [a, b] = bounds(); return logs.filter(l => l.start >= a && l.start < b); }
 
 /* ---------- stats ---------- */
-function streak() {
-  const days = new Set(logs.map(l => dayStart(l.start)));
-  let d = dayStart(Date.now()); if (!days.has(d)) d -= DAY;
-  let n = 0; while (days.has(d)) { n++; d = dayStart(d - DAY / 2); }
-  return n;
-}
+const streak = () => Game.streak(logs, G).current;
 // Buckets for the chart: hours for one day, days up to two months, months beyond that.
 function buckets(a, b) {
   const span = Math.round((b - a) / DAY), out = [];
@@ -397,15 +506,72 @@ function renderSettings() {
   $('#loginSw').setAttribute('aria-checked', !!settings.launchAtLogin);
   $('#folder').textContent = settings.logFolder;
   $('#ver').textContent = settings.version;
+  $('#bedSw').setAttribute('aria-checked', !!G.bedOn);
+  $('#bedAt').value = G.bedAt; $('#factsAt').value = G.factsAt;
+  $('#goalSel').value = String(G.goalMin);
+  $('#vacSw').setAttribute('aria-checked', Game.onVacation(G, Game.dayKey(Date.now())));
+  const off = G.nightOff === Game.nightKey(Date.now());
+  $('#offBtn').textContent = off ? 'Turn reminders back on' : 'Take tonight off';
+  $('#offText').textContent = off ? 'Tonight is off: no reminders, and the timer works as usual.' : 'For movie nights and parties: no reminders tonight, back tomorrow.';
 }
+$('#bedSw').onclick = () => { G.bedOn = !G.bedOn; saveGame(); };
+$('#bedAt').onchange = e => { if (e.target.value) { G.bedAt = e.target.value; saveGame(); } };
+$('#factsAt').onchange = e => { if (e.target.value) { G.factsAt = e.target.value; saveGame(); } };
+$('#goalSel').onchange = e => { G.goalMin = +e.target.value; saveGame(); };
+$('#offBtn').onclick = () => { const k = Game.nightKey(Date.now()); G.nightOff = G.nightOff === k ? '' : k; saveGame(); };
+// Vacation mode keeps a list of date ranges, so past vacations still don't count against the streak.
+$('#vacSw').onclick = () => {
+  const k = Game.dayKey(Date.now()), open = G.vacation.find(v => !v[1]);
+  if (open) { open[1] = k; G.vacation = G.vacation.filter(v => v[0] <= v[1]); }
+  else G.vacation.push([k, null]);
+  saveGame();
+};
 $('#loginSw').onclick = () => native({type: 'setLaunchAtLogin', on: !settings.launchAtLogin});
 $('#chooseFolder').onclick = () => native({type: 'chooseLogFolder'});
 $('#reveal').onclick = () => native({type: 'revealLogFolder'});
 $('#updates').onclick = () => native({type: 'checkUpdates'});
 
+/* ---------- progress ---------- */
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const ring = (p, cls) => `<svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on${cls || ''}" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="${(p * 100).toFixed(1)} 100"/></svg>`;
+const clockOf = m => new Date(dayStart(Date.now()) + (m % 1440) * 6e4).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'});
+const WD = d => new Date(d).toLocaleDateString(undefined, {weekday: 'short'});
+function renderProgress() {
+  const st = Game.streak(logs, G), lv = Game.level(logs), now = Date.now(), today = dayStart(now);
+  $('#pHello').textContent = Game.greeting(window.__USER || '', now, Game.isBedtime(G, now));
+  const left = st.goal - st.today;
+  $('#pSub').textContent = `${dur(st.today)} focused today. ${left > 0 ? dur(left) + ' to your goal.' : 'Goal reached.'}`;
+  $('#pChip').textContent = st.current;
+  $('#lvN').textContent = `Level ${lv.n}`; $('#lvName').textContent = lv.name; $('#lvNext').textContent = `Next: ${lv.next}`;
+  $('#lvBar').style.width = ((lv.xp - lv.from) / (lv.to - lv.from) * 100).toFixed(1) + '%';
+  $('#lvXp').textContent = `${lv.xp.toLocaleString()} / ${lv.to.toLocaleString()} XP · 1 XP for every focused minute`;
+  $('#gGoal').textContent = `${dur(st.goal)} a day`;
+  $('#gRing').setAttribute('stroke-dasharray', `${(Math.min(1, st.today / st.goal) * 100).toFixed(1)} 100`);
+  $('#gNow').textContent = dur(st.today); $('#gLeft').textContent = left > 0 ? `${dur(left)} to go today` : 'Done for today';
+  $('#gWeek').innerHTML = st.week.map(d => `<div>${ring(d.p, d.p >= 1 ? ' full' : '')}<small>${WD(d.day)[0]}</small></div>`).join('');
+  $('#sN').textContent = st.current; $('#sBest').textContent = `Best ${st.best}`;
+  $('#sWeek').innerHTML = st.week.map(d => `<div class="c${d.state === 'done' ? ' done' : d.state === 'now' ? ' now' : ''}"><i>${d.state === 'done' ? CHECK : ''}</i><small>${WD(d.day)}</small></div>`).join('');
+  $('#sVac').textContent = Game.onVacation(G, Game.dayKey(now)) ? 'Vacation mode is on, so your streak is paused' : 'Vacation mode is off';
+  // This week: focus per day, today highlighted.
+  const max = Math.max(st.goal, ...st.week.map(d => d.ms));
+  $('#wTotal').textContent = `${dur(st.week.reduce((n, d) => n + d.ms, 0))} focused`;
+  $('#wBars').innerHTML = st.week.map(d => `<div class="b${d.day === today ? ' now' : ''}${d.day > today ? ' fut' : ''}"><i style="height:${Math.max(4, d.ms / max * 100).toFixed(0)}%">${d.day === today ? `<span>${dur(d.ms)}</span>` : ''}</i><small>${WD(d.day)[0]}</small></div>`).join('');
+  // Lights out: when the Mac was last used each night this week, and whether that was on time.
+  const by = Game.lightsOutBy(G), week = st.week.map(d => ({d, v: nights[Game.dayKey(d.day)]}));
+  const used = week.filter(n => n.v != null), ok = used.filter(n => n.v <= by).length;
+  $('#lBy').textContent = `laptop closed by ${clockOf(by)}`;
+  $('#lN').innerHTML = `${ok} <span>of ${plural(used.length, 'night')}</span>`;
+  $('#lAvg').textContent = used.length ? `Average laptop close ${clockOf(Math.round(used.reduce((n, x) => n + x.v, 0) / used.length))}` : 'No nights yet';
+  $('#lBars').innerHTML = week.map(({d, v}) => `<div class="n${v == null ? ' fut' : v <= by ? ' ok' : ' late'}" title="${v == null ? '' : clockOf(v)}"><i style="height:${v == null ? 30 : Math.min(100, Math.max(18, (v - 1080) / 480 * 100)).toFixed(0)}%"></i><small>${WD(d.day)[0]}</small></div>`).join('');
+  // Badges: just the coin; hovering says what it's for, or "Locked".
+  const b = Game.badges(logs, nights, G);
+  $('#bCount').textContent = `${b.filter(x => x.got).length} of ${b.length}`;
+  $('#bGrid').innerHTML = b.map(x => `<div class="bd${x.got ? '' : ' locked'}" data-tip="${esc(x.got ? x.tip : 'Locked')}">${x.art}</div>`).join('');
+}
+
 function renderAll() {
   drawRanges();
-  renderStats(); renderSessions(); renderSettings();
+  renderStats(); renderProgress(); renderSessions(); renderSettings();
 }
 // ?demo fills the dashboard with two weeks of sample sessions, for screenshots.
 if (new URLSearchParams(location.search).has('demo')) {
@@ -419,7 +585,9 @@ if (new URLSearchParams(location.search).has('demo')) {
       logs.push({id: d + '-' + i, start, end: start + ms, ms, topic: topics[Math.floor(r() * topics.length)]});
     }
   }
-  settings.version = '2.0';
+  settings.version = '3.0';
+  nights = {};
+  for (let d = 1; d <= 6; d++) nights[isoDay(Date.now() - d * DAY)] = [1335, 1352, 1361, 1418, 1340, 1395][d - 1];
 }
 setTab(new URLSearchParams(location.search).get('tab') || window.__TAB || 'stats');
 renderAll();

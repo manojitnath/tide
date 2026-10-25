@@ -172,11 +172,6 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .duo .primary:hover{filter:brightness(1.06)}
 .duo .secondary:hover{color:var(--accent)}
 .duo button:active{transform:scale(.985)}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.stat{border-radius:20px;padding:10px 13px;background:var(--card);box-shadow:var(--bevel)}
-.stat small{display:block;font-size:11px;color:var(--muted);font-weight:580}
-.stat b{display:block;white-space:nowrap;font:600 18px var(--font);margin:2px 0 1px;font-variant-numeric:tabular-nums}
-.stat span{font-size:10.5px;color:var(--muted)}
 
 /* hover and press: a small lift and a quick press-in, on every button */
 .duo button,.icon,.ctrls button,.chips button,.stations button{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,background-color .18s,color .18s,filter .18s,opacity .18s}
@@ -198,10 +193,47 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .chips button{background:var(--chip);box-shadow:var(--chipShadow);border-radius:99px;padding:4px 10px;font-size:12px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chips button:hover{color:var(--accent)}
 
+/* greeting and the streak card */
+.greet{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 0}
+.greet b{display:block;font:700 15px var(--font)}
+.greet span{font-size:11.5px;color:var(--muted)}
+.fchip{display:flex;align-items:center;gap:3px;padding:4px 10px 4px 7px;border-radius:99px;font:700 13px var(--font);background:var(--card);box-shadow:var(--bevel)}
+.fchip .f{width:15px;height:15px}
+.today{border-radius:20px;padding:14px;background:var(--card);box-shadow:var(--bevel)}
+.trow{display:flex;align-items:center;gap:10px}
+.trow .big{width:34px;height:34px;flex:none;filter:drop-shadow(0 0 8px rgba(255,90,40,.55))}
+.trow small,.goalrow small{display:block;font-size:10.5px;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.trow b{font:700 19px/1.1 var(--font)}.trow b span{font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.wk{margin-left:auto;display:flex;gap:4px}
+.wk .d{display:flex;flex-direction:column;align-items:center;gap:2px}
+.wk .d::before{content:"";display:none}
+.wk .d svg{position:absolute}
+.wk .d{position:relative;width:20px}
+.wk .d{--s:20px}
+.wk .d > small{font-size:9.5px;color:var(--muted);margin-top:22px}
+.wk .d::after{content:"";position:absolute;top:0;width:20px;height:20px;border-radius:50%;background:var(--field);box-sizing:border-box}
+.wk .d.done::after{background:linear-gradient(#5fd068,#2fae5a);box-shadow:0 0 10px -2px rgba(47,174,90,.7)}
+.wk .d.now::after{background:none;border:2.5px solid #2fae5a;border-left-color:var(--field);border-bottom-color:var(--field)}
+.wk .d svg{top:4px;width:12px;height:12px;z-index:1;color:#0e2a12}
+.goalrow{display:flex;align-items:flex-end;justify-content:space-between;margin-top:12px}
+.goalrow b{font:700 17px var(--font)}.goalrow b span{font-size:12px;color:var(--muted);font-weight:600}
+.goalrow em{font-style:normal;font-size:12px;color:var(--muted);font-weight:700}
+.gbar{height:7px;border-radius:9px;background:var(--field);margin-top:6px;overflow:hidden;box-shadow:var(--track)}
+.gbar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#3a72ff,#5b8cff);box-shadow:0 0 10px rgba(58,114,255,.6)}
+/* after bedtime: the timer is off; hovering its button offers a night off */
+.night .timecard .state{background:#c9b8ff!important;color:#1d1640!important;box-shadow:none!important}
+.night .timecard{--glow:150,120,255}
+.duo .primary.off{display:flex;align-items:center;justify-content:center;gap:8px;background:#1d1d22;color:#b9b9c6;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 .5px rgba(255,255,255,.08),0 8px 18px -10px rgba(0,0,0,.6)}
+.duo .primary.off .b{display:none}
+.duo .primary.off:hover{color:#fff;background:#2b2f6e}
+.duo .primary.off:hover .a{display:none}.duo .primary.off:hover .b{display:inline}
+.duo .primary.off svg{width:15px;height:15px}
 </style>
+<script>if (!window.Game) document.write('<script src="game.js"><\/script>');</script>
 </head>
 <body class="idle">
 <div class="panel" id="panel">
+  <div class="greet"><div><b id="hello">Hello</b><span id="helloSub"></span></div><div class="fchip" title="Streak"><svg class="f" viewBox="0 0 24 24"><defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d2e"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#fg)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#fff3c4"/></svg><span id="chipN">0</span></div></div>
   <div class="timecard">
   <div class="head">
     <div><div class="state"><i></i><span id="state">Pomodoro</span></div>
@@ -247,10 +279,10 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
     <div class="chips" id="askChips"></div>
     <div class="duo" id="askBtns"></div>
   </div>
-  <div class="stats">
-    <div class="stat"><small>Today</small><b id="tToday">0m</b><span id="tTodayN">0 sessions</span></div>
-    <div class="stat"><small>Streak</small><b id="tStreak">0</b><span>days</span></div>
-    <div class="stat"><small>This week</small><b id="tWeek">0m</b><span id="tWeekN">0 sessions</span></div>
+  <div class="today">
+    <div class="trow"><svg class="big" viewBox="0 0 24 24"><defs><linearGradient id="fs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d2e"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#fs)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#fff3c4"/></svg><div><small>STREAK</small><b><span id="tStreak">0</span> <span>days</span></b></div><div class="wk" id="wk"></div></div>
+    <div class="goalrow"><div><small>FOCUS GOAL</small><b id="goalNow">0m</b></div><em id="goalPct">0%</em></div>
+    <div class="gbar"><i id="goalBar"></i></div>
   </div>
 </div>
 
@@ -287,6 +319,13 @@ const store = {
 let logs = store.get('studyradio.logs', []);
 // The dashboard window sends the log back when it deletes or restores a session.
 window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderStats(); };
+// The game: daily goal, streak, level and badges (game.js). Settings and the nights the Mac was last used come from the app.
+let G = Game.settings(store.get('tide.game', {})), nights = store.get('tide.nights', {});
+window.__syncGame = data => { G = Game.settings(data); render(); };
+window.__syncNights = data => { nights = data || {}; };
+const saveGame = () => store.set('tide.game', G);
+const bedNow = () => Game.isBedtime(G);
+const NAME = window.__USER || '';
 const S = Object.assign({status: 'idle', mode: 'pomo', pomoMin: 30, startedAt: 0, segStart: 0, acc: 0, carry: 0, chained: false, blockMin: 30,
   breakEnds: 0, breakLeft: 0, breakTotal: 0, station: 0, vol: .6, lastSeen: 0}, store.get('studyradio.state', {}));
 if (!BLOCKS.includes(S.pomoMin)) S.pomoMin = 30;
@@ -305,7 +344,7 @@ function clock(ms, withHours) {
   const t = Math.max(0, Math.round(ms / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
   return withHours ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(h * 60 + m)}:${pad(s)}`;
 }
-function dur(ms) { const m = Math.round(ms / MIN), h = Math.floor(m / 60); return h ? `${h}h ${m % 60}m` : `${m}m`; }
+function dur(ms) { const m = Math.round(ms / MIN), h = Math.floor(m / 60); return h ? `${h}h${m % 60 ? ` ${m % 60}m` : ''}` : `${m}m`; }
 const dayStart = d => { d = new Date(d); return +new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
 const fmtTime = ts => new Date(ts).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'});
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
@@ -320,6 +359,7 @@ function renderMsg() { $('#note').textContent = note; $('#progmeta').classList.t
 
 /* ---------- focus and breaks ---------- */
 function beginFocus() {
+  if (bedNow()) { present(null); say('Tide is off after bedtime. Close the laptop.'); render(); return; }
   present(null);
   Object.assign(S, {status: 'running', acc: 0, carry: 0, chained: false, blockMin: S.mode === 'pomo' ? S.pomoMin : 0, startedAt: Date.now(), segStart: Date.now()});
   saveState(); render();
@@ -347,6 +387,7 @@ function resumeBreak() { if (S.status !== 'breakPaused') return; S.breakEnds = D
 function skipBreak() { S.status = 'idle'; saveState(); render(); }
 // "Keep going" after a block: another 30 minutes, logged together with what came before.
 function keepGoing() {
+  if (bedNow()) { present(N.topic()); say('It’s bedtime, so no more blocks tonight.'); return; }
   const p = pending; pending = null; present(null);
   Object.assign(S, {status: 'running', mode: 'pomo', carry: p ? p.ms : 0, startedAt: p ? p.start : Date.now(), chained: true, blockMin: KEEP_GOING, acc: 0, segStart: Date.now()});
   saveState(); render();
@@ -375,7 +416,7 @@ const NUDGES = [
 ];
 let idleSince = Date.now(), nudgeN = Math.floor(Math.random() * NUDGES.length);
 function nudgeCheck() {
-  if (S.status !== 'idle' || notice) { idleSince = Date.now(); return; }
+  if (S.status !== 'idle' || notice || bedNow()) { idleSince = Date.now(); return; }
   if (Date.now() - idleSince < NUDGE_AFTER) return;
   idleSince = Date.now();
   const [title, body] = NUDGES[nudgeN++ % NUDGES.length];
@@ -385,8 +426,13 @@ window.startCountUp = () => {
   if (S.status !== 'idle') return;
   present(null); S.mode = 'free'; beginFocus();
 };
+let wasBed = null, lastMinute = -1;
 function tick() {
   nudgeCheck();
+  const b = bedNow(), minute = Math.floor(Date.now() / MIN);
+  if (b !== wasBed) { wasBed = b; render(); } else if (minute !== lastMinute) renderStats();
+  lastMinute = minute;
+  if (!notice && cheers.length && S.status !== 'running') present(cheers.shift());
   if (S.status === 'running' && S.mode === 'pomo' && elapsed() >= S.blockMin * MIN) {
     const total = S.carry + S.blockMin * MIN, st = S.startedAt;
     Object.assign(S, {status: 'idle', acc: 0, carry: 0, chained: false, segStart: 0, startedAt: 0});
@@ -437,23 +483,51 @@ window.noticeAction = (id, topic) => {
     case 'save':
     case 'discard':
       if (pending && id === 'save' && topic) logs.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), start: pending.start, end: pending.end, ms: pending.ms, topic});
-      if (id === 'save') { saveLogs(); renderStats(); }
+      if (id === 'save') { saveLogs(); renderStats(); checkUnlocks(); }
       pending = null;
-      if (afterTopic === 'next') present(N.next());
+      if (afterTopic === 'next' && !bedNow()) present(N.next());
+      else if (afterTopic === 'next') { present(null); say(id === 'save' ? 'Saved. Good night!' : 'Discarded.', 3500); }
       else { present(null); say(id === 'save' ? 'Saved. Good job!' : 'Discarded.', 3500); }
       break;
     case 'break': present(null); startBreak(breakFor(S.pomoMin)); break;
     case 'focus': present(null); beginFocus(); break;
+    case 'ok': case 'bedmore': case 'bedok': present(null); break;
+    case 'see': present(null); native({type: 'openDashboard', tab: 'progress'}); break;
     case 'plus5': present(null); Object.assign(S, {status: 'break', breakEnds: Date.now() + 5 * MIN, breakTotal: 5 * MIN}); saveState(); render(); break;
   }
 };
+// Bedtime: the app asks every 5 minutes while the Mac is in use after bedtime. A running session isn't interrupted.
+let factN = Math.floor(Math.random() * Game.FACTS.length);
+const bedNotice = () => ({kind: 'bed', title: `It’s ${new Date().toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'})}. Time to sleep.`,
+  text: Game.factsOn(G) ? Game.FACTS[factN++ % Game.FACTS.length] : 'Finish up and close the laptop.',
+  buttons: [btn('bedmore', '5 more minutes'), btn('bedok', 'Good night', 'primary')]});
+window.bedtimeNudge = () => {
+  if (!bedNow() || S.status === 'running' || (notice && notice.kind !== 'bed')) return false;
+  present(bedNotice()); return true;
+};
+// Celebrations (a new badge, a new level, the daily goal) wait in line and show when nothing else is asked.
+const cheers = [];
+function checkUnlocks(quiet) {
+  const got = Game.badges(logs, nights, G).filter(b => b.got), lv = Game.level(logs), st = Game.streak(logs, G), day = Game.dayKey(Date.now());
+  const seen = S.badgesSeen || [];
+  if (!quiet) {
+    got.filter(b => !seen.includes(b.id)).forEach(b => cheers.push({kind: 'badge', art: b.art, title: 'Badge unlocked', text: b.tip.replace(' · ', ': '),
+      buttons: [btn('see', 'See badges'), btn('ok', 'Nice!', 'primary')]}));
+    if (S.levelSeen && lv.n > S.levelSeen) cheers.push({kind: 'level', title: `Level ${lv.n}: ${lv.name}`, text: 'You levelled up. Keep the tide rising.', buttons: [btn('see', 'See progress'), btn('ok', 'Nice!', 'primary')]});
+    if (st.today >= st.goal && S.goalSeen !== day) cheers.push({kind: 'goal', title: 'Daily goal reached', text: `${dur(st.today)} of focus today. Your streak is ${plural(st.current, 'day')}.`, buttons: [btn('ok', 'Nice!', 'primary')]});
+  }
+  S.badgesSeen = got.map(b => b.id); S.levelSeen = lv.n; if (st.today >= st.goal) S.goalSeen = day;
+  saveState();
+}
 // Test the Island without a real session: the app calls this when started with --test-island done|break|topic.
 // Any button just closes it; nothing is logged and the timer isn't touched.
 let testingIsland = false;
 window.testIsland = kind => {
   const ms = 30 * MIN, saved = pending;
   pending = {start: Date.now() - ms, end: Date.now(), ms};
-  const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : N.done(ms);
+  const b = Game.badges(logs, nights, G)[0];
+  const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : kind === 'bed' ? bedNotice()
+    : kind === 'badge' ? {kind: 'badge', art: b.art, title: 'Badge unlocked', text: b.tip.replace(' · ', ': '), buttons: [btn('see', 'See badges'), btn('ok', 'Nice!', 'primary')]} : N.done(ms);
   pending = saved; testingIsland = true; present(n);
 };
 function askPress(id) {
@@ -514,21 +588,29 @@ function render() {
   }[st];
   $('#actions').innerHTML = `<div class="duo">${B.map((b, i) => `<button type="button" class="${i ? 'secondary' : 'primary'}" data-i="${i}">${b[0]}</button>`).join('')}</div>`;
   $('#actions').onclick = e => { const b = e.target.closest('button'); if (b) B[+b.dataset.i][1](); };
+  // After bedtime the timer is off until morning; hovering its button offers a night off (movies, parties).
+  const night = st === 'idle' && bedNow();
+  document.body.classList.toggle('night', night);
+  if (night) {
+    $('#state').textContent = 'Bedtime'; $('#progA').textContent = 'Wind down. Close the laptop soon.'; $('#progB').textContent = '';
+    $('#actions').innerHTML = `<div class="duo"><button type="button" class="primary off"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg><span class="a">Tide is off after ${new Date(Game.dayStart(Date.now()) + Game.hhmm(G.bedAt) * MIN).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'})}</span><span class="b">Take tonight off</span></button></div>`;
+    $('#actions').onclick = () => { G.nightOff = Game.nightKey(Date.now()); saveGame(); if (notice && notice.kind === 'bed') present(null); render(); say('Tonight is off. Enjoy!', 3500); };
+  }
   native({type: 'status', status: st});
   renderMsg(); renderClock(); renderStats();
 }
 
-/* ---------- today, streak and week ---------- */
+/* ---------- greeting, streak and goal ---------- */
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 function renderStats() {
-  const today = dayStart(Date.now()), now = new Date(), weekStart = today - ((now.getDay() + 6) % 7) * DAY;
-  const sum = list => list.reduce((n, l) => n + l.ms, 0);
-  const t = logs.filter(l => l.start >= today), w = logs.filter(l => l.start >= weekStart);
-  $('#tToday').textContent = dur(sum(t)); $('#tTodayN').textContent = plural(t.length, 'session');
-  $('#tWeek').textContent = dur(sum(w)); $('#tWeekN').textContent = plural(w.length, 'session');
-  const days = new Set(logs.map(l => dayStart(l.start)));
-  let d = today, n = 0; if (!days.has(d)) d -= DAY;
-  while (days.has(d)) { n++; d = dayStart(d - DAY / 2); }
-  $('#tStreak').textContent = n;
+  const st = Game.streak(logs, G), lv = Game.level(logs);
+  $('#hello').textContent = Game.greeting(NAME, Date.now(), bedNow());
+  $('#helloSub').textContent = `${dur(st.today)} focused today · Level ${lv.n}`;
+  $('#chipN').textContent = st.current; $('#tStreak').textContent = st.current;
+  $('#wk').innerHTML = st.week.map(d => `<div class="d${d.state === 'done' ? ' done' : d.state === 'now' ? ' now' : ''}">${d.state === 'done' ? CHECK : ''}<small>${'MTWTFSS'[(new Date(d.day).getDay() + 6) % 7]}</small></div>`).join('');
+  const p = Math.min(1, st.today / st.goal);
+  $('#goalNow').innerHTML = `${dur(st.today)} <span>/ ${dur(st.goal)}</span>`;
+  $('#goalPct').textContent = Math.round(p * 100) + '%'; $('#goalBar').style.width = (p * 100).toFixed(1) + '%';
 }
 
 /* ---------- sounds ---------- */
@@ -682,18 +764,20 @@ addEventListener('keydown', e => {
 new ResizeObserver(() => native({type: 'resize', h: Math.ceil($('#panel').getBoundingClientRect().height)})).observe($('#panel'));
 
 /* ---------- boot ---------- */
-showStation(); drawVol(); render();
+showStation(); drawVol(); render(); checkUnlocks(true);
 if (restored) say('Paused while the app was closed.', 10000);
 if (NATIVE) { STATIONS.forEach((st, i) => { if (st.ch) setTimeout(() => resolveStation(i), 400 * i); }); makePlayer(); }
 setInterval(tick, 250);
 setInterval(() => { if (S.status === 'running') saveState(); }, 5000);
 addEventListener('pagehide', saveState);
-// ?demo previews states for screenshots: focus (default), idle, paused, break, done, topic.
+// ?demo previews states for screenshots: focus (default), idle, paused, break, done, topic, night (after bedtime).
 const params = new URLSearchParams(location.search);
 if (params.has('demo')) {
   const kind = params.get('demo') || 'focus', d0 = dayStart(Date.now());
   const mk = (day, h, min, topic) => ({id: day + '-' + h, start: d0 - day * DAY + h * 36e5, end: d0 - day * DAY + h * 36e5 + min * MIN, ms: min * MIN, topic});
-  logs = [mk(0, .1, 30, 'Security+ notes'), mk(0, .05, 60, 'Linear algebra'), mk(1, 9, 60, 'AWS AI Practitioner'), mk(2, 10, 30, 'Reading'), mk(3, 11, 90, 'System design')];
+  logs = [mk(0, .1, 30, 'Security+ notes'), mk(0, .05, 60, 'Linear algebra'), mk(1, 9, 130, 'AWS AI Practitioner'), mk(2, 10, 125, 'Reading'), mk(3, 11, 150, 'System design'), mk(4, 6.5, 120, 'Reading'), mk(5, 9, 95, 'System design')];
+  nights = {[Game.dayKey(d0 - DAY)]: 1350, [Game.dayKey(d0 - 2 * DAY)]: 1361, [Game.dayKey(d0 - 3 * DAY)]: 1418};
+  if (kind === 'night') G = Game.settings({bedAt: '00:00'});
   Object.assign(S, {mode: 'pomo', pomoMin: 60, blockMin: 60, status: 'idle'});
   if (kind === 'focus' || kind === 'paused') Object.assign(S, {status: 'running', startedAt: Date.now() - 23 * MIN - 47e3, segStart: Date.now() - 23 * MIN - 47e3, acc: 0});
   if (kind === 'paused') pauseFocus();

@@ -8,12 +8,12 @@ set -e
 here="${0:A:h}"
 dir="$here/build.noindex"
 out="$dir/Tide.app"
-version="3.0"
+version="3.1"
 
 rm -rf "$out"
 mkdir -p "$out/Contents/MacOS" "$out/Contents/Resources"
 swiftc -O -swift-version 5 "$here/src/main.swift" -o "$out/Contents/MacOS/Tide"
-cp "$here/src/panel.html" "$here/src/dashboard.html" "$here/src/island.html" "$here/src/AppIcon.icns" "$here/src/fonts/Manrope.ttf" "$out/Contents/Resources/"
+cp "$here/src/panel.html" "$here/src/dashboard.html" "$here/src/island.html" "$here/src/game.js" "$here/src/AppIcon.icns" "$here/src/fonts/Manrope.ttf" "$out/Contents/Resources/"
 cp "$here/src/fonts/OFL.txt" "$out/Contents/Resources/Manrope-OFL.txt"
 
 cat > "$out/Contents/Info.plist" <<PLIST

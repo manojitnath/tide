@@ -26,6 +26,9 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 - **Fair logging:** a Pomodoro you end early isn't counted, and neither is under a minute of counting up.
 - **Radio:** ten lofi live streams (Lofi Girl, Chillhop and others) in a compact player: the station's cover art, play/pause, previous and next, stop, a volume button that slides a slider open, and the station list when you click the station's name. It keeps playing when the panel is closed.
 - **Study log:** every counted session is saved with its topic. Recent topics are one click away.
+- **Daily goal, streak and level:** the panel greets you and shows your streak (days you reach your daily goal, 2 hours by default) and today's progress. Every focused minute is 1 XP; levels go from Drop to King tide. Vacation mode pauses the streak.
+- **Badges:** 21 to unlock for early nights, focus hours, streaks and a few specials, in the **Progress** tab of the dashboard. Hover over one to see what it's for.
+- **Bedtime:** from 10 PM (you can change it) the timer turns off until 5 AM, and while you keep using the Mac the Island reminds you every 5 minutes to close the laptop, with a short fact about sleep. Hover over "Tide is off" in the panel to take a night off for a movie or a party. The Progress tab shows when you closed the laptop each night.
 - **Dashboard:** focus time, sessions, streak and top topic for today, 7 days, 30 to 360 days or a custom date range; a focused-time chart; time by topic; the hours you focus best; and a full session list you can tidy up. Export to CSV, or copy today's hours.
 - **Shortcut:** ⌃⌥Space (Control-Option-Space) starts or pauses the timer from any app.
 - **Open at login**, light and dark mode, and an update notice when a new version is out.
@@ -57,6 +60,8 @@ Everything is in `~/Library/Application Support/Tide/` (the app was called Focus
 
 - `Study Log.json`: your sessions
 - `studyradio.state.json`: timer mode, station, volume
+- `tide.game.json`: daily goal, bedtime, vacation mode
+- `tide.nights.json`: the last time the Mac was used each night
 
 To keep the log somewhere else, such as a synced notes folder, choose a folder in **Settings → Your log**. Your current log is copied there if the folder doesn't have one yet.
 

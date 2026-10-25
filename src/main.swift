@@ -77,6 +77,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             self?.web.evaluateJavaScript("window.tick && tick()")
         }
+        // Bedtime: every 30 seconds, note when the Mac is in use at night and remind after bedtime.
+        Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in self?.bedtimeCheck() }
         // Look for a newer release now and once a day.
         checkForUpdate()
         Timer.scheduledTimer(withTimeInterval: 24 * 60 * 60, repeats: true) { [weak self] _ in self?.checkForUpdate() }
@@ -95,15 +97,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     // Both pages get the saved data before their script runs; the dashboard also gets its settings and first tab.
     func pageConfig(extra: String = "") -> WKWebViewConfiguration {
         var saved: [String: String] = [:]
-        for key in ["studyradio.logs", "studyradio.state"] {
+        for key in ["studyradio.logs", "studyradio.state", "tide.game", "tide.nights"] {
             if let text = try? String(contentsOf: fileURL(for: key), encoding: .utf8) { saved[key] = text }
         }
         let json = String(data: try! JSONSerialization.data(withJSONObject: saved), encoding: .utf8)!
         let content = WKUserContentController()
         content.add(self, name: "native")
-        content.addUserScript(WKUserScript(source: "window.__NATIVE = true; window.__STORE = \(json); window.__THEME = \(self.json(theme)); \(extra)",
+        content.addUserScript(WKUserScript(source: "window.__NATIVE = true; window.__STORE = \(json); window.__THEME = \(self.json(theme)); window.__USER = \(self.json(firstName)); \(extra)",
                                            injectionTime: .atDocumentStart, forMainFrameOnly: true))
         content.addUserScript(WKUserScript(source: fontScript, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        content.addUserScript(WKUserScript(source: gameScript, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         let config = WKWebViewConfiguration()
         config.userContentController = content
         config.mediaTypesRequiringUserActionForPlayback = []
@@ -119,6 +122,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     }
 
     // Pages are loaded from a web address, so they can't read the bundled font file: it goes in as data instead.
+    // The game and bedtime rules (game.js), shared by the panel and the dashboard.
+    lazy var gameScript: String = {
+        guard let url = Bundle.main.url(forResource: "game", withExtension: "js") else { return "" }
+        return (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+    }()
+    // For the greeting: the first word of the Mac account's full name.
+    var firstName: String { NSFullUserName().split(separator: " ").first.map(String.init) ?? "" }
+
     lazy var fontScript: String = {
         guard let url = Bundle.main.url(forResource: "Manrope", withExtension: "ttf"), let data = try? Data(contentsOf: url) else { return "" }
         return "document.fonts.add(new FontFace('Manrope', 'url(data:font/ttf;base64,\(data.base64EncodedString()))', {weight: '200 800'}));"
@@ -276,6 +287,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         showPanel()
     }
 
+    // MARK: bedtime
+
+    var lastBedNudge = Date.distantPast
+    func readJSON(_ key: String) -> [String: Any] {
+        guard let data = try? Data(contentsOf: fileURL(for: key)),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return [:] }
+        return object
+    }
+    func minutes(_ text: Any?, _ fallback: Int) -> Int {
+        let parts = (text as? String ?? "").split(separator: ":").compactMap { Int($0) }
+        return parts.count == 2 ? parts[0] * 60 + parts[1] : fallback
+    }
+    // A night runs until 5 AM. While the Mac is in use from 6 PM, the latest time is kept for that night
+    // (the dashboard's Lights out card). After bedtime, the Island reminds every 5 minutes while you keep using it.
+    func bedtimeCheck() {
+        let game = readJSON("tide.game"), now = Date(), cal = Calendar.current
+        let m = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
+        let night = m < 300 ? now.addingTimeInterval(-86400) : now
+        let key = String(format: "%04d-%02d-%02d", cal.component(.year, from: night), cal.component(.month, from: night), cal.component(.day, from: night))
+        let idle = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: CGEventType(rawValue: ~0)!)
+        let nightOff = (game["nightOff"] as? String) == key
+        if idle < 60, !nightOff, m >= 18 * 60 || m < 300 {
+            let value = m < 300 ? m + 1440 : m
+            var nights = readJSON("tide.nights")
+            if (nights[key] as? Int ?? -1) < value {
+                nights[key] = value
+                let text = json(nights)
+                try? text.write(to: fileURL(for: "tide.nights"), atomically: true, encoding: .utf8)
+                for view in [web, dashWeb] { view?.evaluateJavaScript("window.__syncNights && __syncNights(\(text))") }
+            }
+        }
+        guard game["bedOn"] as? Bool ?? true, !nightOff else { return }
+        let bed = minutes(game["bedAt"], 22 * 60)
+        guard m >= bed || m < 300, idle < 120, now.timeIntervalSince(lastBedNudge) >= 290 else { return }
+        web.evaluateJavaScript("window.bedtimeNudge && bedtimeNudge()") { [weak self] result, _ in
+            if result as? Bool == true { self?.lastBedNudge = Date() }
+        }
+    }
+
     // MARK: messages from the pages
 
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -293,11 +343,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         switch type {
         case "store":
             if let key = body["key"] as? String, let value = body["value"] as? String {
-                if fromDash && key != "studyradio.logs" { return }
+                if fromDash && key != "studyradio.logs" && key != "tide.game" { return }
                 try? value.write(to: fileURL(for: key), atomically: true, encoding: .utf8)
-                // Keep the other page's copy of the log in step.
+                // Keep the other page's copy of the log and the game settings in step.
                 if key == "studyradio.logs" {
                     (fromDash ? web : dashWeb)?.evaluateJavaScript("window.__syncLogs && __syncLogs(\(value))")
+                } else if key == "tide.game" {
+                    (fromDash ? web : dashWeb)?.evaluateJavaScript("window.__syncGame && __syncGame(\(value))")
                 }
             }
         case "resize":
