@@ -27,7 +27,7 @@ html{overflow-y:scroll}
 ::-webkit-scrollbar{width:12px;background:transparent}
 ::-webkit-scrollbar-thumb{background:transparent;border-radius:9px;border:3px solid transparent;background-clip:padding-box}
 :hover::-webkit-scrollbar-thumb{background-color:rgba(128,128,128,.35)}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:500 13px/1.4 var(--font);-webkit-font-smoothing:antialiased}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:580 13px/1.4 var(--font);-webkit-font-smoothing:antialiased}
 button,select,input{font:inherit;color:inherit}
 button{border:0;background:none;padding:0;cursor:pointer}
 [hidden]{display:none!important}
@@ -47,7 +47,7 @@ h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em}
 .range{position:relative}
 .range .more svg{width:11px;height:11px;margin-left:4px;vertical-align:-1px}
 .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:10;min-width:190px;background:var(--card);border-radius:14px;padding:6px;box-shadow:0 0 0 .5px var(--line),0 14px 34px rgba(0,0,0,.18)}
-.menu button{display:block;width:100%;text-align:left;padding:7px 10px;border-radius:8px;font-weight:500}
+.menu button{display:block;width:100%;text-align:left;padding:7px 10px;border-radius:8px;font-weight:580}
 .menu button:hover{background:var(--soft)}
 .menu button[aria-checked="true"]::after{content:"\2713";float:right;color:var(--accent);font-weight:700}
 .menu hr{border:0;border-top:.5px solid var(--line);margin:5px 4px}
@@ -118,7 +118,7 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
 .round{width:40px;height:40px}
 /* the four numbers: one blue card, then pastel cards (black with a coloured glow in dark) with dark tags */
 .card{border-radius:24px;padding:16px 18px 14px;--tag:var(--tBlue);--glow:58,115,255;box-shadow:var(--shadow);background-image:var(--sheen),radial-gradient(120% 90% at 50% 125%,rgba(var(--glow),.22),transparent 70%)}
-.card small{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500;color:var(--tag);opacity:.85}
+.card small{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:580;color:var(--tag);opacity:.85}
 .card b{font:600 34px/1.1 var(--font);margin:10px 0 10px;color:var(--tag)}
 @media (prefers-color-scheme: dark){.card b{color:var(--ink)}}
 .card span{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top;background:var(--tag);color:var(--tagInk);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:600}
