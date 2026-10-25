@@ -91,14 +91,16 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 /* the radio: a compact card like a music player. The station's cover art (its stream thumbnail) sits in a small square,
    and a blurred copy of it tints the card. The YouTube player only provides the sound; its video is never shown. */
 .player{position:relative;overflow:hidden;isolation:isolate;padding:12px 14px 8px;border-radius:24px;color:#fff;background:#1c1c1c;box-shadow:var(--bevel)}
-.bgart{position:absolute;inset:-40px;z-index:-2;background-position:center;background-size:cover,auto 136%;opacity:.32;filter:blur(30px) saturate(1.2) brightness(.7)}
+/* WebKit lets a blurred layer spill past rounded corners, so the blur sits in its own clipped box. */
+.bgclip{position:absolute;inset:0;z-index:-2;border-radius:inherit;overflow:hidden;clip-path:inset(0 round 24px)}
+.bgart{position:absolute;inset:-40px;background-position:center;background-size:cover,auto 136%;opacity:.32;filter:blur(30px) saturate(1.2) brightness(.7)}
 /* a thin light edge, so the dark card doesn't melt into the background */
 @media (prefers-color-scheme: dark){.player::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 1px 0 rgba(255,255,255,.08)}}
 /* light mode: white frosted glass with a faint blur of the cover behind it, dark text and controls */
 @media (prefers-color-scheme: light){
   .player{background:rgba(255,255,255,.5);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),inset 0 1px 0 #fff,0 0 0 .5px rgba(20,40,90,.1),0 1px 2px rgba(20,40,90,.06),0 10px 24px -8px rgba(20,40,90,.18)}
   .bgart{opacity:.22;filter:blur(34px) saturate(1.2)}
-  .player::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.6) 55%,rgba(240,244,252,.7))}
+  .player::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.6) 55%,rgba(240,244,252,.7))}
 }
 .prow{display:flex;align-items:center;gap:11px}
 .art{position:relative;width:48px;height:48px;border-radius:12px;overflow:hidden;flex:none;background:#333;box-shadow:0 6px 14px -4px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12)}
@@ -201,7 +203,7 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
   </div>
 
   <div class="player" id="disc">
-    <div class="bgart"></div>
+    <div class="bgclip"><div class="bgart"></div></div>
     <div class="prow">
       <div class="art"><div class="cover"></div><div class="ytbox"><div id="ytFrame"></div></div></div>
       <button class="ptxt" id="stationBtn" type="button" title="Choose a station"><div class="marq" id="marq"><span id="stName">Lofi Girl: Study</span></div><small><i></i><span id="stSub">FM 88.6</span></small></button>
