@@ -128,7 +128,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         return (try? String(contentsOf: url, encoding: .utf8)) ?? ""
     }()
     // For the greeting: the first word of the Mac account's full name.
-    var firstName: String { NSFullUserName().split(separator: " ").first.map(String.init) ?? "" }
+    var firstName: String { (NSFullUserName().split(separator: " ").first.map(String.init) ?? "").capitalized }
 
     lazy var fontScript: String = {
         guard let url = Bundle.main.url(forResource: "Manrope", withExtension: "ttf"), let data = try? Data(contentsOf: url) else { return "" }
