@@ -107,6 +107,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         }
         // Bedtime: every 30 seconds, note when the Mac is in use at night and remind after bedtime.
         Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in self?.bedtimeCheck() }
+        // Unlocking the Mac after bedtime brings the reminder straight back.
+        DistributedNotificationCenter.default().addObserver(forName: NSNotification.Name("com.apple.screenIsUnlocked"), object: nil, queue: .main) { [weak self] _ in
+            self?.lastBedNudge = .distantPast
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { self?.bedtimeCheck() }
+        }
         // Look for a newer release now and once a day.
         checkForUpdate()
         Timer.scheduledTimer(withTimeInterval: 24 * 60 * 60, repeats: true) { [weak self] _ in self?.checkForUpdate() }
