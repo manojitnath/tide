@@ -439,6 +439,8 @@ function tick() {
   if (b !== wasBed) { wasBed = b; render(); } else if (minute !== lastMinute) renderStats();
   lastMinute = minute;
   if (!notice && cheers.length && S.status !== 'running') present(cheers.shift());
+  // Lights-out: a session still going stops and is logged.
+  if ((S.status === 'running' || S.status === 'paused') && Game.isLockTime(G) && !(notice && notice.input)) stopForBed();
   if (S.status === 'running' && S.mode === 'pomo' && elapsed() >= S.blockMin * MIN) {
     const total = S.carry + S.blockMin * MIN, st = S.startedAt;
     Object.assign(S, {status: 'idle', acc: 0, carry: 0, chained: false, segStart: 0, startedAt: 0});
@@ -491,14 +493,15 @@ window.noticeAction = (id, topic) => {
       if (pending && id === 'save' && topic) logs.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), start: pending.start, end: pending.end, ms: pending.ms, topic});
       if (id === 'save') { saveLogs(); renderStats(); checkUnlocks(); }
       pending = null;
-      if (afterTopic === 'next' && !bedNow()) present(N.next());
-      else if (afterTopic === 'next') { present(null); say(id === 'save' ? 'Saved. Good night!' : 'Discarded.', 3500); }
+      if (bedNow() && (afterTopic === 'next' || afterTopic === 'bed')) { present(bedNotice()); say(id === 'save' ? 'Saved. Good night!' : 'Discarded.', 3500); }
+      else if (afterTopic === 'next') present(N.next());
       else { present(null); say(id === 'save' ? 'Saved. Good job!' : 'Discarded.', 3500); }
       break;
     case 'break': present(null); startBreak(breakFor(S.pomoMin)); break;
     case 'focus': present(null); beginFocus(); break;
     case 'ok': case 'bedmore': case 'bedok': present(null); break;
     case 'lock': present(null); native({type: 'lockScreen'}); break;
+    case 'bedlog': present(null); stopForBed(); break;
     case 'see': present(null); native({type: 'openDashboard', tab: 'progress'}); break;
     case 'plus5': present(null); Object.assign(S, {status: 'break', breakEnds: Date.now() + 5 * MIN, breakTotal: 5 * MIN}); saveState(); render(); break;
   }
@@ -512,11 +515,23 @@ const bedNotice = () => Game.isLockTime(G) ? lockNotice() : ({kind: 'bed', title
 const nowText = () => new Date().toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'});
 function lockNotice() {
   const i = factN++ % Game.FACTS.length, facts = [...Game.FACTS.slice(i), ...Game.FACTS.slice(0, i)];
-  return {kind: 'bed', lock: true, title: `It’s ${nowText()}. Time to sleep.`, text: facts[0], facts, buttons: [btn('lock', 'Lock now', 'primary')]};
+  return {kind: 'bed', lock: true, title: `It’s ${nowText()}. Time to sleep.`, text: facts[0], facts, buttons: [btn('lock', 'Lock & rest. Health comes first', 'primary')]};
+}
+// A session still going at bedtime: offer to log it and wind down, or 5 more minutes. At lights-out it stops by itself.
+const windNotice = () => ({kind: 'bed', title: `It’s ${nowText()}. Time to wind down.`, text: `${dur(S.carry + elapsed())} of focus so far. Log it and call it a day.`,
+  buttons: [btn('bedmore', '5 more minutes'), btn('bedlog', 'Log hours', 'primary')]});
+// Ends the session for the night and logs it whatever its length (a Pomodoro too); the topic comes next, then the bedtime Island.
+function stopForBed() {
+  const total = S.carry + elapsed(), st = S.startedAt;
+  Object.assign(S, {status: 'idle', acc: 0, carry: 0, chained: false, segStart: 0, startedAt: 0});
+  saveState(); render();
+  if (total < MIN_LOG) { present(bedNotice()); return; }
+  pending = {start: st, end: Date.now(), ms: total}; afterTopic = 'bed'; present(N.topic());
 }
 window.bedtimeNudge = () => {
-  if (!bedNow() || S.status === 'running' || (notice && notice.kind !== 'bed')) return false;
+  if (!bedNow() || (notice && notice.kind !== 'bed')) return false;
   if (notice && notice.lock) return true;   // already asking to lock; leave it up
+  if (S.status === 'running' || S.status === 'paused') { present(windNotice()); return true; }
   present(bedNotice()); return true;
 };
 // Celebrations (a new badge, a new level, the daily goal) wait in line and show when nothing else is asked.
@@ -540,7 +555,7 @@ window.testIsland = kind => {
   const ms = 30 * MIN, saved = pending;
   pending = {start: Date.now() - ms, end: Date.now(), ms};
   const b = Game.badges(logs, nights, G)[0];
-  const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : kind === 'bed' ? bedNotice() : kind === 'lock' ? lockNotice()
+  const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : kind === 'bed' ? bedNotice() : kind === 'lock' ? lockNotice() : kind === 'wind' ? windNotice()
     : kind === 'badge' ? {kind: 'badge', art: b.art, title: 'Badge unlocked', text: b.tip.replace(' · ', ': '), buttons: [btn('see', 'See badges'), btn('ok', 'Nice!', 'primary')]} : N.done(ms);
   pending = saved; testingIsland = true; present(n);
 };
