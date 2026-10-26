@@ -155,15 +155,16 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
 .bgrid .bd b{font-size:12.5px;font-weight:700;text-align:center}
 .bgrid .bd.locked b{color:var(--muted);opacity:.6}
 /* the label sits on the coin itself, in the coin's colour; locked coins get a grey one */
-.bgrid .bd::after{top:50%;bottom:auto;left:50%;transform:translate(-50%,-50%) scale(.92);white-space:normal;width:max-content;max-width:150px;text-align:center;line-height:1.3;
-  padding:6px 10px;border-radius:10px;background:var(--c);color:#fff;font-weight:700;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 16px -4px rgba(0,0,0,.35);transition:opacity .15s,transform .15s}
+.bgrid .bd::after{top:50%;bottom:auto;left:50%;transform:translate(-50%,-50%) scale(.92);white-space:normal;width:max-content;max-width:180px;text-align:center;line-height:1.3;
+  padding:9px 14px;border-radius:13px;background:var(--c);color:#fff;font-weight:700;font-size:13.5px;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 16px -4px rgba(0,0,0,.35);transition:opacity .15s,transform .15s}
 .bgrid .bd:hover::after{transform:translate(-50%,-50%) scale(1)}
 .bgrid .bd.locked::after{background:#c3c8d4;color:#4a5068;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 6px 16px -6px rgba(20,40,90,.3)}
 @media (prefers-color-scheme: dark){.bgrid .bd.locked::after{background:#3a3a3e;color:#c9c9cf;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 16px -6px rgba(0,0,0,.6)}}
 
-.bd{position:relative;width:76px;height:76px;transition:transform .18s ease-in-out}
-.bd svg{width:100%;height:100%;filter:drop-shadow(0 8px 10px rgba(20,40,90,.22))}
-.bd:hover{transform:translateY(-3px) scale(1.04)}
+.bd{position:relative;width:76px;height:76px}
+.bd svg{width:100%;height:100%;filter:drop-shadow(0 8px 10px rgba(20,40,90,.22));transition:transform .18s ease-in-out;will-change:transform}
+/* only the coin lifts, on its own layer, so the badges around it stay still */
+.bd:hover svg{transform:translateY(-3px)}
 .bd.locked svg{filter:grayscale(1) opacity(.35)}
 @media (prefers-color-scheme: dark){.bd.locked svg{filter:grayscale(1) brightness(.6) opacity(.5)}}
 .bd::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);white-space:nowrap;font-size:11.5px;font-weight:700;color:#fff;background:#16181d;padding:5px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .15s;z-index:3}
