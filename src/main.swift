@@ -24,9 +24,15 @@ final class HoverForwardingView: NSView {
         trackingAreas.forEach(removeTrackingArea)
         addTrackingArea(NSTrackingArea(rect: .zero, options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .inVisibleRect], owner: self))
     }
-    override func mouseMoved(with event: NSEvent) { target?.mouseMoved(with: event) }
-    override func mouseEntered(with event: NSEvent) { target?.mouseEntered(with: event) }
-    override func mouseExited(with event: NSEvent) { target?.mouseExited(with: event) }
+    // The web view hands events it doesn't want back up to this view, so a guard stops them bouncing back and forth.
+    private var forwarding = false
+    private func forward(_ send: (NSView) -> Void) {
+        guard !forwarding, let target else { return }
+        forwarding = true; send(target); forwarding = false
+    }
+    override func mouseMoved(with event: NSEvent) { forward { $0.mouseMoved(with: event) } }
+    override func mouseEntered(with event: NSEvent) { forward { $0.mouseMoved(with: event) } }
+    override func mouseExited(with event: NSEvent) { forward { $0.mouseMoved(with: event) } }
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMessageHandler, UNUserNotificationCenterDelegate {
