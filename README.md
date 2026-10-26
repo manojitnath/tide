@@ -38,6 +38,11 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 - **Daily goal, streak and level:** the panel greets you and shows your streak (days you reach your daily goal, 2 hours by default) and today's progress. Every focused minute is 1 XP; levels go from Drop to King tide. Vacation mode pauses the streak.
 - **Badges:** 21 to unlock for early nights, focus hours, streaks and a few specials, in the **Progress** tab of the dashboard. Hover over one to see what it's for.
 - **Bedtime:** from 10 PM (you can change it) the timer turns off until 5 AM, and while you keep using the Mac the Island reminds you every 5 minutes to close the laptop, with a short fact about sleep. If a session is still going at 10 PM, the Island offers **Log hours** or **5 more minutes**; at 10:30 PM the session stops by itself and asks for its topic. From 10:30 PM the Island only offers to lock the screen (**Lock & Rest**), and it gives a small shake every 25 seconds with a new fact until you lock the screen, and comes back when you unlock it. Hover over "Tide is off" in the panel to take a night off for a movie or a party. The Progress tab shows when you closed the laptop each night.
+- **Gentle nudges in the Island:**
+  - *30 minutes before bedtime:* a heads-up, with **Start last block** if nothing is running.
+  - *Morning report:* the first time you use the Mac after 5 AM, when you closed the laptop last night and your lights-out run, with **Start first block**.
+  - *Close to your goal in the evening* (within an hour of it, 2 hours before bedtime): **Start 30 min** to keep the streak.
+  - *Long count-up sessions:* every 90 minutes, a reminder to stretch, drink water or rest your eyes; **Take 5** pauses and asks you to resume after 5 minutes.
 - **Dashboard:** focus time, sessions, streak and top topic for today, 7 days, 30 to 360 days or a custom date range; a focused-time chart; time by topic; the hours you focus best; and a full session list you can tidy up. Export to CSV, or copy today's hours.
 - **Shortcut:** ⌃⌥Space (Control-Option-Space) starts or pauses the timer from any app.
 - **Open at login**, light and dark mode, and an update notice when a new version is out.

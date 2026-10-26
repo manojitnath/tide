@@ -367,11 +367,11 @@ function renderMsg() { $('#note').textContent = note; $('#progmeta').classList.t
 function beginFocus() {
   if (bedNow()) { present(null); say('Tide is off after bedtime. Close the laptop.'); render(); return; }
   present(null);
-  Object.assign(S, {status: 'running', acc: 0, carry: 0, chained: false, blockMin: S.mode === 'pomo' ? S.pomoMin : 0, startedAt: Date.now(), segStart: Date.now()});
+  Object.assign(S, {status: 'running', acc: 0, carry: 0, chained: false, blockMin: S.mode === 'pomo' ? S.pomoMin : 0, startedAt: Date.now(), segStart: Date.now(), stretchN: 0, resumeAt: 0});
   saveState(); render();
 }
 function pauseFocus() { if (S.status !== 'running') return; S.acc += Date.now() - S.segStart; S.status = 'paused'; saveState(); render(); }
-function resumeFocus() { if (S.status !== 'paused') return; S.status = 'running'; S.segStart = Date.now(); saveState(); render(); }
+function resumeFocus() { if (S.status !== 'paused') return; S.resumeAt = 0; S.status = 'running'; S.segStart = Date.now(); saveState(); render(); }
 // Ending early: an unfinished Pomodoro isn't counted, and neither is under a minute of counting up.
 // Time spent "keeping going" after a full block is always offered for the log.
 function endFocus() {
@@ -439,6 +439,7 @@ function tick() {
   if (b !== wasBed) { wasBed = b; render(); } else if (minute !== lastMinute) renderStats();
   lastMinute = minute;
   if (!notice && cheers.length && S.status !== 'running') present(cheers.shift());
+  nudges();
   // Lights-out: a session still going stops and is logged.
   if ((S.status === 'running' || S.status === 'paused') && Game.isLockTime(G) && !(notice && notice.input)) stopForBed();
   if (S.status === 'running' && S.mode === 'pomo' && elapsed() >= S.blockMin * MIN) {
@@ -502,6 +503,11 @@ window.noticeAction = (id, topic) => {
     case 'ok': case 'bedmore': case 'bedok': present(null); break;
     case 'lock': present(null); native({type: 'lockScreen'}); break;
     case 'bedlog': present(null); stopForBed(); break;
+    case 'last': case 'block30': startBlock(30); break;
+    case 'block': present(null); beginFocus(); break;
+    case 'take5': present(null); pauseFocus(); S.resumeAt = Date.now() + 5 * MIN; saveState(); say('Paused for 5 minutes. Stretch!', 4000); break;
+    case 'resume': present(null); resumeFocus(); break;
+    case 'endnow': present(null); endFocus(); break;
     case 'see': present(null); native({type: 'openDashboard', tab: 'progress'}); break;
     case 'plus5': present(null); Object.assign(S, {status: 'break', breakEnds: Date.now() + 5 * MIN, breakTotal: 5 * MIN}); saveState(); render(); break;
   }
@@ -534,6 +540,59 @@ window.bedtimeNudge = () => {
   if (S.status === 'running' || S.status === 'paused') { present(windNotice()); return true; }
   present(bedNotice()); return true;
 };
+/* ---------- gentle nudges: before bedtime, in the morning, near the goal, on long sessions ---------- */
+const minuteNow = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+const clockAt = m => new Date(Game.dayStart(Date.now()) + m * MIN).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'});
+function startBlock(min) { present(null); S.mode = 'pomo'; S.pomoMin = min; beginFocus(); }
+const STRETCH = ['Stand up and stretch for a minute.', 'Drink some water.', 'Look at something 20 feet away for 20 seconds.', 'Roll your shoulders and relax your jaw.'];
+function nudges() {
+  if (notice) return;
+  const m = minuteNow(), day = Game.dayKey(Date.now()), night = Game.nightKey(Date.now()), bed = Game.hhmm(G.bedAt);
+  const off = G.nightOff === night, active = S.status === 'running' || S.status === 'paused';
+  // 1. Heads-up, 30 minutes before bedtime, once a night.
+  if (G.bedOn && !off && m >= bed - 30 && m < bed && S.headsUp !== night) {
+    S.headsUp = night; saveState();
+    present({kind: 'bed', title: `Bedtime in ${bed - m} minutes`, text: active ? 'Finish what you’re on. Tide turns off at ' + clockAt(bed) + '.' : `Start your last block now, or start winding down. Tide turns off at ${clockAt(bed)}.`,
+      buttons: active ? [btn('ok', 'Okay', 'primary')] : [btn('ok', 'Wind down'), btn('last', 'Start last block', 'primary')]});
+    return;
+  }
+  // 3. Close to the daily goal in the evening, once a day.
+  const st = Game.streak(logs, G), left = st.goal - st.today;
+  if (S.status === 'idle' && !bedNow() && m >= bed - 120 && m < bed - 30 && left > 0 && left <= 60 * MIN && S.goalNudge !== day) {
+    S.goalNudge = day; saveState();
+    present({kind: 'goal', title: `${dur(left)} to your daily goal`, text: st.current ? `One more block keeps your ${plural(st.current, 'day')} streak going.` : 'One more block and today counts towards a streak.',
+      buttons: [btn('ok', 'Not today'), btn('block30', 'Start 30 min', 'primary')]});
+    return;
+  }
+  // 4. Long count-up sessions: a stretch every 90 minutes; "Take 5" pauses and asks to resume after 5 minutes.
+  if (S.status === 'running' && S.mode === 'free') {
+    const k = Math.floor(elapsed() / (90 * MIN));
+    if (k > (S.stretchN || 0)) {
+      S.stretchN = k; saveState();
+      present({kind: 'stretch', title: `${dur(elapsed())} of focus. Time for a breather`, text: STRETCH[(k - 1) % STRETCH.length], buttons: [btn('ok', 'Keep going'), btn('take5', 'Take 5', 'primary')]});
+      return;
+    }
+  }
+  if (S.status === 'paused' && S.resumeAt && Date.now() >= S.resumeAt) {
+    S.resumeAt = 0; saveState();
+    present({kind: 'stretch', title: 'Break’s over', text: 'Ready to pick it up again?', buttons: [btn('endnow', 'End focus'), btn('resume', 'Resume', 'primary')]});
+  }
+}
+// 2. The morning report: the app asks on the first use of the Mac after 5 AM; once a day, about last night.
+window.morningReport = () => {
+  const day = Game.dayKey(Date.now()), m = minuteNow();
+  if (notice || S.morningSeen === day || m < 5 * 60 || m >= 12 * 60) return false;
+  S.morningSeen = day; saveState();
+  const v = nights[Game.dayKey(Date.now() - 864e5)];
+  if (v == null) return false;
+  const by = Game.lightsOutBy(G), ok = v <= by;
+  let run = 0; for (let d = 1; d < 400; d++) { const x = nights[Game.dayKey(Date.now() - d * 864e5)]; if (x == null || x > by) break; run++; }
+  present({kind: 'morning', title: `Good morning${NAME ? ', ' + NAME : ''}`,
+    text: `Laptop closed at ${clockAt(v)}. ` + (ok ? (run > 1 ? `Lights out ${run} nights in a row. 🌙` : 'Right on time. 🌙') : `That’s past ${clockAt(by)}. Tonight’s a fresh start.`),
+    buttons: [btn('ok', 'Thanks'), btn('block', 'Start first block', 'primary')]});
+  return true;
+};
+
 // Celebrations (a new badge, a new level, the daily goal) wait in line and show when nothing else is asked.
 const cheers = [];
 function checkUnlocks(quiet) {
@@ -556,6 +615,10 @@ window.testIsland = kind => {
   pending = {start: Date.now() - ms, end: Date.now(), ms};
   const b = Game.badges(logs, nights, G)[0];
   const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : kind === 'bed' ? bedNotice() : kind === 'lock' ? lockNotice() : kind === 'wind' ? windNotice()
+    : kind === 'heads' ? {kind: 'bed', title: 'Bedtime in 30 minutes', text: 'Start your last block now, or start winding down. Tide turns off at 10:00 PM.', buttons: [btn('ok', 'Wind down'), btn('last', 'Start last block', 'primary')]}
+    : kind === 'morning' ? {kind: 'morning', title: `Good morning${NAME ? ', ' + NAME : ''}`, text: 'Laptop closed at 10:24 PM. Lights out 5 nights in a row. 🌙', buttons: [btn('ok', 'Thanks'), btn('block', 'Start first block', 'primary')]}
+    : kind === 'goal' ? {kind: 'goal', title: '30m to your daily goal', text: 'One more block keeps your 6-day streak going.', buttons: [btn('ok', 'Not today'), btn('block30', 'Start 30 min', 'primary')]}
+    : kind === 'stretch' ? {kind: 'stretch', title: '1h 30m of focus. Time for a breather', text: STRETCH[0], buttons: [btn('ok', 'Keep going'), btn('take5', 'Take 5', 'primary')]}
     : kind === 'badge' ? {kind: 'badge', art: b.art, title: 'Badge unlocked', text: b.tip.replace(' · ', ': '), buttons: [btn('see', 'See badges'), btn('ok', 'Nice!', 'primary')]} : N.done(ms);
   pending = saved; testingIsland = true; present(n);
 };

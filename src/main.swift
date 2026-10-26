@@ -355,6 +355,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
                 for view in [web, dashWeb] { view?.evaluateJavaScript("window.__syncNights && __syncNights(\(text))") }
             }
         }
+        // The first use of the Mac in the morning: the panel shows last night's report (once a day).
+        if idle < 60, m >= 300, m < 12 * 60 { web.evaluateJavaScript("window.morningReport && morningReport()") }
         guard game["bedOn"] as? Bool ?? true, !nightOff else { return }
         let bed = minutes(game["bedAt"], 22 * 60)
         guard m >= bed || m < 300, idle < 120, now.timeIntervalSince(lastBedNudge) >= 290 else { return }
