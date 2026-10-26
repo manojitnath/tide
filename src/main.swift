@@ -16,23 +16,26 @@ final class PanelWindow: NSWindow {
 }
 
 // WebKit only follows the mouse in the active app's windows. The Island shows over other apps, so this view
-// watches the mouse itself and passes the moves on, and its buttons light up on hover without a click first.
+// watches the mouse itself and tells the page where it is; the page lights up the button under it.
 final class HoverForwardingView: NSView {
-    weak var target: NSView?
+    weak var target: WKWebView?
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         trackingAreas.forEach(removeTrackingArea)
         addTrackingArea(NSTrackingArea(rect: .zero, options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .inVisibleRect], owner: self))
     }
-    // The web view hands events it doesn't want back up to this view, so a guard stops them bouncing back and forth.
-    private var forwarding = false
-    private func forward(_ send: (NSView) -> Void) {
-        guard !forwarding, let target else { return }
-        forwarding = true; send(target); forwarding = false
+    private func send(_ event: NSEvent?) {
+        guard let target else { return }
+        var x = -1.0, y = -1.0
+        if let event {
+            let p = convert(event.locationInWindow, from: nil)
+            x = p.x; y = bounds.height - p.y
+        }
+        target.evaluateJavaScript("window.hoverAt && hoverAt(\(x), \(y))")
     }
-    override func mouseMoved(with event: NSEvent) { forward { $0.mouseMoved(with: event) } }
-    override func mouseEntered(with event: NSEvent) { forward { $0.mouseMoved(with: event) } }
-    override func mouseExited(with event: NSEvent) { forward { $0.mouseMoved(with: event) } }
+    override func mouseMoved(with event: NSEvent) { send(event) }
+    override func mouseEntered(with event: NSEvent) { send(event) }
+    override func mouseExited(with event: NSEvent) { send(nil) }
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMessageHandler, UNUserNotificationCenterDelegate {
