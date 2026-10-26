@@ -147,7 +147,7 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
 .wstep button{width:26px;height:26px;border-radius:50%;font-size:17px;line-height:1;color:var(--muted);background:var(--soft);transition:background-color .15s,color .15s}
 .wstep button:hover:not(:disabled){color:var(--ink);background:var(--line)}
 .wstep button:disabled{opacity:.3;cursor:default}
-.wstep span{min-width:84px;text-align:center}
+.wstep span{min-width:84px;text-align:center;font-weight:600;color:var(--ink)}
 .lweek{margin:-8px 0 8px;font-size:12px;color:var(--muted)}
 .bgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:18px 10px;padding-top:4px}
 .bgrid .bd{width:auto;height:auto;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -276,7 +276,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
         <div class="skwk" id="sWeek"></div><p class="vac"><i></i><span id="sVac"></span></p></div>
     </div>
     <div class="g2">
-      <div class="panel wkc"><div class="ph"><h2 class="wstep"><button type="button" id="wPrev" title="Previous week">‹</button><span id="wName">This week</span><button type="button" id="wNext" title="Next week">›</button></h2><span id="wTotal"></span></div><div class="fbars" id="wBars"></div></div>
+      <div class="panel wkc"><div class="ph"><h2>Focus</h2><span class="wstep"><button type="button" id="wPrev" title="Previous week">‹</button><span id="wName">This week</span><button type="button" id="wNext" title="Next week">›</button></span></div><p class="lweek" id="wTotal"></p><div class="fbars" id="wBars"></div></div>
       <div class="panel bedc"><div class="ph"><h2><span class="moon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg></span>Lights out</h2><span id="lBy"></span></div><p class="lweek" id="lWeek"></p>
         <div class="bedrow"><div><b id="lN"></b><small id="lAvg"></small></div><div class="nbars" id="lBars"></div></div></div>
     </div>
