@@ -15,6 +15,20 @@ final class PanelWindow: NSWindow {
     override var canBecomeMain: Bool { false }
 }
 
+// WebKit only follows the mouse in the active app's windows. The Island shows over other apps, so this view
+// watches the mouse itself and passes the moves on, and its buttons light up on hover without a click first.
+final class HoverForwardingView: NSView {
+    weak var target: NSView?
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: .zero, options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .inVisibleRect], owner: self))
+    }
+    override func mouseMoved(with event: NSEvent) { target?.mouseMoved(with: event) }
+    override func mouseEntered(with event: NSEvent) { target?.mouseEntered(with: event) }
+    override func mouseExited(with event: NSEvent) { target?.mouseExited(with: event) }
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMessageHandler, UNUserNotificationCenterDelegate {
     var statusItem: NSStatusItem!
     var panel: PanelWindow!
@@ -240,10 +254,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         island.level = .popUpMenu
         island.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         island.isReleasedWhenClosed = false
-        islandWeb = WKWebView(frame: island.contentView!.bounds, configuration: pageConfig())
+        island.acceptsMouseMovedEvents = true
+        let hover = HoverForwardingView(frame: island.contentView!.bounds)
+        island.contentView = hover
+        islandWeb = WKWebView(frame: hover.bounds, configuration: pageConfig())
         islandWeb.autoresizingMask = [.width, .height]
         islandWeb.setValue(false, forKey: "drawsBackground")
-        island.contentView!.addSubview(islandWeb)
+        hover.addSubview(islandWeb)
+        hover.target = islandWeb
         loadPage("island", into: islandWeb)
     }
 
