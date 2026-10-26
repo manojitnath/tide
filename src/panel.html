@@ -515,7 +515,7 @@ const bedNotice = () => Game.isLockTime(G) ? lockNotice() : ({kind: 'bed', title
 const nowText = () => new Date().toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'});
 function lockNotice() {
   const i = factN++ % Game.FACTS.length, facts = [...Game.FACTS.slice(i), ...Game.FACTS.slice(0, i)];
-  return {kind: 'bed', lock: true, title: `It’s ${nowText()}. Time to sleep.`, text: facts[0], facts, buttons: [btn('lock', 'Lock & rest. Health comes first', 'primary')]};
+  return {kind: 'bed', lock: true, title: `It’s ${nowText()}. Time to sleep.`, text: facts[0], facts, buttons: [btn('lock', 'Lock & Rest', 'primary')]};
 }
 // A session still going at bedtime: offer to log it and wind down, or 5 more minutes. At lights-out it stops by itself.
 const windNotice = () => ({kind: 'bed', title: `It’s ${nowText()}. Time to wind down.`, text: `${dur(S.carry + elapsed())} of focus so far. Log it and call it a day.`,
