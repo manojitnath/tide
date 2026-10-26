@@ -160,7 +160,7 @@
       goalDays: [...t.values()].filter(ms => ms >= g.goalMin * MIN).length,
       level: level(logs).n,
     };
-    return BADGES.map(([id, color, pic, tip, test]) => ({id, tip, art: coin(color, pic), got: !!test(facts)}));
+    return BADGES.map(([id, color, pic, tip, test]) => ({id, tip, color, art: coin(color, pic), got: !!test(facts)}));
   }
 
   const greeting = (name, ts = Date.now(), bed = false) => {
