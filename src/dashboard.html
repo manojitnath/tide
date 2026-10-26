@@ -228,6 +228,13 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
 @media (prefers-color-scheme: dark){.badge.locked .medal{background:#3a3a3e}}
 .lvl em{position:absolute;right:16px;top:16px;font-style:normal;font-size:12px;font-weight:700;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:99px}
 input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:7px 12px;box-shadow:var(--shadow);font:inherit;color:inherit}
+/* hover and press, the same feel as the panel: a small lift and a quick press-in */
+.btn,select,input[type=time],.round,.switch,.tabs button,.range button,.menu button{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,background-color .18s,color .18s,filter .18s}
+.btn:hover,select:hover,input[type=time]:hover,.round:hover{transform:translateY(-1px);box-shadow:var(--shadow),0 6px 14px -6px rgba(20,40,90,.35);color:var(--accent)}
+.btn.dark:hover{color:#fff;filter:brightness(1.08)}
+.switch:hover{filter:brightness(1.08)}
+.tabs button:not([aria-pressed="true"]):hover,.range button:not([aria-pressed="true"]):hover{color:var(--ink);background:var(--soft)}
+.btn:active,select:active,.round:active,.switch:active,.tabs button:active,.range button:active{transform:scale(.97);transition-duration:.08s}
 @media (max-width:760px){.cards{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}}
 </style>
 <script>if (!window.Game) document.write('<script src="game.js"><\/script>');</script>
