@@ -326,6 +326,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         }
     }
 
+    // Locks the screen like Control-Command-Q. Falls back to sleeping the display, which locks if a password is required.
+    func lockScreen() {
+        if let login = dlopen("/System/Library/PrivateFrameworks/login.framework/Versions/Current/login", RTLD_NOW),
+           let lock = dlsym(login, "SACLockScreenImmediate") {
+            typealias Lock = @convention(c) () -> Int32
+            _ = unsafeBitCast(lock, to: Lock.self)()
+            return
+        }
+        let sleep = Process()
+        sleep.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
+        sleep.arguments = ["displaysleepnow"]
+        try? sleep.run()
+    }
+
     // MARK: messages from the pages
 
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -395,6 +409,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
                 UserDefaults.standard.set(value, forKey: "theme")
                 applyTheme()
             }
+        case "lockScreen":
+            lockScreen()
         case "quit":
             NSApp.terminate(nil)
         case "copy":

@@ -23,6 +23,11 @@
   const factsOn = (g, ts = Date.now()) => { const m = minutesOf(ts); return m >= hhmm(g.factsAt) || m < MORNING; };
   // A night counts as "lights out" when the Mac was last used within 30 minutes of bedtime.
   const lightsOutBy = g => hhmm(g.bedAt) + 30;
+  // From lights-out time the reminder only offers to lock the screen.
+  const isLockTime = (g, ts = Date.now()) => {
+    const m = minutesOf(ts), by = lightsOutBy(g);
+    return isBedtime(g, ts) && (by >= 1440 ? m >= by - 1440 && m < MORNING : m >= by || m < MORNING);
+  };
   const FACTS = [
     'Adults need at least 7 hours of sleep a night to stay healthy.',
     'People who sleep under 6 hours are about 4 times more likely to catch a cold.',
@@ -164,5 +169,5 @@
     return name ? `${part}, ${name}` : part;
   };
 
-  window.Game = {MIN, DAY, dayStart, dayKey, nightKey, hhmm, settings, isBedtime, factsOn, lightsOutBy, FACTS, streak, level, badges, greeting, onVacation};
+  window.Game = {MIN, DAY, dayStart, dayKey, nightKey, hhmm, settings, isBedtime, isLockTime, factsOn, lightsOutBy, FACTS, streak, level, badges, greeting, onVacation};
 })();

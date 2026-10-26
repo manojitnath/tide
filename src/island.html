@@ -62,6 +62,9 @@ input.shake{animation:shake .3s}
 .card.bed{background-color:#2b2f6e;background-image:linear-gradient(rgba(255,255,255,.08),rgba(255,255,255,0) 45%),radial-gradient(circle at 100% 0,transparent 0 70px,rgba(255,255,255,.1) 70px 71px,transparent 71px 112px,rgba(255,255,255,.07) 112px 113px,transparent 113px),radial-gradient(120% 90% at 50% 130%,rgba(150,120,255,.45),transparent 70%)}
 .card.bed .logo{color:#2b2f6e}
 .card.bed .btns .primary{color:#2b2f6e;background:linear-gradient(#fff,#ece9ff)}
+.card.shake{animation:ishake .5s cubic-bezier(.36,.07,.19,.97)}
+@keyframes ishake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}}
+#text{transition:opacity .25s}
 </style>
 </head>
 <body>
@@ -82,8 +85,20 @@ let notice = null;
 // The panel page decides what to ask; this page only shows it and reports which button was pressed.
 const LOGO = document.querySelector('.logo').innerHTML;
 const MOON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>';
+// At lights-out the Island shakes every few seconds and shows the next sleep fact, until you lock the screen.
+let factTimer = 0;
 function setNotice(n) {
   notice = n;
+  clearInterval(factTimer);
+  if (n.facts && n.facts.length) {
+    let i = 0;
+    factTimer = setInterval(() => {
+      const card = document.querySelector('.card'), t = document.querySelector('#text');
+      i = (i + 1) % n.facts.length; t.style.opacity = 0;
+      setTimeout(() => { t.textContent = n.facts[i]; t.style.opacity = 1; report(); }, 250);
+      card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    }, 8000);
+  }
   // Bedtime gets the night card; a new badge shows its coin in place of the logo.
   document.querySelector('.card').classList.toggle('bed', n.kind === 'bed');
   const logo = document.querySelector('.logo');
@@ -119,6 +134,7 @@ if (!window.__NATIVE) document.body.classList.add('preview');
 if (q.has('top')) setTopInset(+q.get('top'));
 if (q.has('demo')) {
   const demos = {
+    lock: {kind: 'bed', lock: true, title: 'It’s 10:47 PM. Time to sleep.', text: 'Adults need at least 7 hours of sleep a night to stay healthy.', facts: ['Adults need at least 7 hours of sleep a night to stay healthy.', 'Short sleep raises your hunger hormone, so you crave more food the next day.'], buttons: [{id: 'lock', label: 'Lock now', style: 'primary'}]},
     bed: {kind: 'bed', title: 'It’s 10:30 PM. Time to sleep.', text: 'People who sleep under 6 hours are about 4 times more likely to catch a cold.', buttons: [{id: 'bedmore', label: '5 more minutes'}, {id: 'bedok', label: 'Good night', style: 'primary'}]},
     break: {title: 'Break complete', text: 'Nice reset. Focus when you’re ready.', buttons: [{id: 'focus', label: 'Start Focus', style: 'primary'}, {id: 'plus5', label: '+5 min'}]},
     done: {title: 'Focus complete', text: '30 minutes of deep work. Well done.', buttons: [{id: 'log', label: 'Log it', style: 'primary'}, {id: 'keep', label: 'Keep going'}]},

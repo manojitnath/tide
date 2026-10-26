@@ -321,7 +321,7 @@ let logs = store.get('studyradio.logs', []);
 window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderStats(); };
 // The game: daily goal, streak, level and badges (game.js). Settings and the nights the Mac was last used come from the app.
 let G = Game.settings(store.get('tide.game', {})), nights = store.get('tide.nights', {});
-window.__syncGame = data => { G = Game.settings(data); render(); };
+window.__syncGame = data => { G = Game.settings(data); if (notice && notice.kind === 'bed' && !bedNow()) present(null); render(); };
 window.__syncNights = data => { nights = data || {}; };
 const saveGame = () => store.set('tide.game', G);
 const bedNow = () => Game.isBedtime(G);
@@ -492,17 +492,25 @@ window.noticeAction = (id, topic) => {
     case 'break': present(null); startBreak(breakFor(S.pomoMin)); break;
     case 'focus': present(null); beginFocus(); break;
     case 'ok': case 'bedmore': case 'bedok': present(null); break;
+    case 'lock': present(null); native({type: 'lockScreen'}); break;
     case 'see': present(null); native({type: 'openDashboard', tab: 'progress'}); break;
     case 'plus5': present(null); Object.assign(S, {status: 'break', breakEnds: Date.now() + 5 * MIN, breakTotal: 5 * MIN}); saveState(); render(); break;
   }
 };
 // Bedtime: the app asks every 5 minutes while the Mac is in use after bedtime. A running session isn't interrupted.
 let factN = Math.floor(Math.random() * Game.FACTS.length);
-const bedNotice = () => ({kind: 'bed', title: `It’s ${new Date().toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'})}. Time to sleep.`,
+// From lights-out time the Island only offers Lock now, shakes every few seconds and shows a new fact each time.
+const bedNotice = () => Game.isLockTime(G) ? lockNotice() : ({kind: 'bed', title: `It’s ${new Date().toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'})}. Time to sleep.`,
   text: Game.factsOn(G) ? Game.FACTS[factN++ % Game.FACTS.length] : 'Finish up and close the laptop.',
   buttons: [btn('bedmore', '5 more minutes'), btn('bedok', 'Good night', 'primary')]});
+const nowText = () => new Date().toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'});
+function lockNotice() {
+  const i = factN++ % Game.FACTS.length, facts = [...Game.FACTS.slice(i), ...Game.FACTS.slice(0, i)];
+  return {kind: 'bed', lock: true, title: `It’s ${nowText()}. Time to sleep.`, text: facts[0], facts, buttons: [btn('lock', 'Lock now', 'primary')]};
+}
 window.bedtimeNudge = () => {
   if (!bedNow() || S.status === 'running' || (notice && notice.kind !== 'bed')) return false;
+  if (notice && notice.lock) return true;   // already asking to lock; leave it up
   present(bedNotice()); return true;
 };
 // Celebrations (a new badge, a new level, the daily goal) wait in line and show when nothing else is asked.
@@ -526,7 +534,7 @@ window.testIsland = kind => {
   const ms = 30 * MIN, saved = pending;
   pending = {start: Date.now() - ms, end: Date.now(), ms};
   const b = Game.badges(logs, nights, G)[0];
-  const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : kind === 'bed' ? bedNotice()
+  const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : kind === 'bed' ? bedNotice() : kind === 'lock' ? lockNotice()
     : kind === 'badge' ? {kind: 'badge', art: b.art, title: 'Badge unlocked', text: b.tip.replace(' · ', ': '), buttons: [btn('see', 'See badges'), btn('ok', 'Nice!', 'primary')]} : N.done(ms);
   pending = saved; testingIsland = true; present(n);
 };
