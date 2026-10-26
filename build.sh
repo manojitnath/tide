@@ -8,7 +8,7 @@ set -e
 here="${0:A:h}"
 dir="$here/build.noindex"
 out="$dir/Tide.app"
-version="3.1"
+version="3.2"
 
 rm -rf "$out"
 mkdir -p "$out/Contents/MacOS" "$out/Contents/Resources"
