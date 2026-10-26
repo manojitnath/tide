@@ -38,6 +38,11 @@ final class HoverForwardingView: NSView {
     override func mouseExited(with event: NSEvent) { send(nil) }
 }
 
+// A web view that acts on the first click even while another app is active, so the Island's buttons need one click.
+final class FirstClickWebView: WKWebView {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMessageHandler, UNUserNotificationCenterDelegate {
     var statusItem: NSStatusItem!
     var panel: PanelWindow!
@@ -266,7 +271,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         island.acceptsMouseMovedEvents = true
         let hover = HoverForwardingView(frame: island.contentView!.bounds)
         island.contentView = hover
-        islandWeb = WKWebView(frame: hover.bounds, configuration: pageConfig())
+        islandWeb = FirstClickWebView(frame: hover.bounds, configuration: pageConfig())
         islandWeb.autoresizingMask = [.width, .height]
         islandWeb.setValue(false, forKey: "drawsBackground")
         hover.addSubview(islandWeb)
