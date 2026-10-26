@@ -1,0 +1,126 @@
+<!doctype html>
+<!-- Tide feature showcase for the top of the README: six tiles, each a headline and a piece of the real app
+     (iframes of src/*.html in their ?demo modes). Serve the project root, open
+     http://127.0.0.1:8765/docs/promo/features.html and screenshot at 1800 x 1560 (2x). -->
+<meta charset="utf-8">
+<title>Tide features</title>
+<style>
+@font-face{font-family:Manrope;src:url(../../src/fonts/Manrope.ttf) format("truetype");font-weight:200 800}
+*{box-sizing:border-box}
+html,body{margin:0;width:1800px;height:1560px;overflow:hidden;background:#e4e8f3;font-family:Manrope,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+iframe{border:0;background:transparent;display:block}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding:44px}
+.tile{position:relative;height:720px;border-radius:40px;overflow:hidden;background:#fff;box-shadow:0 1px 0 #fff inset,0 20px 40px -24px rgba(20,40,90,.25)}
+.tile.dark{background:#111214}
+h2{position:absolute;left:44px;right:44px;margin:0;font-size:44px;line-height:1.08;font-weight:800;letter-spacing:-.03em;color:#9aa0b3}
+h2 b{color:#16181d}
+.dark h2{color:#6b6f7c}.dark h2 b{color:#fff}
+.top h2{top:44px}.bottom h2{bottom:96px}
+p.sub{position:absolute;left:44px;right:44px;margin:0;font-size:19px;font-weight:600;color:#6b7183;line-height:1.35}
+.top p.sub{top:150px}.bottom p.sub{bottom:44px}
+.dark p.sub{color:#8a8a8a}
+.frame{position:absolute;filter:drop-shadow(0 24px 34px rgba(20,40,90,.22))}
+.frame iframe{transform-origin:0 0}
+/* 1 · the panel */
+.t1 .brand{position:absolute;left:44px;top:44px;display:flex;align-items:center;gap:14px}
+.t1 .brand img{width:64px;height:64px}
+.t1 .brand b{font-size:34px;font-weight:800;letter-spacing:-.02em;color:#0f1a3a}
+.t1 h2{top:132px}.t1 p.sub{top:240px}
+.t1 .frame{left:90px;top:300px}
+.t1 .frame iframe{width:380px;height:560px;transform:scale(1.02)}
+/* 2 · the Island */
+.mbar{position:absolute;left:0;right:0;top:300px;height:34px;background:#0f1a3a;display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:0 24px;color:#fff;font:600 14px -apple-system,sans-serif}
+.mbar .notch{position:absolute;left:50%;top:0;width:150px;height:34px;transform:translateX(-50%);background:#000;border-radius:0 0 14px 14px}
+.t2{background:linear-gradient(#fff 0 300px,#cfdcff 300px)}
+.t2 .f1{left:50%;top:328px;margin-left:-216px}
+.t2 .f1 iframe{width:432px;height:170px;transform:scale(1)}
+.t2 .f2{left:50%;top:520px;margin-left:-216px;opacity:.95}
+.t2 .f2 iframe{width:432px;height:170px}
+/* 3 · the radio */
+.t3 .frame{left:22px;top:290px}
+.t3 .frame iframe{width:390px;height:150px;transform:scale(1.32)}
+.t3 .stations{position:absolute;left:44px;right:44px;top:520px;display:flex;flex-wrap:wrap;gap:8px}
+.t3 .stations span{font-size:15px;font-weight:700;color:#4a5370;background:#eef1f8;border-radius:99px;padding:7px 13px}
+/* 4 · streak and badges */
+.t4 .frame{left:24px;top:56px}
+.t4 .frame iframe{width:380px;height:190px;transform:scale(1.32)}
+.coins{position:absolute;left:44px;right:44px;top:360px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;justify-items:center}
+.coins svg{width:104px;height:104px;filter:drop-shadow(0 10px 12px rgba(20,40,90,.25))}
+.coins .locked svg{filter:grayscale(1) opacity(.35)}
+/* 5 · bedtime */
+.t5 .f1{left:50%;top:250px;margin-left:-216px}
+.t5 .f1 iframe{width:432px;height:180px}
+.t5 .f2{left:24px;top:440px}
+.t5 .f2 iframe{width:380px;height:110px;transform:scale(1.32)}
+/* 6 · the dashboard */
+.t6 .frame{left:44px;top:250px;border-radius:22px;overflow:hidden;box-shadow:0 0 0 1px rgba(20,40,90,.08)}
+.t6 .frame{width:470px;height:370px}
+.t6 .frame iframe{width:1000px;height:790px;transform:scale(.58)}
+</style>
+<body>
+<div class="grid">
+  <div class="tile t1 top">
+    <div class="brand"><img src="../icon/icon-6.png" alt=""><b>Tide</b></div>
+    <h2>Your <b>focus timer</b>, in the menu bar</h2>
+    <p class="sub">Pomodoro or count up, lofi radio, and today's focus, one click away.</p>
+    <div class="frame"><iframe id="p1" src="../../src/panel.html?demo=focus&name=Manojit"></iframe></div>
+  </div>
+  <div class="tile t2 top">
+    <h2>Know when <b>time's up</b></h2>
+    <p class="sub">The Island drops from the notch, logs your session and suggests a break.</p>
+    <div class="mbar"><span class="notch"></span><span>Mon 9:41 AM</span></div>
+    <div class="frame f1"><iframe id="i1" src="../../src/island.html?demo=done"></iframe></div>
+    <div class="frame f2"><iframe id="i2" src="../../src/island.html?demo=break"></iframe></div>
+  </div>
+  <div class="tile t3 top">
+    <h2><b>Lofi radio</b> while you work</h2>
+    <p class="sub">Ten live stations, playing in the background even with the panel closed.</p>
+    <div class="frame"><iframe id="r1" src="../../src/panel.html?demo=focus"></iframe></div>
+    <div class="stations"><span>Lofi Girl: Study</span><span>Jazz</span><span>Piano</span><span>Rainy</span><span>Synthwave</span><span>Chillhop</span><span>Late Night</span><span>+3 more</span></div>
+  </div>
+  <div class="tile t4 bottom">
+    <div class="frame"><iframe id="s1" src="../../src/panel.html?demo=focus"></iframe></div>
+    <div class="coins" id="coins"></div>
+    <h2>Build a <b>streak</b>, earn <b>badges</b></h2>
+    <p class="sub">Reach your daily goal, level up with every focused minute, unlock 21 badges.</p>
+  </div>
+  <div class="tile t5 dark top">
+    <h2>Close the laptop <b>on time</b></h2>
+    <div class="frame f1"><iframe id="b1" src="../../src/island.html?demo=lock"></iframe></div>
+    <div class="frame f2"><iframe id="b2" src="../../src/panel.html?demo=night"></iframe></div>
+    <p class="sub" style="top:auto;bottom:44px">After bedtime the timer turns off, and the Island nudges you to lock the screen with a fact about sleep.</p>
+  </div>
+  <div class="tile t6 top">
+    <h2>See where your <b>focus goes</b></h2>
+    <p class="sub">Every session is logged by topic: time, best hours, streaks and trends.</p>
+    <div class="frame"><iframe id="d1" src="../../src/dashboard.html?demo"></iframe></div>
+  </div>
+</div>
+<script src="cover.js"></script>
+<script src="../../src/game.js"></script>
+<script>
+const only = sel => `html,body{background:transparent!important}body{padding:0!important;min-height:0!important}
+  .panel{background:transparent!important;box-shadow:none!important;padding:12px 16px 30px!important}.panel>*:not(${sel}){display:none!important}`;
+function prep(id, css) {
+  const d = document.getElementById(id).contentDocument; if (!d || !d.body) return;
+  d.body.classList.remove('preview');
+  const st = d.createElement('style'); st.textContent = 'html,body{background:transparent!important}body{min-height:0!important}' + (css || ''); d.head.append(st);
+  const put = () => d.querySelectorAll('.cover, .bgart').forEach(e => e.style.backgroundImage = `url("${TIDE_COVER}")`);
+  put(); setInterval(put, 100);
+}
+// A few coins: the first unlocked, the next ones locked, as they'd look early on.
+const MIN = 60e3, now = Date.now(), logs = [...Array(12)].map((_, i) => ({start: now - i * 864e5, ms: 130 * MIN}));
+const b = Game.badges(logs, {}, Game.settings({}));
+const pick = ['first', 'hours10', 'streak7', 'deep'];
+document.getElementById('coins').innerHTML = pick.map((id, i) => { const x = b.find(y => y.id === id); return `<div class="${i < 4 ? '' : 'locked'}">${x.art}</div>`; }).join('');
+addEventListener('load', () => setTimeout(() => {
+  prep('p1', 'body{padding:0!important}.panel{box-shadow:none!important;background:transparent!important}');
+  prep('i1'); prep('i2');
+  prep('r1', only('#disc'));
+  prep('s1', only('.today'));
+  prep('b1'); prep('b2', only('#actions'));
+  prep('d1', '.wrap{padding-top:16px!important}');
+  const dd = document.getElementById('d1').contentDocument; dd.querySelector('#stats [data-r="menu"]').click(); dd.querySelector('[data-span="30"]').click();
+}, 400));
+</script>
+</body>

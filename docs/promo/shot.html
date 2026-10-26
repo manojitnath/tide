@@ -1,0 +1,16 @@
+<!doctype html>
+<!-- Screenshot helper: shows one page (?src=, relative to this folder) at ?w= x ?h=, with an original cover in the radio
+     instead of a station's artwork. Serve the project root and screenshot http://127.0.0.1:8765/docs/promo/shot.html?... -->
+<meta charset="utf-8">
+<style>html,body{margin:0;overflow:hidden;background:transparent}iframe{border:0;display:block}</style>
+<iframe id="f"></iframe>
+<script src="cover.js"></script>
+<script>
+const q = new URLSearchParams(location.search), f = document.getElementById('f');
+f.style.width = (q.get('w') || 380) + 'px'; f.style.height = (q.get('h') || 600) + 'px';
+f.src = q.get('src');
+f.onload = () => {
+  const d = f.contentDocument, put = () => d.querySelectorAll('.cover, .bgart').forEach(e => e.style.backgroundImage = `url("${TIDE_COVER}")`);
+  put(); setInterval(put, 100);
+};
+</script>

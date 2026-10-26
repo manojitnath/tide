@@ -1,0 +1,130 @@
+<!doctype html>
+<!-- Three flat-colour directions for the panel, each in Ready / Focus / Break. A big simple character fills the top;
+     with ?animate the eyes blink and the character drifts a little. -->
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+body{margin:0;background:#ece9e2;font:13px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#1d1d1f;padding:26px 32px;-webkit-font-smoothing:antialiased}
+h1{font:800 22px 'Bricolage Grotesque',system-ui;margin:0 0 2px}
+.sub{color:#77736b;margin:0 0 18px}
+h2{font:800 16px 'Bricolage Grotesque',system-ui;margin:20px 0 10px}
+.row{display:flex;gap:22px;align-items:flex-start}
+.panel{width:300px;border-radius:22px;overflow:hidden;box-shadow:0 16px 36px -14px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.1);display:flex;flex-direction:column;background:var(--bg);color:var(--ink)}
+.hero{height:190px;position:relative;overflow:hidden;background:var(--hero)}
+.hero svg{position:absolute;inset:0;width:100%;height:100%}
+.chip{position:absolute;left:14px;top:12px;z-index:2;font:700 11px -apple-system,system-ui;letter-spacing:.04em;padding:4px 9px;border-radius:99px;background:var(--chip);color:var(--chipInk)}
+.gear{position:absolute;right:12px;top:10px;z-index:2;width:28px;height:28px;border-radius:50%;background:var(--chip);color:var(--chipInk);display:grid;place-items:center;font-size:13px}
+.body{padding:14px 16px 14px;display:flex;flex-direction:column;gap:10px}
+.time{font:800 50px/1 'Bricolage Grotesque',system-ui;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.line{display:flex;justify-content:space-between;align-items:baseline}
+.line span{color:var(--muted);font-size:12px}
+.prog{height:6px;border-radius:9px;background:var(--track);overflow:hidden}.prog i{display:block;height:100%;border-radius:9px;background:var(--accent)}
+.radio{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:8px 10px}
+.pp{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg);font-size:11px;flex:none}
+.radio b{display:block;font-size:12.5px}.radio small{color:var(--muted);font-size:11px}
+.radio .grow{flex:1;min-width:0}
+.vol{width:50px;height:4px;border-radius:9px;background:var(--track)}.vol i{display:block;width:60%;height:100%;border-radius:9px;background:var(--ink)}
+.btn{border-radius:99px;padding:12px 0;text-align:center;font:700 15px -apple-system,system-ui}
+.main{background:var(--accent);color:var(--accentInk)}
+.second{background:transparent;box-shadow:inset 0 0 0 1.5px var(--outline);color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stat{background:var(--card);border-radius:12px;padding:8px 10px}
+.stat small{display:block;color:var(--muted);font-size:10.5px;font-weight:600}.stat b{font:800 16px 'Bricolage Grotesque',system-ui}
+.foot{display:grid;grid-template-columns:1fr auto 1fr;color:var(--muted);font-size:12px;padding-top:2px}.foot span:last-child{justify-self:end}
+
+/* directions */
+.cat{--bg:#fbfaf6;--ink:#1c1c1c;--muted:#7b776f;--card:#f0eee7;--track:#e4e1d8;--hero:#3f8a5b;--accent:#1c1c1c;--accentInk:#ffd33d;--outline:#d6d2c7;--chip:rgba(0,0,0,.25);--chipInk:#fff}
+.blob{--bg:#f7f2ea;--ink:#232323;--muted:#857e73;--card:#ece5d9;--track:#e2dacc;--hero:#e9dfcf;--accent:#ff7ebd;--accentInk:#232323;--outline:#d2c8b8;--chip:#fff;--chipInk:#232323}
+.shape{--bg:#232323;--ink:#f8f6ed;--muted:#a19e95;--card:#2f2f2f;--track:#3a3a3a;--hero:#2b2b2b;--accent:#50a65c;--accentInk:#fff;--outline:#4a4a4a;--chip:#f8f6ed;--chipInk:#232323}
+
+/* motion (only with ?animate) */
+.anim .blink{transform-box:fill-box;transform-origin:50% 50%;animation:blink 4.2s infinite}
+.anim .bob{animation:bob 4s ease-in-out infinite}
+.anim .zz text{animation:rise 3s linear infinite;opacity:0}.anim .zz text:nth-child(2){animation-delay:1.5s}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+@keyframes bob{50%{transform:translateY(4px)}}
+@keyframes rise{0%{opacity:0;transform:translate(0,0)}20%{opacity:1}100%{opacity:0;transform:translate(8px,-24px)}}
+</style>
+<body>
+<h1>Focus MN: flat character directions</h1>
+<p class="sub">Each direction in Ready, Focus and Break. The character's eyes change with the state; it blinks and drifts slightly. Mockup only.</p>
+<div id="out"></div>
+<script>
+const W = 300, H = 190;
+// eyes: kind = open | look | focus | closed
+function catEyes(kind) {
+  const eye = (cx) => {
+    if (kind === 'closed') return `<path d="M${cx - 22} ${118} q22 16 44 0" fill="none" stroke="#ffd33d" stroke-width="6" stroke-linecap="round"/>`;
+    const lid = kind === 'focus' ? `<rect x="${cx - 28}" y="86" width="56" height="${kind === 'focus' ? 22 : 0}" fill="#141414"/>` : '';
+    const px = kind === 'look' ? 9 : kind === 'focus' ? -4 : 0, py = kind === 'focus' ? 8 : 0;
+    return `<g class="blink"><ellipse cx="${cx}" cy="116" rx="26" ry="24" fill="#ffd33d"/><ellipse cx="${cx + px}" cy="${116 + py}" rx="6" ry="17" fill="#141414"/>${lid}</g>`;
+  };
+  return eye(112) + eye(188);
+}
+function cat(state) {
+  const kind = {ready: 'look', focus: 'focus', break: 'closed'}[state];
+  return `<svg viewBox="0 0 ${W} ${H}"><g class="bob">
+    <path d="M38 58 L58 -6 L108 34 Z M262 58 L242 -6 L192 34 Z" fill="#141414"/><path d="M56 40 L64 10 L88 32 Z M244 40 L236 10 L212 32 Z" fill="#f29bb3"/>
+    <ellipse cx="150" cy="150" rx="132" ry="118" fill="#141414"/>
+    ${catEyes(kind)}
+    <path d="M141 150 h18 l-9 10 z" fill="#f29bb3"/>
+    <path d="M150 160 q-9 10 -18 4 M150 160 q9 10 18 4" fill="none" stroke="#f3f0e8" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M86 156 l-52 -6 M86 166 l-50 8 M214 156 l52 -6 M214 166 l50 8" stroke="#f3f0e8" stroke-width="2.2" stroke-linecap="round"/>
+    ${state === 'break' ? `<g class="zz" fill="#ffd33d" font-weight="800" font-family="Bricolage Grotesque,system-ui"><text x="226" y="70" font-size="22">z</text><text x="246" y="52" font-size="15">z</text></g>` : ''}
+    ${state === 'focus' ? `<rect x="104" y="58" width="92" height="10" rx="5" fill="#ffd33d" opacity=".9"/><text x="150" y="52" text-anchor="middle" fill="#ffd33d" font-size="11" font-weight="800" font-family="Bricolage Grotesque">• • •</text>` : ''}
+  </g></svg>`;
+}
+function blobEyes(kind, cy) {
+  const eye = (cx) => {
+    if (kind === 'closed') return `<path d="M${cx - 17} ${cy} q17 12 34 0" fill="none" stroke="#232323" stroke-width="5" stroke-linecap="round"/>`;
+    const px = kind === 'look' ? -5 : kind === 'focus' ? 6 : 0, py = kind === 'look' ? -6 : kind === 'focus' ? 7 : 0;
+    const lid = kind === 'focus' ? `<path d="M${cx - 21} ${cy - 2} a21 21 0 0 1 42 0 z" fill="#ff7ebd"/>` : '';
+    return `<g class="blink"><circle cx="${cx}" cy="${cy}" r="21" fill="#fff"/><circle cx="${cx + px}" cy="${cy + py}" r="11" fill="#232323"/>${lid}</g>`;
+  };
+  return eye(126) + eye(176);
+}
+function blob(state) {
+  const kind = {ready: 'look', focus: 'focus', break: 'closed'}[state];
+  const top = state === 'break' ? 112 : 70;
+  return `<svg viewBox="0 0 ${W} ${H}"><circle cx="246" cy="46" r="18" fill="#ffd166" opacity="${state === 'break' ? .4 : 1}"/>
+    <g class="bob"><path d="M10 ${H + 4} C10 ${top} 80 ${top - 26} 150 ${top - 26} C220 ${top - 26} 290 ${top} 290 ${H + 4} Z" fill="#ff7ebd"/>
+    ${blobEyes(kind, top + 22)}
+    ${state === 'break' ? `<path d="M138 ${top + 50} q12 8 24 0" fill="none" stroke="#232323" stroke-width="4" stroke-linecap="round"/>` : ''}
+    ${state === 'break' ? `<g class="zz" fill="#232323" font-weight="800" font-family="Bricolage Grotesque,system-ui"><text x="214" y="${top - 6}" font-size="20">z</text><text x="232" y="${top - 24}" font-size="14">z</text></g>` : ''}
+    </g></svg>`;
+}
+function shape(state) {
+  const asleep = state === 'break';
+  const face = state === 'ready' ? `<g class="blink"><circle cx="134" cy="112" r="7" fill="#1d1d1d"/><circle cx="168" cy="112" r="7" fill="#1d1d1d"/></g><path d="M134 132 q17 16 34 0" fill="none" stroke="#1d1d1d" stroke-width="5" stroke-linecap="round"/>`
+    : state === 'focus' ? `<g class="blink"><rect x="126" y="108" width="16" height="6" rx="3" fill="#1d1d1d"/><rect x="160" y="108" width="16" height="6" rx="3" fill="#1d1d1d"/></g><path d="M143 134 h16" stroke="#1d1d1d" stroke-width="5" stroke-linecap="round"/>`
+    : `<path d="M126 114 q8 6 16 0 M160 114 q8 6 16 0" fill="none" stroke="#1d1d1d" stroke-width="5" stroke-linecap="round"/><path d="M144 132 q7 5 14 0" fill="none" stroke="#1d1d1d" stroke-width="4" stroke-linecap="round"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}">
+    <ellipse cx="150" cy="178" rx="80" ry="8" fill="#3a3a3a"/>
+    <g class="bob" ${asleep ? 'transform="rotate(-14 150 120)"' : ''}><path d="M150 40 L214 86 L190 160 L110 160 L86 86 Z" fill="#50a65c" stroke="#50a65c" stroke-width="18" stroke-linejoin="round"/>${face}</g>
+    ${state === 'focus' ? `<g><rect x="214" y="104" width="56" height="62" rx="10" fill="#9fd3ff"/><path d="M224 120 h36 M224 132 h30 M224 144 h34" stroke="#2b6aa3" stroke-width="4" stroke-linecap="round"/></g>` : ''}
+    ${state === 'ready' ? `<g><path d="M216 50 q0 -14 14 -14 h46 q14 0 14 14 v14 q0 14 -14 14 h-40 l-10 10 v-10 q-10 -2 -10 -14 z" fill="#f8f6ed"/><text x="250" y="62" text-anchor="middle" font-size="11" font-weight="800" fill="#232323" font-family="Bricolage Grotesque">Let's go?</text></g>` : ''}
+    ${asleep ? `<g class="zz" fill="#f8f6ed" font-weight="800" font-family="Bricolage Grotesque,system-ui"><text x="216" y="70" font-size="22">z</text><text x="236" y="50" font-size="15">z</text></g>` : ''}
+  </svg>`;
+}
+const STATES = {
+  ready: {chip: 'POMODORO', time: '30:00', l: '', r: '30 min · 5 min break', prog: 0, main: 'Start Focus', second: 'Take break', playing: false},
+  focus: {chip: 'DEEP WORK', time: '18:42', l: 'Started 9:05', r: 'Ends 9:35', prog: 38, main: 'Pause', second: '', playing: true},
+  break: {chip: 'BREAK', time: '03:12', l: '', r: '', prog: 36, main: 'Pause', second: 'Skip break', playing: true},
+};
+const panel = (dir, art, st) => { const s = STATES[st]; return `<div class="panel ${dir}">
+  <div class="hero"><span class="chip">${s.chip}</span><span class="gear">⚙︎</span>${art(st)}</div>
+  <div class="body">
+    <div class="line"><div class="time">${s.time}</div><span>${s.r}</span></div>
+    <div class="prog"><i style="width:${s.prog}%"></i></div>
+    <div class="radio"><span class="pp">${s.playing ? '❚❚' : '▶'}</span><div class="grow"><b>Lofi Girl: Study</b><small>FM 88.6${s.playing ? ' · LIVE' : ''}</small></div><span style="color:var(--muted)">⏭</span><span class="vol"><i></i></span></div>
+    <div class="btn main">${s.main}</div>${s.second ? `<div class="btn second">${s.second}</div>` : ''}
+    <div class="stats"><div class="stat"><small>Today</small><b>1h 30m</b></div><div class="stat"><small>Streak</small><b>4 days</b></div><div class="stat"><small>Week</small><b>4h 30m</b></div></div>
+    <div class="foot"><span>Dashboard</span><span>Settings</span><span>Quit</span></div>
+  </div></div>`; };
+const dirs = [['1 · Cat', 'cat', cat], ['2 · Blob', 'blob', blob], ['3 · Shapes', 'shape', shape]];
+const only = new URLSearchParams(location.search).get('dir');
+document.getElementById('out').innerHTML = dirs.filter(d => !only || d[1] === only).map(([name, cls, art]) =>
+  `<h2>${name}</h2><div class="row">${['ready', 'focus', 'break'].map(st => panel(cls, art, st)).join('')}</div>`).join('');
+if (location.search.includes('animate')) document.body.classList.add('anim');
+</script>
+</body>

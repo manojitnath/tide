@@ -1,17 +1,26 @@
 # Tide
 
-A focus timer and lofi radio that lives in your Mac's menu bar. Click the time in the menu bar to open the timer: Pomodoro or count-up, a live lofi station, and today's focus at a glance. Every session is logged by topic, and a dashboard shows where your time went.
+A focus timer and lofi radio that lives in your Mac's menu bar. Click the time in the menu bar to open the timer: Pomodoro or count-up, a live lofi station, and your streak and daily goal at a glance. Every session is logged by topic, a dashboard shows where your time went, and at bedtime Tide turns off and nudges you to close the laptop.
 
 **[Download Tide for macOS](https://github.com/manojitnath/tide/releases/latest/download/Tide.zip)** (macOS 13 or later, see [Install](#install))
 
 <p>
-  <img src="docs/screenshots/panel-focus.png" width="32%" alt="The menu bar panel while focusing: the timer card, the radio player with the live video, and Pause">
-  <img src="docs/screenshots/panel-paused.png" width="32%" alt="The panel when paused: Resume and End focus">
+  <img src="docs/promo/tide-features.png" width="100%" alt="Tide's features: a focus timer in the menu bar, the Island under the notch, lofi radio, streaks and badges, bedtime reminders, and the dashboard">
+</p>
+
+<p>
+  <img src="docs/screenshots/island-done.png" width="48%" alt="The Island under the notch: Focus complete, with Log it and Keep going">
+  <img src="docs/screenshots/island-lock.png" width="48%" alt="The bedtime Island after 10:30 PM: a sleep fact and Lock now">
+</p>
+
+<p>
+  <img src="docs/screenshots/panel-focus.png" width="32%" alt="The menu bar panel while focusing: the greeting, the clock card, the radio and the streak card">
+  <img src="docs/screenshots/panel-night.png" width="32%" alt="The panel in dark mode after bedtime: the timer is off">
   <img src="docs/screenshots/panel-break.png" width="32%" alt="The panel in dark mode during a break">
 </p>
 
 <p>
-  <img src="docs/screenshots/dashboard.png" width="100%" alt="The dashboard: focus time, sessions, streak, top topic, a focused-time chart, topics and best hours">
+  <img src="docs/screenshots/progress.png" width="100%" alt="The Progress tab: level, daily goal, streak, focus by week, lights out and badges">
 </p>
 
 ## Features
@@ -34,8 +43,7 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 - **Open at login**, light and dark mode, and an update notice when a new version is out.
 
 <p>
-  <img src="docs/screenshots/island-done.png" width="48%" alt="The Island under the notch: Focus complete, with Log it and Keep going">
-  <img src="docs/screenshots/island-break.png" width="48%" alt="The Island: Break complete, with Start Focus and +5 min">
+  <img src="docs/screenshots/dashboard.png" width="100%" alt="The dashboard: focus time, sessions, streak, top topic, a focused-time chart, topics and best hours">
 </p>
 
 ## Install

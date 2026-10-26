@@ -1,0 +1,212 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Bold shapes</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font: 13px -apple-system, BlinkMacSystemFont, sans-serif; background: #d9d4cc; padding: 28px; color: #141414; -webkit-font-smoothing: antialiased; }
+  .row { display: flex; gap: 22px; align-items: flex-start; margin-bottom: 26px; }
+  .cap { font-size: 12px; font-weight: 600; color: #6b655c; margin: 0 0 10px 2px; letter-spacing: .02em; }
+  .num { font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
+  svg { display: block; }
+
+  /* ---------- A: bold colour blocks (light) ---------- */
+  .A { --bg: #f4f1eb; --card: #fff; --ink: #141414; --sub: #6f6a62; --line: #e6e1d8;
+       --purple: #8a6cf7; --green: #2f7d4f; --coral: #f0624a; --yellow: #ffc83d; }
+  /* ---------- B: dark geometric ---------- */
+  .B { --bg: #0d0d0e; --card: #19191b; --ink: #fff; --sub: #8d8d93; --line: #2a2a2d;
+       --pink: #e8336b; --wine: #9c3456; --rose: #f47c72; }
+
+  .panel { width: 320px; background: var(--bg); color: var(--ink); border-radius: 16px; padding: 12px;
+           box-shadow: 0 18px 40px rgba(0,0,0,.18), 0 0 0 .5px rgba(0,0,0,.15); }
+  .hero { position: relative; height: 178px; border-radius: 14px; overflow: hidden; padding: 16px; }
+  .hero .label { position: relative; font-size: 13px; font-weight: 700; }
+  .hero .time { position: absolute; left: 14px; bottom: 30px; font-size: 58px; font-weight: 800; line-height: 1; }
+  .hero .meta { position: absolute; left: 16px; bottom: 13px; font-size: 11px; font-weight: 600; opacity: .8; }
+  .chip { position: absolute; right: 12px; top: 12px; background: var(--ink); color: var(--bg); font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 99px; }
+  .shape { position: absolute; }
+  .bar { position: absolute; left: 16px; right: 16px; bottom: 0; height: 5px; background: rgba(0,0,0,.18); }
+  .bar i { display: block; height: 100%; background: var(--ink); }
+
+  .radio { margin-top: 8px; background: var(--card); border-radius: 14px; padding: 10px; display: flex; align-items: center; gap: 10px; }
+  .disc { width: 42px; height: 42px; border-radius: 50%; flex: none; position: relative; overflow: hidden; }
+  .radio .t { flex: 1; min-width: 0; }
+  .radio b { display: block; font-size: 13px; }
+  .radio span { font-size: 11px; color: var(--sub); }
+  .play { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .btn { height: 38px; border-radius: 99px; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+  .btn.pri { background: var(--ink); color: var(--bg); }
+  .btn.sec { box-shadow: inset 0 0 0 1.5px var(--ink); }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+  .stat { border-radius: 12px; padding: 9px 10px; background: var(--card); }
+  .stat b { display: block; font-size: 18px; font-weight: 800; }
+  .stat span { font-size: 11px; color: var(--sub); font-weight: 600; }
+  .foot { display: flex; justify-content: space-between; margin-top: 10px; padding: 0 4px; font-size: 12px; color: var(--sub); font-weight: 600; }
+
+  /* B specifics */
+  .B .hero { background: transparent; padding: 6px 4px; height: 186px; }
+  .B .hero .time { left: 2px; bottom: 34px; font-size: 68px; }
+  .B .hero .meta { left: 4px; bottom: 14px; color: var(--sub); opacity: 1; }
+  .B .chip { background: var(--card); color: var(--ink); right: auto; left: auto; position: static; display: inline-block; margin-top: 8px; }
+  .B .bar { left: 4px; right: 4px; height: 4px; bottom: 4px; border-radius: 2px; background: var(--line); }
+  .B .bar i { border-radius: 2px; background: var(--pink); }
+  .B .btn.pri { background: #fff; color: #0d0d0e; }
+  .B .btn.sec { box-shadow: inset 0 0 0 1.5px #3a3a3e; }
+
+  /* ---------- Dashboard ---------- */
+  .dash { width: 980px; height: 640px; border-radius: 14px; overflow: hidden; display: flex; background: var(--bg); color: var(--ink);
+          box-shadow: 0 18px 40px rgba(0,0,0,.18), 0 0 0 .5px rgba(0,0,0,.2); }
+  .side { width: 200px; padding: 44px 14px 16px; display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; }
+  .lights { position: absolute; left: 16px; top: 16px; display: flex; gap: 8px; }
+  .lights i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; } .lights i+i { background: #febc2e; } .lights i+i+i { background: #28c840; }
+  .brand { font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; margin: 4px 6px 22px; }
+  .nav { padding: 9px 12px; border-radius: 99px; font-weight: 600; font-size: 14px; }
+  .nav.on { background: var(--ink); color: var(--bg); }
+  .main { flex: 1; padding: 22px 26px; display: flex; flex-direction: column; gap: 14px; }
+  .head { display: flex; align-items: center; justify-content: space-between; }
+  .head h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; }
+  .seg { display: flex; background: var(--card); border-radius: 99px; padding: 3px; }
+  .seg span { padding: 6px 14px; border-radius: 99px; font-weight: 600; font-size: 12px; color: var(--sub); }
+  .seg span.on { background: var(--ink); color: var(--bg); }
+  .tiles { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 12px; }
+  .tile { position: relative; overflow: hidden; height: 132px; border-radius: 16px; padding: 14px 16px; }
+  .tile span { position: relative; font-size: 12px; font-weight: 700; }
+  .tile b { position: absolute; left: 16px; bottom: 12px; font-size: 40px; font-weight: 800; line-height: 1; }
+  .tile b small { font-size: 18px; font-weight: 700; margin: 0 4px 0 1px; }
+  .grid2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; flex: 1; }
+  .card { background: var(--card); border-radius: 16px; padding: 14px 16px; position: relative; }
+  .card h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .card h3 span { color: var(--sub); font-weight: 600; font-size: 12px; }
+  .bars { display: flex; align-items: flex-end; gap: 14px; height: 300px; padding-top: 8px; }
+  .bars div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+  .bars i { width: 100%; border-radius: 10px 10px 4px 4px; background: var(--ink); }
+  .bars small { font-size: 11px; color: var(--sub); font-weight: 600; }
+  .topic { display: grid; grid-template-columns: 74px 1fr 52px; align-items: center; gap: 8px; margin: 9px 0; font-weight: 600; font-size: 12px; }
+  .topic i { height: 16px; border-radius: 99px; display: block; }
+  .topic em { font-style: normal; color: var(--sub); text-align: right; }
+  .hours { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; margin-top: 4px; }
+  .hours i { height: 22px; border-radius: 4px; }
+  .hlab { display: flex; justify-content: space-between; font-size: 10px; color: var(--sub); margin-top: 5px; font-weight: 600; }
+</style>
+
+<body>
+<div class="cap">A · Bold colour blocks: menu bar panel (Ready · Focus · Break)</div>
+<div class="row" id="rowA"></div>
+<div class="cap">B · Dark geometric: menu bar panel (Ready · Focus · Break)</div>
+<div class="row" id="rowB"></div>
+<div class="cap">A · Dashboard</div>
+<div class="row" id="dashA"></div>
+<div class="cap">B · Dashboard</div>
+<div class="row" id="dashB"></div>
+</body>
+
+<script>
+// Abstract shapes as small SVG builders.
+const burst = (size, color, n = 14, inner = .72) => {
+  const c = size / 2, pts = [];
+  for (let i = 0; i < n * 2; i++) { const r = (i % 2 ? inner : 1) * c, a = Math.PI * i / n; pts.push((c + r * Math.cos(a)).toFixed(1) + ',' + (c + r * Math.sin(a)).toFixed(1)); }
+  return `<svg width="${size}" height="${size}"><polygon points="${pts.join(' ')}" fill="${color}"/></svg>`;
+};
+const half = (w, h, color, side = 'left') => `<div style="width:${w}px;height:${h}px;background:${color};border-radius:${side === 'left' ? `${h}px 0 0 ${h}px` : side === 'right' ? `0 ${h}px ${h}px 0` : side === 'top' ? `${w}px ${w}px 0 0` : `0 0 ${w}px ${w}px`}"></div>`;
+const quarter = (s, color, corner = 'tl') => `<div style="width:${s}px;height:${s}px;background:${color};border-${{tl: 'top-left', tr: 'top-right', bl: 'bottom-left', br: 'bottom-right'}[corner]}-radius:${s}px"></div>`;
+const at = (css, html) => `<div class="shape" style="${css}">${html}</div>`;
+const stripes = (w, n, color, gap = 5, h = 6) => `<div style="display:grid;gap:${gap}px;width:${w}px">${Array.from({length: n}, () => `<i style="display:block;height:${h}px;border-radius:9px;background:${color}"></i>`).join('')}</div>`;
+const playIcon = c => `<svg width="12" height="14" viewBox="0 0 12 14"><path d="M1 1.5v11a1 1 0 0 0 1.5.9l9-5.5a1 1 0 0 0 0-1.8l-9-5.5A1 1 0 0 0 1 1.5z" fill="${c}"/></svg>`;
+const pauseIcon = c => `<svg width="12" height="14"><rect x="1" y="1" width="3.5" height="12" rx="1.2" fill="${c}"/><rect x="7.5" y="1" width="3.5" height="12" rx="1.2" fill="${c}"/></svg>`;
+
+const P = {
+  A: {
+    ready: {bg: 'var(--yellow)', label: 'Ready when you are.', time: '60:00', meta: 'Pomodoro · tap the clock to change',
+      shapes: at('right:-70px;bottom:-80px', `<div style="width:150px;height:150px;border-radius:50%;background:var(--green)"></div>`) + at('right:70px;top:-30px', quarter(80, 'var(--coral)', 'bl')) + at('right:16px;top:16px', burst(40, '#141414', 10, .55)),
+      btns: ['Start focus', 'Count up'], playing: false, prog: 0},
+    focus: {bg: 'var(--purple)', label: 'Time for deep work!', time: '42:17', meta: 'Physics · 18 min left', topic: true,
+      shapes: at('right:-26px;top:-26px', burst(130, 'var(--yellow)', 16, .78)) + at('right:60px;bottom:0', half(40, 40, '#141414', 'top')) + at('right:20px;bottom:0', half(40, 40, 'var(--coral)', 'top')),
+      btns: ['Pause', 'End'], playing: true, prog: 70},
+    break: {bg: 'var(--green)', label: 'Take a short break.', time: '04:12', meta: 'Stretch, drink some water', fg: '#fff',
+      shapes: at('right:-100px;top:10px', `<div style="width:170px;height:170px;border-radius:50%;background:var(--coral)"></div>`) + at('right:40px;top:-20px', `<div style="width:60px;height:60px;border-radius:50%;background:var(--yellow)"></div>`) + at('right:16px;top:18px', stripes(50, 4, 'rgba(255,255,255,.9)', 5, 5)),
+      btns: ['Skip break', 'Keep going'], playing: true, prog: 16},
+  },
+  B: {
+    ready: {label: 'Ready when you are.', time: '60:00', meta: 'Pomodoro · tap the clock to change',
+      shapes: at('right:-4px;top:4px', `<div style="display:flex">${half(48, 96, 'var(--wine)', 'left')}${half(48, 96, 'var(--rose)', 'left')}</div>`),
+      btns: ['Start focus', 'Count up'], playing: false, prog: 0},
+    focus: {label: 'Time for deep work!', time: '42:17', meta: 'Physics · 18 min left',
+      shapes: at('right:-4px;top:-2px', `<div style="display:flex;align-items:center">${half(24, 48, 'var(--rose)', 'right')}${half(38, 76, 'var(--wine)', 'right')}${half(60, 120, 'var(--pink)', 'right')}</div>`),
+      btns: ['Pause', 'End'], playing: true, prog: 70},
+    break: {label: 'Take a short break.', time: '04:12', meta: 'Stretch, drink some water',
+      shapes: at('right:2px;top:12px', stripes(96, 9, 'var(--rose)', 5, 6)),
+      btns: ['Skip break', 'Keep going'], playing: true, prog: 16},
+  },
+};
+
+function discA() { return `<div class="disc" style="background:var(--coral)"><div style="position:absolute;inset:9px;border-radius:50%;background:#141414"></div><div style="position:absolute;left:21px;top:0;width:21px;height:42px;background:var(--yellow);border-radius:0 21px 21px 0;mix-blend-mode:multiply"></div><div style="position:absolute;inset:17px;border-radius:50%;background:#fff"></div></div>`; }
+function discB() { return `<div class="disc" style="background:var(--wine)"><div style="position:absolute;left:0;top:0;width:21px;height:42px;background:var(--pink)"></div><div style="position:absolute;inset:15px;border-radius:50%;background:#0d0d0e"></div></div>`; }
+
+function panel(theme, s) {
+  const st = P[theme][s], A = theme === 'A';
+  const fg = st.fg || '#141414';
+  const hero = A
+    ? `<div class="hero" style="background:${st.bg};color:${fg}">${st.shapes}<div class="label">${st.label}</div><div class="time num">${st.time}</div><div class="meta">${st.meta}</div>${st.prog ? `<div class="bar" style="background:${fg === '#fff' ? 'rgba(255,255,255,.3)' : 'rgba(0,0,0,.18)'}"><i style="width:${st.prog}%;background:${fg}"></i></div>` : ''}</div>`
+    : `<div class="hero">${st.shapes}<div class="label">${st.label}</div><div class="time num">${st.time}</div><div class="meta">${st.meta}</div>${st.prog ? `<div class="bar"><i style="width:${st.prog}%"></i></div>` : ''}</div>`;
+  const playBg = A ? '#141414' : '#fff', playFg = A ? '#fff' : '#0d0d0e';
+  return `<div class="panel ${theme}">
+    ${hero}
+    <div class="radio">${A ? discA() : discB()}<div class="t"><b>Lofi Girl</b><span>${st.playing ? 'beats to relax / study to' : 'Radio off · 3 stations'}</span></div>
+      <div class="play" style="background:${playBg}">${st.playing ? pauseIcon(playFg) : playIcon(playFg)}</div></div>
+    <div class="btns"><div class="btn pri">${st.btns[0]}</div><div class="btn sec">${st.btns[1]}</div></div>
+    <div class="stats">
+      <div class="stat"${A ? ' style="background:var(--yellow)"' : ''}><b class="num">2h 40m</b><span>Today</span></div>
+      <div class="stat"${A ? ' style="background:var(--coral);color:#fff"' : ''}><b class="num">6 days</b><span${A ? ' style="color:rgba(255,255,255,.85)"' : ''}>Streak</span></div>
+      <div class="stat"${A ? ' style="background:var(--purple);color:#fff"' : ''}><b class="num">14h</b><span${A ? ' style="color:rgba(255,255,255,.85)"' : ''}>This week</span></div>
+    </div>
+    <div class="foot"><span>Dashboard</span><span>Settings</span><span>Quit</span></div>
+  </div>`;
+}
+for (const t of ['A', 'B']) document.getElementById('row' + t).innerHTML = ['ready', 'focus', 'break'].map(s => panel(t, s)).join('');
+
+function dash(theme) {
+  const A = theme === 'A';
+  const week = [[ 'Mon', 2.1], ['Tue', 3.2], ['Wed', 1.4], ['Thu', 2.7], ['Fri', 1.9], ['Sat', .8], ['Sun', 2.6]];
+  const max = 3.4;
+  const barColor = (i) => A ? (i === 6 ? 'var(--coral)' : '#141414') : (i === 6 ? 'var(--pink)' : '#3a3a3e');
+  const topics = A ? [['Physics', 82, 'var(--purple)', '5h 10m'], ['Maths', 64, 'var(--coral)', '4h 02m'], ['Reading', 40, 'var(--green)', '2h 31m'], ['Coding', 28, 'var(--yellow)', '1h 47m'], ['Other', 12, '#141414', '0h 40m']]
+                   : [['Physics', 82, 'var(--pink)', '5h 10m'], ['Maths', 64, 'var(--rose)', '4h 02m'], ['Reading', 40, 'var(--wine)', '2h 31m'], ['Coding', 28, '#5a5a60', '1h 47m'], ['Other', 12, '#3a3a3e', '0h 40m']];
+  const hrs = [0,0,0,0,0,0,0,.1,.4,.9,1,.7,.3,.5,.8,.95,.6,.3,.2,.5,.7,.4,.1,0];
+  const hcol = v => v === 0 ? (A ? '#ece7de' : '#232326') : A ? `rgba(138,108,247,${.2 + v * .8})` : `rgba(232,51,107,${.2 + v * .8})`;
+  const tiles = A ? `
+      <div class="tile" style="background:var(--purple);color:#fff">${at('right:-30px;top:-30px', burst(150, 'var(--yellow)', 16, .78))}<span>Focus time</span><b class="num">14<small>h</small>20<small>m</small></b></div>
+      <div class="tile" style="background:var(--green);color:#fff">${at('right:-36px;bottom:-36px', `<div style="width:110px;height:110px;border-radius:50%;background:var(--coral)"></div>`)}${at('right:52px;top:14px', `<div style="width:26px;height:26px;border-radius:50%;background:var(--yellow)"></div>`)}<span>Sessions</span><b class="num">23</b></div>
+      <div class="tile" style="background:var(--yellow)">${at('right:0;top:0', quarter(64, '#141414', 'bl'))}${at('right:64px;top:0', half(32, 64, 'var(--coral)', 'left'))}<span>Best day</span><b class="num">3<small>h</small>12<small>m</small></b></div>`
+    : `
+      <div class="tile" style="background:var(--card)">${at('right:-4px;top:6px', `<div style="display:flex;align-items:center">${half(30, 60, 'var(--rose)', 'right')}${half(46, 92, 'var(--wine)', 'right')}${half(60, 120, 'var(--pink)', 'right')}</div>`)}<span style="color:var(--sub)">Focus time</span><b class="num">14<small>h</small>20<small>m</small></b></div>
+      <div class="tile" style="background:var(--card)">${at('right:16px;top:16px', stripes(70, 6, 'var(--rose)', 5, 6))}<span style="color:var(--sub)">Sessions</span><b class="num">23</b></div>
+      <div class="tile" style="background:var(--pink)">${at('right:-30px;bottom:-30px', `<div style="width:110px;height:110px;border-radius:50%;background:var(--wine)"></div>`)}<span>Best day</span><b class="num">3<small>h</small>12<small>m</small></b></div>`;
+  return `<div class="dash ${theme}">
+    <div class="side" style="background:${A ? '#ebe6dd' : '#141416'}">
+      <div class="lights"><i></i><i></i><i></i></div>
+      <div class="brand">Focus<br>MN</div>
+      <div class="nav on">Stats</div><div class="nav">Sessions</div><div class="nav">Settings</div>
+      ${A ? at('left:-30px;bottom:-30px', `<div style="width:120px;height:120px;border-radius:50%;background:var(--coral)"></div>`) + at('left:70px;bottom:0', half(90, 90, 'var(--purple)', 'top')) + at('left:120px;bottom:70px', burst(48, 'var(--yellow)', 10, .6))
+          : at('left:0;bottom:30px', `<div style="display:flex">${half(40, 80, 'var(--wine)', 'right')}${half(50, 100, 'var(--pink)', 'right')}</div>`) + at('left:20px;bottom:150px', stripes(120, 4, '#2a2a2d', 5, 6))}
+    </div>
+    <div class="main">
+      <div class="head"><h1>This week</h1><div class="seg"><span>Today</span><span class="on">7D</span><span>Range</span></div></div>
+      <div class="tiles">${tiles}</div>
+      <div class="grid2">
+        <div class="card"><h3>Focus per day <span>Avg 2h 05m</span></h3>
+          <div class="bars">${week.map(([d, v], i) => `<div><i style="height:${v / max * 100}%;background:${barColor(i)}"></i><small>${d}</small></div>`).join('')}</div></div>
+        <div class="card"><h3>By topic <span>14h 20m</span></h3>
+          ${topics.map(([n, w, c, t]) => `<div class="topic"><span>${n}</span><i style="width:${w}%;background:${c}"></i><em class="num">${t}</em></div>`).join('')}
+          <h3 style="margin-top:16px">When you focus</h3>
+          <div class="hours">${hrs.map(v => `<i style="background:${hcol(v)}"></i>`).join('')}</div>
+          <div class="hlab"><span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>12am</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+document.getElementById('dashA').innerHTML = dash('A');
+document.getElementById('dashB').innerHTML = dash('B');
+</script>

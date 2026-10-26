@@ -1,0 +1,63 @@
+/* Blue card theme for the dashboard (mockup). Same layout; colours, shapes and type from the TeamReach reference. */
+@font-face{font-family:Rounded;src:url(file:///System/Library/Fonts/SFNSRounded.ttf)}
+:root{--round:ui-rounded,Rounded,-apple-system,system-ui,sans-serif;
+  --bg:#edf1fb;--card:#fff;--ink:#16181d;--muted:#6b7183;--line:rgba(20,40,90,.08);--soft:#eef2fb;
+  --accent:#1f5cf2;--purple:#8a5cf6;--pill:#1f5cf2;--pillInk:#fff;
+  --pBlue:#d6e6fd;--pGreen:#e5f5cd;--pCream:#fbf0d9;--tBlue:#0f2b4f;--tGreen:#21400f;--tCream:#4c3b19;--tagInk:#fff;
+  --shadow:0 1px 2px rgba(20,40,90,.04),0 8px 24px rgba(20,40,90,.06)}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121212;--card:#1c1c1c;--ink:#f2f2f2;--muted:#8a8a8a;--line:rgba(255,255,255,.07);--soft:#262626;
+  --accent:#3a73ff;--purple:#9b74ff;--pill:#3a73ff;--pillInk:#fff;
+  --pBlue:#18202e;--pGreen:#1b2416;--pCream:#2a2418;--tBlue:#9ec2ff;--tGreen:#b4e38a;--tCream:#f4d38f;--tagInk:#121212;
+  --shadow:inset 0 1px 0 rgba(255,255,255,.05),0 0 0 .5px rgba(255,255,255,.08)}}
+
+h1{font:600 30px/1.1 var(--round);letter-spacing:-.01em}
+.ph h2{font:600 18px var(--round)}
+.tabs div,.range{box-shadow:var(--shadow)}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:#fff;box-shadow:none}
+.range button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.round{width:40px;height:40px}
+
+/* the four numbers: one blue group card, then the pastel date cards with dark tags */
+.cards{gap:14px}
+.card{border-radius:24px;padding:16px 18px 14px;box-shadow:none;position:relative;overflow:hidden;--tag:var(--tBlue)}
+.card small{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500;color:var(--tag);opacity:.85}
+.card b{font:600 34px/1.1 var(--round);margin:10px 0 10px;color:var(--tag)}
+.card span{display:inline-block;background:var(--tag);color:var(--tagInk);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:600}
+.card span:empty{display:none}
+.card:nth-child(1){background:#1f5cf2;--tag:#fff;
+  background-image:radial-gradient(circle at 100% 0,transparent 0 44px,rgba(255,255,255,.16) 44px 45px,transparent 45px 78px,rgba(255,255,255,.12) 78px 79px,transparent 79px),
+    radial-gradient(circle at 100% 0,rgba(255,255,255,.07) 0 78px,transparent 78px)}
+.card:nth-child(1) small{color:#fff}
+.card:nth-child(1) span{background:rgba(255,255,255,.2);color:#fff}
+.card:nth-child(2){background:var(--pBlue);--tag:var(--tBlue)}
+.card:nth-child(3){background:var(--pGreen);--tag:var(--tGreen)}
+.card:nth-child(4){background:var(--pCream);--tag:var(--tCream)}
+
+.panel,.group{border-radius:24px;box-shadow:var(--shadow)}
+.plot,.trow{border-color:var(--line)}
+.bars i{border-radius:9px 9px 3px 3px;background:var(--accent)}
+.bars div:last-child i{background:var(--purple)}
+.track{height:9px;background:var(--soft)}
+.trow:nth-child(4n+1) .track i{background:var(--accent)}
+.trow:nth-child(4n+2) .track i{background:var(--purple)}
+.trow:nth-child(4n+3) .track i{background:#3e8a1c}
+.trow:nth-child(4n+4) .track i{background:#e0a23a}
+.hours i{background:var(--purple);border-radius:5px 5px 2px 2px;opacity:1}
+select,.btn{box-shadow:var(--shadow)}
+.btn.dark{background:var(--accent);color:#fff}
+.switch[aria-checked="true"]{background:var(--accent)}
+.group h3{text-transform:none;letter-spacing:0;font:600 14px var(--round);color:var(--ink)}
+
+/* Light mode with the same bevel as dark. Dark mode is untouched. */
+@media (prefers-color-scheme: light){
+  :root{--bg:#eaeef6;--bevel:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(20,40,90,.05),0 0 0 .5px rgba(20,40,90,.08),0 1px 2px rgba(20,40,90,.05),0 12px 28px -10px rgba(20,40,90,.16)}
+  .panel,.group,.tabs div,.range,.round,select,.btn{background:linear-gradient(#fff,#f6f7fb);box-shadow:var(--bevel)}
+  .card{box-shadow:var(--bevel);background-image:linear-gradient(rgba(255,255,255,.5),rgba(255,255,255,0) 55%)}
+  .card:nth-child(1){box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 .5px rgba(20,40,90,.12),0 14px 28px -10px rgba(31,92,242,.55);
+    background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,0) 50%),radial-gradient(circle at 100% 0,transparent 0 44px,rgba(255,255,255,.16) 44px 45px,transparent 45px 78px,rgba(255,255,255,.12) 78px 79px,transparent 79px),radial-gradient(circle at 100% 0,rgba(255,255,255,.07) 0 78px,transparent 78px)}
+  .tabs button[aria-pressed="true"],.range button[aria-pressed="true"]{background:linear-gradient(#3a72ff,#1f5cf2);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 8px -2px rgba(31,92,242,.55)}
+  .bars i{background:linear-gradient(#3a72ff,#1f5cf2);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+  .bars div:last-child i,.hours i{background:linear-gradient(#a07dff,#8a5cf6)}
+  .track{box-shadow:inset 0 1px 2px rgba(20,40,90,.1)}
+}

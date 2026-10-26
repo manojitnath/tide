@@ -12,7 +12,7 @@
 | `src/AppIcon.icns` | The app icon, made by `docs/icon/make-icns.sh` from `docs/icon/icon.html`. |
 | `build.sh` | Builds `build.noindex/Tide.app`. `--install` copies it to `/Applications` and opens it; `--zip` makes the release zip. |
 | `src/fonts/` | Manrope, the bundled font, and its licence. |
-| `docs/screenshots/` | README images, rendered from the pages' `?demo` modes. |
+| `docs/screenshots/`, `docs/promo/` | README images, rendered from the pages' `?demo` modes, and the pages that build them. |
 
 ## How it fits together
 
@@ -66,10 +66,12 @@ Each station in `STATIONS` (in `panel.html`) stores a channel, title words to ma
   - `dashboard.html?demo` (two weeks of sample sessions), `&tab=sessions`, `&tab=settings`
 - In a browser, data is kept in localStorage, not in your real log.
 - After `./build.sh --install`, check the real app: the panel opens from the menu bar, a session logs, the radio keeps playing with the panel closed.
-- README screenshots: render the demo pages with headless Chrome, for example:
+- README images: serve the project root (`python3 -m http.server 8765`) and render with headless Chrome.
+  - Screenshots go through `docs/promo/shot.html`, which shows one demo page at a set size and puts an original cover (`docs/promo/cover.js`) in the radio instead of a station's artwork. `&name=` sets the greeting's name. For example:
 
-  ```bash
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars --force-device-scale-factor=2 --window-size=380,580 --screenshot=docs/screenshots/panel-focus.png "http://127.0.0.1:8765/panel.html?demo"
-  ```
+    ```bash
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars --force-device-scale-factor=2 --blink-settings=preferredColorScheme=1 --window-size=380,560 --screenshot=docs/screenshots/panel-focus.png "http://127.0.0.1:8765/docs/promo/shot.html?w=380&h=560&src=..%2F..%2Fsrc%2Fpanel.html%3Fdemo%3Dfocus%26name%3DManojit"
+    ```
 
-  Add `--force-dark-mode` for dark screenshots.
+    `preferredColorScheme=0` gives dark mode.
+  - The feature image at the top is `docs/promo/features.html` (1800 × 1560, 2x) saved as `docs/promo/tide-features.png`; `docs/promo/promo.html` is the MacBook showcase.

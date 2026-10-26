@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tide</title>
+<style>
+/* Manrope (bundled, SIL Open Font License) for all text. In the app it is added from the bundle; this rule is for the browser preview. */
+@font-face{font-family:"Manrope Preview";src:url(fonts/Manrope.ttf) format("truetype");font-weight:200 800}
+/* Light: soft blue-grey with pastel cards. Dark: near-black. Both use the same bevel: a lit top edge, a soft lower edge and depth below. */
+:root{--font:Manrope,"Manrope Preview",ui-rounded,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --bg:linear-gradient(#f7f8fc,#eceff6);--ink:#16181d;--muted:#6b7183;--card:linear-gradient(#fff,#f6f7fb);--line:rgba(20,40,90,.08);--field:#eef2fb;
+  --accent:#1f5cf2;
+  --pReady:#fbf0d9;--pFocus:#d6e6fd;--pBreak:#e5f5cd;--tReady:#4c3b19;--tFocus:#0f2b4f;--tBreak:#21400f;--tagInk:#fff;--timeInk:var(--tag);
+  --sheen:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,0) 55%);
+  --bevel:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(20,40,90,.06),0 0 0 .5px rgba(20,40,90,.08),0 1px 2px rgba(20,40,90,.06),0 10px 24px -8px rgba(20,40,90,.16);
+  --chip:linear-gradient(#fff,#f1f3f8);--chipShadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(20,40,90,.1),0 2px 6px rgba(20,40,90,.1);--trackBg:rgba(255,255,255,.7);--track:inset 0 1px 2px rgba(20,40,90,.12)}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#161616;--ink:#f2f2f2;--muted:#8a8a8a;--card:linear-gradient(#222,#1c1c1c);--line:rgba(255,255,255,.08);--field:#2a2a2a;
+  --accent:#3a73ff;
+  --pReady:#1f1f1f;--pFocus:#1f1f1f;--pBreak:#1f1f1f;--tReady:#f4d38f;--tFocus:#9ec2ff;--tBreak:#b4e38a;--tagInk:#121212;--timeInk:var(--ink);
+  --sheen:linear-gradient(rgba(255,255,255,.03),rgba(255,255,255,0) 55%);
+  --bevel:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.4),0 0 0 .5px rgba(255,255,255,.09),0 1px 2px rgba(0,0,0,.4),0 10px 24px -8px rgba(0,0,0,.6);
+  --chip:linear-gradient(#333,#272727);--chipShadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 0 .5px rgba(255,255,255,.08);--trackBg:rgba(255,255,255,.08);--track:inset 0 1px 2px rgba(0,0,0,.5)}}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;color:var(--ink);font:580 13px/1.35 var(--font);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;cursor:default}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+input{font:inherit;color:inherit;-webkit-user-select:text;user-select:text}
+[hidden]{display:none!important}
+/* In a browser the panel sits on a plain backdrop; in the app the window clips it to rounded corners. */
+body.preview{background:#dde5f8;min-height:100vh;padding:30px}
+body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 0 0 .5px rgba(20,40,90,.12),0 22px 50px rgba(20,40,90,.25)}
+@media (prefers-color-scheme: dark){body.preview{background:#0a0a0a}body.preview .panel{box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 .5px rgba(255,255,255,.1),0 22px 50px rgba(0,0,0,.6)}}
+.panel{width:320px;padding:12px;display:flex;flex-direction:column;gap:12px;position:relative;background:var(--bg)}
+
+/* the timer card: pastel in light, black in dark, with a soft glow of the state's colour at the bottom */
+.timecard{border-radius:20px;padding:14px 16px 12px;background-color:var(--pReady);--tag:var(--tReady);--glow:244,211,143;box-shadow:var(--bevel);
+  background-image:var(--sheen),radial-gradient(120% 90% at 50% 125%,rgba(var(--glow),.25),transparent 70%)}
+.running .timecard{background-color:var(--pFocus);--tag:var(--tFocus);--glow:58,115,255}
+.break .timecard,.breakPaused .timecard{background-color:var(--pBreak);--tag:var(--tBreak);--glow:120,200,80}
+/* Ready has no accent: the pill looks like the menu button and there is no glow. */
+.idle .timecard{--glow:31,31,31}
+.idle .timecard .state{background:var(--chip);color:var(--ink);box-shadow:var(--chipShadow)}
+/* the rings from the group card sit in the top right corner, behind the menu button */
+.timecard{background-image:var(--sheen),radial-gradient(circle at 100% 0,transparent 0 62px,rgba(255,255,255,.06) 62px 63px,transparent 63px 104px,rgba(255,255,255,.045) 104px 105px,transparent 105px),radial-gradient(120% 90% at 50% 125%,rgba(var(--glow),.25),transparent 70%)}
+/* Light mode: the same card in bright blue. As in dark mode, the state shows in the pill, the progress line and a soft glow at the bottom:
+   amber when ready or paused, light blue while focusing, green on a break. */
+@media (prefers-color-scheme: light){
+  .timecard{background-color:#1f5cf2;color:#fff;--tag:#f6cf7e;--glow:255,196,92;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,0,40,.15),0 0 0 .5px rgba(20,40,90,.12),0 16px 30px -12px rgba(31,92,242,.6);
+    background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,0) 50%),radial-gradient(circle at 100% 0,transparent 0 62px,rgba(255,255,255,.16) 62px 63px,transparent 63px 104px,rgba(255,255,255,.12) 104px 105px,transparent 105px),radial-gradient(circle at 100% 0,rgba(255,255,255,.07) 0 104px,transparent 104px),radial-gradient(130% 95% at 50% 130%,rgba(var(--glow),.75),transparent 72%)}
+  .running .timecard{background-color:#1f5cf2;--tag:#c2dcff;--glow:150,200,255}
+  .break .timecard,.breakPaused .timecard{background-color:#1f5cf2;--tag:#bdea92;--glow:140,225,100}
+  .timecard .state{color:#16181d;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+  .timecard .time{color:#fff}
+  .timecard .prog{background:rgba(255,255,255,.25);box-shadow:inset 0 1px 2px rgba(0,0,40,.2)}
+  .timecard .progmeta{color:rgba(255,255,255,.78)}
+  .timecard .progmeta.noted #note{color:#fff}
+  .idle .timecard{--glow:31,92,242}
+}
+.head{display:flex;justify-content:space-between;align-items:flex-start}
+.state{display:inline-flex;align-items:center;background:var(--tag);color:var(--tagInk);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:600}
+.paused .state,.breakPaused .state{animation:pulse 1.4s ease-in-out infinite alternate;will-change:opacity}
+@keyframes pulse{from{opacity:1}to{opacity:.4}}
+.time{display:block;text-align:left;font:600 52px/1.05 var(--font);letter-spacing:-.01em;font-variant-numeric:tabular-nums;margin-top:10px;color:var(--timeInk);border-radius:10px}
+.time.long{font-size:44px}
+.idle .time{cursor:pointer}
+.idle .time:hover{opacity:.75}
+.icon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:var(--chip);box-shadow:var(--chipShadow)}
+.icon:hover{color:var(--accent)}
+.icon svg{width:17px;height:17px}
+/* the menu: the corner button turns into a close button and the others drop down under it */
+.menu{position:relative;z-index:10}
+.menu .x,.menu.open .dots{display:none}
+.menu.open .x{display:block}
+.menu .icon{width:35px;height:35px}
+.menu .icon svg{width:15.5px;height:15.5px}
+.menu.open #gear{box-shadow:var(--chipShadow),0 0 0 1.5px var(--accent)}
+.mlist{position:absolute;right:-5px;top:39px;display:flex;flex-direction:column;gap:6px;padding:5px;border-radius:99px;visibility:hidden;opacity:0;transform:translateY(-6px);transition:opacity .18s,transform .18s,visibility 0s .18s;
+  background:#eef1f7;box-shadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(20,40,90,.12),0 14px 30px -8px rgba(20,40,90,.35)}
+@media (prefers-color-scheme: dark){.mlist{background:#161616;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 .5px rgba(255,255,255,.1),0 14px 30px -8px rgba(0,0,0,.8)}}
+.menu.open .mlist{opacity:1;transform:none;transition:opacity .18s,transform .18s}
+.menu.open .mlist{visibility:visible}
+#quit:hover{color:#ff453a}
+#progWrap{margin-top:10px}
+.prog{height:6px;border-radius:9px;background:var(--trackBg);box-shadow:var(--track);overflow:hidden}
+.prog i{display:block;height:100%;width:0;border-radius:9px;background:var(--tag);transition:width .25s linear}
+/* Always one line tall, even when empty, so nothing below moves when the text comes and goes. */
+.progmeta{display:flex;justify-content:space-between;font-size:11.5px;line-height:15px;height:15px;color:var(--muted);font-weight:580;margin-top:6px;white-space:nowrap}
+.progmeta #note,.progmeta.noted span{display:none}
+.progmeta.noted #note{display:block;color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+
+/* the radio: a compact card like a music player, the cover on the left and the station and controls beside it. The cover art (its stream thumbnail) sits in a square,
+   and a blurred copy of it tints the card. The YouTube player only provides the sound; its video is never shown. */
+.player{position:relative;isolation:isolate;display:flex;gap:12px;padding:10px 14px 10px 10px;border-radius:20px;color:#fff;background:#1c1c1c;box-shadow:var(--bevel)}
+/* WebKit lets a blurred layer spill past rounded corners, so the blur sits in its own clipped box. */
+.bgclip{position:absolute;inset:0;z-index:-2;border-radius:inherit;overflow:hidden;clip-path:inset(0 round 20px)}
+.bgart{position:absolute;inset:-40px;background-position:center;background-size:cover,auto 136%;opacity:.32;filter:blur(30px) saturate(1.2) brightness(.7)}
+/* a thin light edge, so the dark card doesn't melt into the background */
+@media (prefers-color-scheme: dark){.player::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 1px 0 rgba(255,255,255,.08)}}
+/* light mode: white frosted glass with a faint blur of the cover behind it, dark text and controls */
+@media (prefers-color-scheme: light){
+  .player{background:rgba(255,255,255,.5);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),inset 0 1px 0 #fff,0 0 0 .5px rgba(20,40,90,.1),0 1px 2px rgba(20,40,90,.06),0 10px 24px -8px rgba(20,40,90,.18)}
+  .bgart{opacity:.22;filter:blur(34px) saturate(1.2)}
+  .player::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.6) 55%,rgba(240,244,252,.7))}
+}
+.pmain{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
+.prow{display:flex;align-items:center;gap:8px}
+.art{position:relative;width:68px;height:68px;border-radius:12px;overflow:hidden;flex:none;background:#333;box-shadow:0 6px 14px -4px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12)}
+@media (prefers-color-scheme: light){.art{box-shadow:0 6px 14px -5px rgba(20,40,90,.45),inset 0 0 0 1px rgba(0,0,0,.06)}}
+.cover{position:absolute;inset:0;transition:opacity .6s;background-position:center;background-repeat:no-repeat;background-size:cover,auto 136%}
+.ytbox{position:absolute;inset:0;opacity:0;overflow:hidden}
+/* YouTube won't play in a tiny player, so it keeps a normal size, hidden. */
+.ytbox iframe{position:absolute;left:0;top:0;width:470px;height:264px;border:0;pointer-events:none}
+.ptxt{flex:1;min-width:0;text-align:left;color:inherit}
+.marq{width:100%;overflow:hidden;white-space:nowrap;font:600 14px/1.2 var(--font)}
+.marq span{display:inline-block}
+.marq.scroll span{padding-left:100%;animation:marq 9s linear infinite}
+@keyframes marq{to{transform:translateX(-100%)}}
+.ptxt:hover .marq{text-decoration:underline;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent)}
+.ptxt small{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:580;opacity:.7}
+.ptxt small i{width:6px;height:6px;border-radius:50%;background:#ff453a;display:none}
+.playing .ptxt small i{display:block}
+/* little level bars that bounce while the radio plays */
+.eq{display:flex;align-items:center;gap:2.5px;height:15px;flex:none}
+.eq i{width:3px;height:100%;border-radius:2px;background:#fff;opacity:.9;transform:scaleY(var(--rest));will-change:transform}
+@media (prefers-color-scheme: light){.eq i{background:var(--accent)}}
+.eq i:nth-child(1){--rest:.4}.eq i:nth-child(2){--rest:.8}.eq i:nth-child(3){--rest:1}.eq i:nth-child(4){--rest:.65}.eq i:nth-child(5){--rest:.35}
+/* While playing, each bar jumps between levels on its own short loop, so together they pulse like a music meter.
+   Only the transform changes, which the GPU animates smoothly at full frame rate. */
+.playing .eq i{animation:eq1 .9s ease-in-out infinite}
+.playing .eq i:nth-child(2){animation-name:eq2;animation-duration:.72s}
+.playing .eq i:nth-child(3){animation-name:eq3;animation-duration:1s}
+.playing .eq i:nth-child(4){animation-name:eq2;animation-duration:.8s;animation-delay:-.28s}
+.playing .eq i:nth-child(5){animation-name:eq1;animation-duration:.94s;animation-delay:-.42s}
+@keyframes eq1{0%,100%{transform:scaleY(.3)}25%{transform:scaleY(.85)}50%{transform:scaleY(.45)}75%{transform:scaleY(1)}}
+@keyframes eq2{0%,100%{transform:scaleY(.7)}30%{transform:scaleY(.25)}60%{transform:scaleY(1)}80%{transform:scaleY(.5)}}
+@keyframes eq3{0%,100%{transform:scaleY(1)}20%{transform:scaleY(.4)}45%{transform:scaleY(.75)}70%{transform:scaleY(.3)}}
+/* volume: the button slides a short slider open beside it, pushing the other controls to the right */
+.volwrap{display:flex;align-items:center;flex:none}
+.volslide{width:0;overflow:hidden;opacity:0;transition:width .3s ease-in-out,opacity .3s ease-in-out}
+.volwrap.open .volslide{width:48px;opacity:1}
+.vbar{width:44px;height:24px;margin-left:2px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+.vbar div{position:relative;width:100%;height:4px;border-radius:9px;background:rgba(255,255,255,.22);overflow:hidden}
+.vbar i{position:absolute;left:0;top:0;bottom:0;border-radius:9px;background:#fff}
+@media (prefers-color-scheme: light){.vbar div{background:rgba(20,40,90,.14)}.vbar i{background:var(--accent)}}
+/* The gaps shrink exactly as the volume slider grows, and stop is pinned to the right edge, so only the middle buttons move. */
+.ctrls{display:flex;align-items:center;gap:12px;margin:0 -4px;transition:gap .3s ease-in-out}
+.ctrls.volopen{gap:0}
+#stopRadio{margin-left:auto}
+.ctrls button{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:inherit}
+.ctrls button svg{width:16px;height:16px}
+.ctrls .play svg{width:22px;height:22px}
+.ctrls .side{opacity:.7}
+.ctrls .side svg{width:15px;height:15px}
+#stopRadio svg{width:13px;height:13px}
+#volBtn,#stopRadio{opacity:1}
+.ctrls button:hover{background:rgba(255,255,255,.12);opacity:1}
+@media (prefers-color-scheme: light){.ctrls button:hover{background:rgba(20,40,90,.07)}}
+.stations{position:absolute;left:22px;right:22px;z-index:5;border-radius:16px;padding:6px;max-height:260px;overflow:auto;background:var(--card);box-shadow:var(--bevel),0 14px 34px rgba(0,0,0,.25)}
+@media (prefers-color-scheme: dark){.stations{background:#232323}}
+.stations button{display:flex;justify-content:space-between;width:100%;padding:7px 10px;border-radius:9px;text-align:left}
+.stations button:hover{background:var(--field)}
+.stations button span{color:var(--muted);font-variant-numeric:tabular-nums}
+.stations button[aria-current="true"]{font-weight:700;color:var(--accent)}
+
+/* buttons: the main action solid blue, a second action a raised card-coloured pill beside it */
+.duo{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:12px}
+.duo button{min-width:0;height:46px;border-radius:99px;font:600 16px var(--font);letter-spacing:-.01em}
+.duo .primary{color:#fff;background:linear-gradient(#3a72ff,#1f5cf2);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,40,.15),0 8px 18px -8px rgba(31,92,242,.7)}
+.duo .secondary{color:var(--ink);background:var(--card);box-shadow:var(--bevel)}
+.duo .primary:hover{filter:brightness(1.06)}
+.duo .secondary:hover{color:var(--accent)}
+.duo button:active{transform:scale(.985)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{border-radius:20px;padding:10px 13px;background:var(--card);box-shadow:var(--bevel)}
+.stat small{display:block;font-size:11px;color:var(--muted);font-weight:580}
+.stat b{display:block;white-space:nowrap;font:600 18px var(--font);margin:2px 0 1px;font-variant-numeric:tabular-nums}
+.stat span{font-size:10.5px;color:var(--muted)}
+
+/* hover and press: a small lift and a quick press-in, on every button */
+.duo button,.icon,.ctrls button,.chips button,.stations button{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,background-color .18s,color .18s,filter .18s,opacity .18s}
+.duo button:hover,.icon:hover{transform:translateY(-1px)}
+.duo .primary:hover{filter:brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,40,.15),0 12px 22px -8px rgba(31,92,242,.8)}
+.chips button:hover{transform:translateY(-1px)}
+.duo button:active,.icon:active,.ctrls button:active,.chips button:active{transform:scale(.96);transition-duration:.08s}
+
+/* questions (end of a block or break), shown here when the panel is open, otherwise in the Island under the notch */
+.ask{display:flex;flex-direction:column;gap:9px;border-radius:20px;padding:13px;background:var(--card);box-shadow:var(--bevel)}
+.ask h2{margin:0;font:600 16px var(--font);text-align:center}
+.ask p{margin:-4px 0 2px;color:var(--muted);text-align:center}
+.ask input::-webkit-calendar-picker-indicator{display:none!important}
+.ask input{width:100%;padding:9px 11px;border-radius:12px;border:0;background:var(--field);box-shadow:var(--track);outline:none;font-size:14px}
+.ask input:focus{box-shadow:var(--track),0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+.ask input.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chips button{background:var(--chip);box-shadow:var(--chipShadow);border-radius:99px;padding:4px 10px;font-size:12px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips button:hover{color:var(--accent)}
+
+/* ---------- game (mockup) ---------- */
+.stat{position:relative}
+.goal .ring{position:absolute;right:9px;top:9px;width:24px;height:24px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke:rgba(20,40,90,.12);stroke-width:5}
+@media (prefers-color-scheme: dark){.ring circle{stroke:rgba(255,255,255,.12)}}
+.ring .on{stroke:var(--accent);stroke-linecap:round}
+.fl{display:flex;align-items:center;gap:3px}
+.flame{width:17px;height:17px;flex:none;margin-left:-2px}
+.xp{height:4px;border-radius:9px;background:rgba(20,40,90,.12);margin:5px 0 4px;overflow:hidden}
+@media (prefers-color-scheme: dark){.xp{background:rgba(255,255,255,.12)}}
+.xp i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#3a72ff,#8a5cf6)}
+</style>
+</head>
+<body class="idle">
+<div class="panel" id="panel">
+  <div class="timecard">
+  <div class="head">
+    <div><div class="state"><i></i><span id="state">Pomodoro</span></div>
+      <button class="time" id="time" type="button" title="Click to switch: Count up, 30, 60 or 90 minutes">30:00</button></div>
+    <div class="menu" id="menu">
+      <button class="icon" id="gear" type="button" title="Menu"><svg class="dots" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg><svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <div class="mlist">
+        <button class="icon" id="theme" type="button" title="Theme"></button>
+        <button class="icon" id="openLog" type="button" title="Dashboard"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="11" width="3.4" height="8" rx="1"/><rect x="10.3" y="5" width="3.4" height="14" rx="1"/><rect x="16.6" y="8" width="3.4" height="11" rx="1"/></svg></button>
+        <button class="icon" id="openSettings" type="button" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+        <button class="icon" id="quit" type="button" title="Quit Tide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3.5v8"/><path d="M7 6.3a7.5 7.5 0 1 0 10 0"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div id="progWrap"><div class="prog"><i id="prog"></i></div><div class="progmeta" id="progmeta"><span id="progA"></span><span id="progB"></span><span id="note"></span></div></div>
+  </div>
+
+  <div class="player" id="disc">
+    <div class="bgclip"><div class="bgart"></div></div>
+    <div class="art"><div class="cover"></div><div class="ytbox"><div id="ytFrame"></div></div></div>
+    <div class="pmain">
+      <div class="prow">
+        <button class="ptxt" id="stationBtn" type="button" title="Choose a station"><div class="marq" id="marq"><span id="stName">Lofi Girl: Study</span></div><small><i></i><span id="stSub">FM 88.6</span></small></button>
+        <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="ctrls">
+        <div class="volwrap" id="volWrap"><button class="side" id="volBtn" type="button" title="Volume"></button>
+          <div class="volslide"><div class="vbar" id="vol" title="Volume"><div><i id="volFill"></i></div></div></div></div>
+        <button id="prevSt" type="button" title="Previous station"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5h2.6v14H5zm3.8 7L19 5.2v13.6z"/></svg></button>
+        <button class="play" id="radioBtn" type="button" title="Play or pause the radio"></button>
+        <button id="nextSt" type="button" title="Next station"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 5H19v14h-2.6zM5 5.2 15.2 12 5 18.8z"/></svg></button>
+        <button class="side" id="stopRadio" type="button" title="Stop the radio"><svg viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="2" fill="currentColor"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div class="stations" id="stations" hidden role="menu"></div>
+
+  <div class="actions" id="actions"></div>
+  <div class="ask" id="ask" hidden>
+    <h2 id="askTitle"></h2><p id="askText"></p>
+    <input type="text" id="askInput" list="topicList" maxlength="80" placeholder="What did you work on?" hidden autocomplete="off">
+    <datalist id="topicList"></datalist>
+    <div class="chips" id="askChips"></div>
+    <div class="duo" id="askBtns"></div>
+  </div>
+  <div class="stats">
+    <div class="stat goal"><small>Today</small><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="75 100"/></svg><b>1h 30m</b><span>of 2h goal</span></div>
+    <div class="stat"><small>Streak</small><b class="fl"><svg class="flame" viewBox="0 0 24 24"><defs><linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff5e3a"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#fl)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#ffe08a"/></svg>4 days</b><span>best 9</span></div>
+    <div class="stat"><small>Level 7</small><b>Swell</b><div class="xp"><i style="width:68%"></i></div><span>240 XP to go</span></div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+// YouTube stations play a channel's live stream. A stream's ID changes when the channel restarts it, so each station
+// also names its channel and words from the stream's title; the app looks up the current ID on launch and whenever
+// a stream fails. yt is the last known ID.
+const STATIONS = [
+  {name:'Lofi Girl: Study',     f:88.6,  ch:'LofiGirl',      match:['lofi hip hop radio', 'study'], yt:'rFZHOHl-L8A'},
+  {name:'Lofi Girl: Jazz',      f:90.4,  ch:'LofiGirl',      match:['jazz lofi radio'],           yt:'E2vONfzoyRI'},
+  {name:'Lofi Girl: Piano',     f:92.2,  ch:'LofiGirl',      match:['piano radio'],               yt:'N0snMcR6aaA'},
+  {name:'Lofi Girl: Asian',     f:94.0,  ch:'LofiGirl',      match:['asian lofi radio'],          yt:'1Tl2FtV06qo'},
+  {name:'Lofi Girl: Rainy',     f:95.8,  ch:'LofiGirl',      match:['sad lofi radio'],            yt:'CwPCy1GLS38'},
+  {name:'Lofi Girl: Synthwave', f:97.6,  ch:'LofiGirl',      match:['synthwave radio'],           yt:'4xDzrJKXOOY'},
+  {name:'Chillhop: Radio',      f:99.4,  ch:'ChillhopMusic', match:['chillhop radio'],            yt:'5yx6BWlEVcY'},
+  {name:'Chillhop: Late Night', f:101.2, ch:'ChillhopMusic', match:['late night vibes'],          yt:'i6WzngxTnBA'},
+  {name:'Steezyasfuck: Lofi',   f:102.8, ch:'steezyasfvck',  match:['lofi hip hop radio'],        yt:'uWzSqdcfPZw'},
+  {name:'Bits & Hits: Gaming',  f:104.4, ch:'FantasyLofi',   match:['gaming lofi radio'],         yt:'Fo5BDohM9Fo'},
+];
+const MIN_LOG = 60e3, DAY = 864e5, MIN = 60e3;
+// Pomodoro blocks and the break that follows each.
+const BLOCKS = [30, 60, 90], BREAK_FOR = {30: 5, 60: 15, 90: 20}, KEEP_GOING = 30;
+const breakFor = min => (BREAK_FOR[min] || 5) * MIN;
+
+// In the app, data lives in files the app reads and writes; in a browser it uses localStorage.
+const NATIVE = !!window.__NATIVE;
+const native = msg => { try { window.webkit.messageHandlers.native.postMessage(msg); } catch (e) {} };
+if (!NATIVE) document.body.classList.add('preview');
+const store = {
+  get(k, d) { try { const v = NATIVE ? (window.__STORE || {})[k] : localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { const s = JSON.stringify(v); if (NATIVE) { native({type: 'store', key: k, value: s}); return; } try { localStorage.setItem(k, s); } catch (e) {} },
+};
+let logs = store.get('studyradio.logs', []);
+// The dashboard window sends the log back when it deletes or restores a session.
+window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderStats(); };
+const S = Object.assign({status: 'idle', mode: 'pomo', pomoMin: 30, startedAt: 0, segStart: 0, acc: 0, carry: 0, chained: false, blockMin: 30,
+  breakEnds: 0, breakLeft: 0, breakTotal: 0, station: 0, vol: .6, lastSeen: 0}, store.get('studyradio.state', {}));
+if (!BLOCKS.includes(S.pomoMin)) S.pomoMin = 30;
+if (!S.blockMin) S.blockMin = S.pomoMin;
+let restored = false;
+// A session that was running when the app quit comes back paused, counting time up to the last save.
+if (S.status === 'running') { S.acc += Math.max(0, (S.lastSeen || S.segStart) - S.segStart); S.status = 'paused'; restored = true; }
+if (S.status === 'break' && Date.now() >= S.breakEnds) S.status = 'idle';
+function saveState() { S.lastSeen = Date.now(); store.set('studyradio.state', S); }
+function saveLogs() { store.set('studyradio.logs', logs); }
+const elapsed = () => S.acc + (S.status === 'running' ? Date.now() - S.segStart : 0);
+
+/* ---------- formatting ---------- */
+const pad = n => String(n).padStart(2, '0');
+function clock(ms, withHours) {
+  const t = Math.max(0, Math.round(ms / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return withHours ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(h * 60 + m)}:${pad(s)}`;
+}
+function dur(ms) { const m = Math.round(ms / MIN), h = Math.floor(m / 60); return h ? `${h}h ${m % 60}m` : `${m}m`; }
+const dayStart = d => { d = new Date(d); return +new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+const fmtTime = ts => new Date(ts).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'});
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+/* ---------- status line ---------- */
+let noteTimer = 0, note = '';
+// A short note replaces the status line for a few seconds.
+function say(text, hold = 5000) { note = text; clearTimeout(noteTimer); noteTimer = setTimeout(() => { note = ''; renderMsg(); }, hold); renderMsg(); }
+// Short notes replace the line under the clock for a few seconds.
+function renderMsg() { $('#note').textContent = note; $('#progmeta').classList.toggle('noted', !!note); }
+
+/* ---------- focus and breaks ---------- */
+function beginFocus() {
+  present(null);
+  Object.assign(S, {status: 'running', acc: 0, carry: 0, chained: false, blockMin: S.mode === 'pomo' ? S.pomoMin : 0, startedAt: Date.now(), segStart: Date.now()});
+  saveState(); render();
+}
+function pauseFocus() { if (S.status !== 'running') return; S.acc += Date.now() - S.segStart; S.status = 'paused'; saveState(); render(); }
+function resumeFocus() { if (S.status !== 'paused') return; S.status = 'running'; S.segStart = Date.now(); saveState(); render(); }
+// Ending early: an unfinished Pomodoro isn't counted, and neither is under a minute of counting up.
+// Time spent "keeping going" after a full block is always offered for the log.
+function endFocus() {
+  const total = S.carry + elapsed(), st = S.startedAt, pomo = S.mode === 'pomo', chained = S.chained;
+  Object.assign(S, {status: 'idle', acc: 0, carry: 0, chained: false, segStart: 0, startedAt: 0});
+  saveState(); render();
+  if (pomo && chained) { pending = {start: st, end: Date.now(), ms: total}; afterTopic = 'next'; present(N.chainEnd()); return; }
+  if (pomo) say('Ended early, so not logged.');
+  else if (total < MIN_LOG) say('Under 1 min, so not logged.');
+  else { pending = {start: st, end: Date.now(), ms: total}; afterTopic = ''; present(N.topic()); return; }
+}
+function startBreak(len) {
+  len = len || breakFor(S.mode === 'pomo' ? S.pomoMin : 0);
+  Object.assign(S, {status: 'break', breakTotal: len, breakEnds: Date.now() + len, breakLeft: 0});
+  saveState(); render();
+}
+function pauseBreak() { if (S.status !== 'break') return; S.breakLeft = Math.max(0, S.breakEnds - Date.now()); S.status = 'breakPaused'; saveState(); render(); }
+function resumeBreak() { if (S.status !== 'breakPaused') return; S.breakEnds = Date.now() + S.breakLeft; S.status = 'break'; saveState(); render(); }
+function skipBreak() { S.status = 'idle'; saveState(); render(); }
+// "Keep going" after a block: another 30 minutes, logged together with what came before.
+function keepGoing() {
+  const p = pending; pending = null; present(null);
+  Object.assign(S, {status: 'running', mode: 'pomo', carry: p ? p.ms : 0, startedAt: p ? p.start : Date.now(), chained: true, blockMin: KEEP_GOING, acc: 0, segStart: Date.now()});
+  saveState(); render();
+}
+// The menu bar shortcut and the main button: start, pause or resume whatever is going.
+function start() {
+  if (notice) return;
+  ({idle: beginFocus, running: pauseFocus, paused: resumeFocus, break: pauseBreak, breakPaused: resumeBreak})[S.status]();
+}
+// Clicking the time cycles the timer: count up, then 30, 60 and 90 minute Pomodoros.
+function cycleMode() {
+  if (S.status !== 'idle') { say('Stop the timer to switch.', 2500); return; }
+  const order = ['free', ...BLOCKS], now = S.mode === 'pomo' ? S.pomoMin : 'free', next = order[(order.indexOf(now) + 1) % order.length];
+  if (next === 'free') S.mode = 'free'; else { S.mode = 'pomo'; S.pomoMin = next; }
+  saveState(); render();
+}
+
+// After 30 minutes with nothing running, a macOS notification nudges you to start; its button starts counting up.
+const NUDGE_AFTER = 30 * MIN;
+const NUDGES = [
+  ['Start a session?', 'Time won\u2019t come back. Even 20 focused minutes counts.'],
+  ['Ready to focus?', 'The hardest part is starting. Let\u2019s go.'],
+  ['Your future self says hi', 'One focused session now beats an hour of scrolling.'],
+  ['Still here?', 'Pick one thing and give it your full attention.'],
+  ['Small steps, big progress', 'Start the timer and see where it takes you.'],
+];
+let idleSince = Date.now(), nudgeN = Math.floor(Math.random() * NUDGES.length);
+function nudgeCheck() {
+  if (S.status !== 'idle' || notice) { idleSince = Date.now(); return; }
+  if (Date.now() - idleSince < NUDGE_AFTER) return;
+  idleSince = Date.now();
+  const [title, body] = NUDGES[nudgeN++ % NUDGES.length];
+  native({type: 'nudge', title, body});
+}
+window.startCountUp = () => {
+  if (S.status !== 'idle') return;
+  present(null); S.mode = 'free'; beginFocus();
+};
+function tick() {
+  nudgeCheck();
+  if (S.status === 'running' && S.mode === 'pomo' && elapsed() >= S.blockMin * MIN) {
+    const total = S.carry + S.blockMin * MIN, st = S.startedAt;
+    Object.assign(S, {status: 'idle', acc: 0, carry: 0, chained: false, segStart: 0, startedAt: 0});
+    saveState(); render(); chime();
+    pending = {start: st, end: Date.now(), ms: total}; afterTopic = 'next';
+    present(N.done(total));
+  }
+  if (S.status === 'break' && Date.now() >= S.breakEnds) {
+    S.status = 'idle'; saveState(); render(); chime();
+    present(N.breakDone());
+  }
+  renderClock();
+}
+
+/* ---------- questions: finished blocks and breaks ---------- */
+let notice = null, noticeSeq = 0, pending = null, afterTopic = '', panelOpen = !NATIVE;
+const btn = (id, label, style) => ({id, label, style: style || 'secondary'});
+const N = {
+  done: total => ({title: 'Focus complete', text: `${Math.round(total / MIN)} minutes of deep work. Well done.`, buttons: [btn('log', 'Log it', 'primary'), btn('keep', 'Keep going')]}),
+  chainEnd: () => ({title: 'Focus works best in blocks', text: 'Take a break, you’ve earned it.', buttons: [btn('log', 'Log it', 'primary'), btn('keep', 'Keep going')]}),
+  topic: () => ({title: 'What did you work on?', text: sessionLine(pending), input: true, needsTopic: 'save', chips: recentTopics(4), buttons: [btn('discard', 'Discard'), btn('save', 'Save', 'primary')]}),
+  next: () => { const m = Math.round(breakFor(S.pomoMin) / MIN); return {title: 'Logged. Nice work.', text: `Take a ${m}-minute break, or keep the momentum?`, buttons: [btn('break', 'Take break', 'primary'), btn('focus', 'Start Focus')]}; },
+  breakDone: () => ({title: 'Break complete', text: 'Nice reset. Focus when you’re ready.', buttons: [btn('focus', 'Start Focus', 'primary'), btn('plus5', '+5 min')]}),
+};
+// A question shows in the panel while it's open, otherwise in the Island under the notch, until it's answered.
+function present(n) {
+  notice = n ? Object.assign({id: ++noticeSeq}, n) : null;
+  renderAsk();
+  native({type: 'notice', notice});
+}
+window.panelVisible = open => { panelOpen = open; if (!open) menu(false); renderAsk(); if (!open && notice) native({type: 'notice', notice}); };
+function renderAsk() {
+  const show = !!notice && panelOpen;
+  $('#ask').hidden = !show; $('#actions').hidden = show;
+  if (!show) return;
+  $('#askTitle').textContent = notice.title; $('#askText').textContent = notice.text || '';
+  $('#askInput').hidden = !notice.input;
+  $('#askChips').innerHTML = notice.input ? (notice.chips || []).map(t => `<button type="button">${esc(t)}</button>`).join('') : '';
+  $('#askBtns').innerHTML = notice.buttons.map(b => `<button type="button" class="${b.style}" data-id="${b.id}">${esc(b.label)}</button>`).join('');
+  if (notice.input) { $('#topicList').innerHTML = [...new Set(logs.map(l => l.topic))].map(t => `<option value="${esc(t)}">`).join(''); $('#askInput').value = ''; setTimeout(() => $('#askInput').focus(), 60); }
+}
+// Answers come from the panel's buttons or, through the app, from the Island.
+window.noticeAction = (id, topic) => {
+  if (testingIsland) { testingIsland = false; present(null); return; }
+  switch (id) {
+    case 'log': present(N.topic()); break;
+    case 'keep': keepGoing(); break;
+    case 'save':
+    case 'discard':
+      if (pending && id === 'save' && topic) logs.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), start: pending.start, end: pending.end, ms: pending.ms, topic});
+      if (id === 'save') { saveLogs(); renderStats(); }
+      pending = null;
+      if (afterTopic === 'next') present(N.next());
+      else { present(null); say(id === 'save' ? 'Saved. Good job!' : 'Discarded.', 3500); }
+      break;
+    case 'break': present(null); startBreak(breakFor(S.pomoMin)); break;
+    case 'focus': present(null); beginFocus(); break;
+    case 'plus5': present(null); Object.assign(S, {status: 'break', breakEnds: Date.now() + 5 * MIN, breakTotal: 5 * MIN}); saveState(); render(); break;
+  }
+};
+// Test the Island without a real session: the app calls this when started with --test-island done|break|topic.
+// Any button just closes it; nothing is logged and the timer isn't touched.
+let testingIsland = false;
+window.testIsland = kind => {
+  const ms = 30 * MIN, saved = pending;
+  pending = {start: Date.now() - ms, end: Date.now(), ms};
+  const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : N.done(ms);
+  pending = saved; testingIsland = true; present(n);
+};
+function askPress(id) {
+  const topic = $('#askInput').value.trim();
+  if (notice && notice.needsTopic === id && !topic) { const i = $('#askInput'); i.classList.remove('shake'); void i.offsetWidth; i.classList.add('shake'); i.focus(); return; }
+  noticeAction(id, topic);
+}
+$('#askBtns').onclick = e => { const b = e.target.closest('button'); if (b) askPress(b.dataset.id); };
+$('#askChips').onclick = e => { const b = e.target.closest('button'); if (b) { $('#askInput').value = b.textContent; $('#askInput').focus(); } };
+$('#askInput').addEventListener('keydown', e => { if (e.key === 'Enter' && notice) askPress(notice.needsTopic); });
+function recentTopics(n) {
+  const seen = [];
+  for (let i = logs.length - 1; i >= 0 && seen.length < n; i--) if (!seen.includes(logs[i].topic)) seen.push(logs[i].topic);
+  return seen;
+}
+// "1h 30m of focus, 8:31 to 10:05 PM", naming paused time so the clock times add up.
+function sessionLine(p) {
+  const paused = p.end - p.start - p.ms;
+  return `${dur(p.ms)} of focus${paused >= MIN ? `, ${dur(paused)} paused` : ''}, ${fmtTime(p.start)} to ${fmtTime(p.end)}`;
+}
+
+/* ---------- drawing ---------- */
+const PIE = ['○', '◔', '◑', '◕', '●'];
+let lastMenu = null;
+function renderClock() {
+  const st = S.status, pomo = S.mode === 'pomo';
+  let ms = 0, p = 0, hours = false;
+  if (st === 'break') { ms = S.breakEnds - Date.now(); p = 1 - ms / S.breakTotal; }
+  else if (st === 'breakPaused') { ms = S.breakLeft; p = 1 - ms / S.breakTotal; }
+  else if (st === 'idle') ms = pomo ? S.pomoMin * MIN : 0;
+  else if (pomo) { ms = S.blockMin * MIN - elapsed(); p = elapsed() / (S.blockMin * MIN); }
+  else { ms = elapsed(); hours = ms >= 36e5; }
+  p = Math.min(1, Math.max(0, p));
+  const text = clock(ms, hours);
+  $('#time').textContent = text; $('#time').classList.toggle('long', text.length > 5);
+  $('#prog').style.width = (p * 100).toFixed(2) + '%';
+  // The menu bar shows the time, with a filling circle for Pomodoro blocks and breaks.
+  const pie = pomo || st === 'break' || st === 'breakPaused' ? PIE[Math.min(4, Math.floor(p * 4 + .5))] + ' ' : '';
+  const menu = st === 'idle' ? '' : (st === 'paused' || st === 'breakPaused' ? '⏸ ' : pie) + text;
+  if (menu !== lastMenu) { lastMenu = menu; native({type: 'clock', text: menu}); }
+}
+function render() {
+  const st = S.status, pomo = S.mode === 'pomo';
+  document.body.classList.remove('idle', 'running', 'paused', 'break', 'breakPaused'); document.body.classList.add(st);
+  $('#state').textContent = st === 'idle' ? (pomo ? 'Pomodoro' : 'Count up')
+    : st === 'running' ? (pomo ? (S.chained ? `Keep going · ${S.blockMin} min` : `Pomodoro · ${S.blockMin} min`) : 'Count up')
+    : st === 'paused' ? 'Paused' : st === 'break' ? 'Break' : 'Break paused';
+  if (st === 'idle') { $('#progA').textContent = ''; $('#progB').textContent = pomo ? `${S.pomoMin} min · ${BREAK_FOR[S.pomoMin]} min break` : ''; }
+  else if (st === 'break' || st === 'breakPaused') { $('#progA').textContent = ''; $('#progB').textContent = ''; }
+  else { $('#progA').textContent = `Started ${fmtTime(S.startedAt)}`; $('#progB').textContent = pomo && st === 'running' ? `Ends ${fmtTime(Date.now() + S.blockMin * MIN - elapsed())}` : (S.carry ? `${dur(S.carry)} before this block` : ''); }
+  // Buttons for each state: [label, action, primary?]
+  const B = {
+    idle: [['Start Focus', beginFocus, 1]],
+    running: [['Pause', pauseFocus, 1]],
+    paused: [['Resume', resumeFocus, 1], ['End focus', () => endFocus()]],
+    break: [['Pause', pauseBreak, 1], ['Skip break', skipBreak]],
+    breakPaused: [['Resume', resumeBreak, 1], ['Start Focus', beginFocus]],
+  }[st];
+  $('#actions').innerHTML = `<div class="duo">${B.map((b, i) => `<button type="button" class="${i ? 'secondary' : 'primary'}" data-i="${i}">${b[0]}</button>`).join('')}</div>`;
+  $('#actions').onclick = e => { const b = e.target.closest('button'); if (b) B[+b.dataset.i][1](); };
+  native({type: 'status', status: st});
+  renderMsg(); renderClock(); renderStats();
+}
+
+/* ---------- today, streak and week ---------- */
+function renderStats() {
+  const today = dayStart(Date.now()), now = new Date(), weekStart = today - ((now.getDay() + 6) % 7) * DAY;
+  const sum = list => list.reduce((n, l) => n + l.ms, 0);
+  const t = logs.filter(l => l.start >= today), w = logs.filter(l => l.start >= weekStart);
+  $('#tToday').textContent = dur(sum(t)); $('#tTodayN').textContent = plural(t.length, 'session');
+  $('#tWeek').textContent = dur(sum(w)); $('#tWeekN').textContent = plural(w.length, 'session');
+  const days = new Set(logs.map(l => dayStart(l.start)));
+  let d = today, n = 0; if (!days.has(d)) d -= DAY;
+  while (days.has(d)) { n++; d = dayStart(d - DAY / 2); }
+  $('#tStreak').textContent = n;
+}
+
+/* ---------- sounds ---------- */
+let ac;
+function chime() {
+  try {
+    ac = ac || new AudioContext(); if (ac.state === 'suspended') ac.resume();
+    [880, 1320].forEach((f, i) => {
+      const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + i * .22;
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.25, t + .02); g.gain.exponentialRampToValueAtTime(.001, t + 1.2);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 1.3);
+    });
+  } catch (e) {}
+}
+
+/* ---------- radio (official YouTube embed, hidden; it only plays the sound) ---------- */
+const playSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+const pauseSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+let radioOn = false, radioPaused = false, yt = null, ytReady = null, ytPlayerReady = null;
+const retried = {};
+const ytId = st => (S.ytIds && S.ytIds[st.name]) || st.yt;
+function loadYT() {
+  if (!ytReady) ytReady = new Promise(resolve => {
+    window.onYouTubeIframeAPIReady = resolve;
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api'; tag.onerror = () => resolve();
+    document.head.append(tag);
+  });
+  return ytReady;
+}
+// YouTube starts a freshly created player muted (autoplay rules) but switches streams in an existing one with sound,
+// so the player is created idle at launch and every play takes the switch-streams path.
+function makePlayer() {
+  if (!ytPlayerReady) ytPlayerReady = loadYT().then(() => new Promise(resolve => {
+    if (!window.YT || !YT.Player) return resolve(null);
+    yt = new YT.Player('ytFrame', {
+      playerVars: {autoplay: 0, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, modestbranding: 1, playsinline: 1, rel: 0},
+      events: {
+        onReady: () => resolve(yt),
+        onStateChange: e => {
+          if (!radioOn) return;
+          if (e.data === YT.PlayerState.PLAYING) { unmuteYT(); setTimeout(unmuteYT, 600); retried[STATIONS[S.station].name] = false; document.body.classList.add('playing'); }
+          else if (e.data === YT.PlayerState.BUFFERING || e.data === YT.PlayerState.PAUSED) document.body.classList.remove('playing');
+        },
+        onError: () => { if (radioOn) ytFailed(); },
+      },
+    });
+  }));
+  return ytPlayerReady;
+}
+function unmuteYT() { if (!yt || !yt.isMuted) return; if (yt.isMuted()) yt.unMute(); yt.setVolume(Math.round(S.vol * 100)); }
+async function playYT(id) {
+  const player = await makePlayer();
+  if (!radioOn) return;
+  if (!player) { say('Radio didn’t load. Check your connection.'); return; }
+  player.unMute(); player.setVolume(Math.round(S.vol * 100)); player.loadVideoById(id);
+}
+function resolveStation(i) { const st = STATIONS[i]; if (st.ch) native({type: 'resolve', i, ch: st.ch, match: st.match}); }
+function ytResolved(i, id) {
+  const st = STATIONS[i]; if (!st || !id) return;
+  const changed = id !== ytId(st);
+  S.ytIds = Object.assign({}, S.ytIds, {[st.name]: id}); saveState();
+  if (changed && i === S.station && radioOn && retried[st.name]) playYT(id);
+}
+function ytFailed() {
+  const st = STATIONS[S.station];
+  if (NATIVE && st.ch && !retried[st.name]) { retried[st.name] = true; say('Finding the live stream…'); resolveStation(S.station); }
+  else say('Station offline. Try another.');
+}
+function showStation() {
+  const st = STATIONS[S.station];
+  $('#stName').textContent = st.name;
+  $('#stSub').textContent = `FM ${st.f.toFixed(1)}${radioOn ? ' · LIVE' : ''}`;
+  requestAnimationFrame(() => $('#marq').classList.toggle('scroll', $('#stName').offsetWidth > $('#marq').clientWidth));
+  $('#radioBtn').innerHTML = radioOn && !radioPaused ? pauseSvg : playSvg;
+  const id = ytId(st);
+  document.querySelectorAll('.cover, .bgart').forEach(e => e.style.backgroundImage = `url(https://i.ytimg.com/vi/${id}/maxresdefault.jpg), url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`);
+}
+function tuneTo(i) {
+  S.station = (i + STATIONS.length) % STATIONS.length; saveState();
+  if (radioOn) { radioPaused = false; document.body.classList.remove('playing'); playYT(ytId(STATIONS[S.station])); }
+  showStation();
+}
+// Play/pause keeps the stream loaded; stop unloads it.
+function playPause() {
+  if (radioOn && !radioPaused) { radioPaused = true; if (yt && yt.pauseVideo) yt.pauseVideo(); document.body.classList.remove('playing'); }
+  else if (radioOn && radioPaused) { radioPaused = false; if (yt && yt.playVideo) yt.playVideo(); }
+  else { radioOn = true; radioPaused = false; tuneTo(S.station); }
+  showStation();
+}
+function stopRadio() { radioOn = false; radioPaused = false; if (yt && yt.stopVideo) { try { yt.stopVideo(); } catch (e) {} } document.body.classList.remove('playing'); showStation(); }
+function playStation(i) { radioOn = true; tuneTo(i); }
+$('#radioBtn').onclick = playPause;
+$('#stopRadio').onclick = stopRadio;
+$('#prevSt').onclick = () => playStation(S.station - 1);
+$('#nextSt').onclick = () => playStation(S.station + 1);
+$('#stationBtn').onclick = e => {
+  e.stopPropagation();
+  const list = $('#stations');
+  list.innerHTML = STATIONS.map((s, i) => `<button type="button" data-i="${i}" aria-current="${i === S.station}">${esc(s.name)}<span>${s.f.toFixed(1)}</span></button>`).join('');
+  list.style.top = ($('#disc').offsetTop + 58) + 'px';
+  list.hidden = !list.hidden;
+};
+$('#stations').onclick = e => { const b = e.target.closest('button'); if (b) { $('#stations').hidden = true; playStation(+b.dataset.i); } };
+addEventListener('click', e => { if (!e.target.closest('#stations, #stationBtn')) $('#stations').hidden = true; });
+
+// Volume: a button that slides a short slider open beside it. Scrolling over either also changes it.
+const VOL_ICONS = ['<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="m16 9.5 5 5m0-5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  '<path d="M4 9h4l5-4v14l-5-4H4zm12.5-1.5a6 6 0 0 1 0 9l-1.2-1.2a4.3 4.3 0 0 0 0-6.6z"/>',
+  '<path d="M4 9h4l5-4v14l-5-4H4zm12.5-1.5a6 6 0 0 1 0 9l-1.2-1.2a4.3 4.3 0 0 0 0-6.6zM19 5a9.5 9.5 0 0 1 0 14l-1.2-1.2a7.8 7.8 0 0 0 0-11.6z"/>'];
+function drawVol() {
+  $('#volFill').style.width = (S.vol * 100).toFixed(1) + '%';
+  $('#volBtn').innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor">${VOL_ICONS[S.vol < .01 ? 0 : S.vol < .5 ? 1 : 2]}</svg>`;
+  $('#volBtn').title = `Volume ${Math.round(S.vol * 100)}%`;
+}
+function setVol(v) { S.vol = Math.min(1, Math.max(0, v)); if (yt && yt.setVolume) yt.setVolume(Math.round(S.vol * 100)); drawVol(); }
+const volFrom = e => { const r = $('#vol div').getBoundingClientRect(); setVol((e.clientX - r.left) / r.width); };
+$('#vol').addEventListener('pointerdown', e => { e.currentTarget.setPointerCapture(e.pointerId); volFrom(e); });
+$('#vol').addEventListener('pointermove', e => { if (e.buttons) volFrom(e); });
+$('#vol').addEventListener('pointerup', saveState);
+const volOpen = open => { $('#volWrap').classList.toggle('open', open); $('.ctrls').classList.toggle('volopen', open); };
+$('#volBtn').onclick = e => { e.stopPropagation(); volOpen(!$('#volWrap').classList.contains('open')); };
+$('.volwrap').addEventListener('wheel', e => { e.preventDefault(); setVol(S.vol - e.deltaY / 400); clearTimeout(volSave); volSave = setTimeout(saveState, 400); }, {passive: false});
+let volSave;
+addEventListener('click', e => { if (!e.target.closest('.volwrap')) volOpen(false); });
+
+/* ---------- controls ---------- */
+$('#time').onclick = cycleMode;
+// The menu: round buttons that drop down under the corner button.
+const menu = open => $('#menu').classList.toggle('open', open);
+$('#gear').onclick = e => { e.stopPropagation(); menu(!$('#menu').classList.contains('open')); };
+$('#openSettings').onclick = () => { menu(false); native({type: 'openDashboard', tab: 'settings'}); };
+$('#openLog').onclick = () => { menu(false); native({type: 'openDashboard', tab: 'stats'}); };
+$('#quit').onclick = () => native({type: 'quit'});
+// Theme: follow the Mac, or always light, or always dark. The app applies it to every window.
+const THEMES = {system: ['Match the Mac', '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>'],
+  light: ['Light', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>'],
+  dark: ['Dark', '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>']};
+let theme = THEMES[window.__THEME] ? window.__THEME : 'system';
+function drawTheme() { $('#theme').innerHTML = THEMES[theme][1]; $('#theme').title = `Theme: ${THEMES[theme][0]}`; }
+$('#theme').onclick = () => { const k = Object.keys(THEMES); theme = k[(k.indexOf(theme) + 1) % k.length]; drawTheme(); native({type: 'theme', value: theme}); };
+drawTheme();
+addEventListener('click', e => { if (!e.target.closest('#menu')) menu(false); });
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); start(); }
+  if (e.key === 'Escape') { if ($('#volWrap').classList.contains('open')) volOpen(false); else if ($('#menu').classList.contains('open')) menu(false); else native({type: 'hidePanel'}); }
+});
+// The app's window follows the panel's height.
+new ResizeObserver(() => native({type: 'resize', h: Math.ceil($('#panel').getBoundingClientRect().height)})).observe($('#panel'));
+
+/* ---------- boot ---------- */
+showStation(); drawVol(); render();
+if (restored) say('Paused while the app was closed.', 10000);
+if (NATIVE) { STATIONS.forEach((st, i) => { if (st.ch) setTimeout(() => resolveStation(i), 400 * i); }); makePlayer(); }
+setInterval(tick, 250);
+setInterval(() => { if (S.status === 'running') saveState(); }, 5000);
+addEventListener('pagehide', saveState);
+// ?demo previews states for screenshots: focus (default), idle, paused, break, done, topic.
+const params = new URLSearchParams(location.search);
+if (params.has('demo')) {
+  const kind = params.get('demo') || 'focus', d0 = dayStart(Date.now());
+  const mk = (day, h, min, topic) => ({id: day + '-' + h, start: d0 - day * DAY + h * 36e5, end: d0 - day * DAY + h * 36e5 + min * MIN, ms: min * MIN, topic});
+  logs = [mk(0, .1, 30, 'Security+ notes'), mk(0, .05, 60, 'Linear algebra'), mk(1, 9, 60, 'AWS AI Practitioner'), mk(2, 10, 30, 'Reading'), mk(3, 11, 90, 'System design')];
+  Object.assign(S, {mode: 'pomo', pomoMin: 60, blockMin: 60, status: 'idle'});
+  if (kind === 'focus' || kind === 'paused') Object.assign(S, {status: 'running', startedAt: Date.now() - 23 * MIN - 47e3, segStart: Date.now() - 23 * MIN - 47e3, acc: 0});
+  if (kind === 'paused') pauseFocus();
+  if (kind === 'break') Object.assign(S, {status: 'break', breakTotal: 15 * MIN, breakEnds: Date.now() + 11 * MIN + 12e3});
+  // The video only plays in the app, so a browser preview keeps the blue cover.
+  radioOn = kind !== 'idle'; document.body.classList.toggle('playing', radioOn && NATIVE); showStation();
+  render();
+  if (kind === 'done') { pending = {start: Date.now() - 60 * MIN, end: Date.now(), ms: 60 * MIN}; afterTopic = 'next'; present(N.done(60 * MIN)); }
+  if (kind === 'topic') { pending = {start: Date.now() - 60 * MIN, end: Date.now(), ms: 60 * MIN}; afterTopic = 'next'; present(N.topic()); }
+}
+</script>
+</body>
+</html>

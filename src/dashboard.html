@@ -279,7 +279,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
       <div class="lvl"><small id="lvN"></small><b id="lvName"></b><div class="xpbar"><i id="lvBar"></i></div><span id="lvXp"></span><em id="lvNext"></em></div>
       <div class="panel goalc"><div class="ph"><h2>Daily goal</h2><span id="gGoal"></span></div>
         <div class="big"><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on" id="gRing" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="0 100"/></svg><div><b id="gNow"></b><span id="gLeft"></span></div></div><div class="week" id="gWeek"></div></div>
-      <div class="panel streakc"><div class="sk"><svg class="skflame" viewBox="0 0 24 24"><defs><linearGradient id="skf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d2e"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#skf)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#fff3c4"/></svg><div><small>STREAK</small><b><span id="sN">0</span> <span>DAYS</span></b></div><em id="sBest"></em></div>
+      <div class="panel streakc"><div class="sk"><svg class="skflame" viewBox="0 0 24 24"><defs><linearGradient id="skf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d2e"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#skf)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#fff3c4"/></svg><div><small>STREAK</small><b><span id="sN">0</span> <span id="sDays">DAYS</span></b></div><em id="sBest"></em></div>
         <div class="skwk" id="sWeek"></div><p class="vac"><i></i><span id="sVac"></span></p></div>
     </div>
     <div class="g2">
@@ -562,7 +562,7 @@ $('#wPrev').onclick = () => { weekBack++; renderProgress(); };
 $('#wNext').onclick = () => { weekBack = Math.max(0, weekBack - 1); renderProgress(); };
 function renderProgress() {
   const st = Game.streak(logs, G), lv = Game.level(logs), now = Date.now(), today = dayStart(now);
-  $('#pHello').textContent = Game.greeting(window.__USER || '', now, Game.isBedtime(G, now));
+  $('#pHello').textContent = Game.greeting(window.__USER || new URLSearchParams(location.search).get('name') || '', now, Game.isBedtime(G, now));
   const left = st.goal - st.today;
   $('#pSub').textContent = `${dur(st.today)} focused today. ${left > 0 ? dur(left) + ' to your goal.' : 'Goal reached.'}`;
   $('#pChip').textContent = st.current;
@@ -572,7 +572,7 @@ function renderProgress() {
   $('#gGoal').textContent = `${dur(st.goal)} a day`;
   $('#gRing').setAttribute('stroke-dasharray', `${(Math.min(1, st.today / st.goal) * 100).toFixed(1)} 100`);
   $('#gNow').textContent = dur(st.today); $('#gLeft').textContent = left > 0 ? `${dur(left)} to go today` : 'Done for today';
-  $('#sN').textContent = st.current; $('#sBest').textContent = `Best ${st.best}`;
+  $('#sN').textContent = st.current; $('#sDays').textContent = st.current === 1 ? 'DAY' : 'DAYS'; $('#sBest').textContent = `Best ${st.best}`;
   $('#sWeek').innerHTML = st.week.map(d => `<div class="c${d.state === 'done' ? ' done' : d.state === 'now' ? ' now' : ''}"><i>${d.state === 'done' ? CHECK : ''}</i><small>${WD(d.day)}</small></div>`).join('');
   $('#sVac').textContent = Game.onVacation(G, Game.dayKey(now)) ? 'Vacation mode is on, so your streak is paused' : 'Vacation mode is off';
   // The week shown in This week, Lights out and the goal rings: this week, or one stepped back to with ‹ ›.
@@ -606,15 +606,16 @@ if (new URLSearchParams(location.search).has('demo')) {
   let seed = 3; const r = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
   logs = [];
   for (let d = 13; d >= 0; d--) {
-    const n = d === 0 ? 2 : Math.floor(r() * 4) + (d % 6 === 0 ? 0 : 1);
+    const n = d === 0 ? 2 : Math.floor(r() * 3) + (d % 6 === 0 ? 1 : 2);
     for (let i = 0; i < n; i++) {
-      const start = dayStart(Date.now() - d * DAY) + (8 + Math.floor(r() * 12)) * 36e5 + Math.floor(r() * 50) * 6e4, ms = [20, 40, 40, 60][Math.floor(r() * 4)] * 6e4;
+      const start = dayStart(Date.now() - d * DAY) + (8 + Math.floor(r() * 12)) * 36e5 + Math.floor(r() * 50) * 6e4, ms = [40, 60, 60, 90][Math.floor(r() * 4)] * 6e4;
       logs.push({id: d + '-' + i, start, end: start + ms, ms, topic: topics[Math.floor(r() * topics.length)]});
     }
   }
   settings.version = '3.0';
   nights = {};
-  for (let d = 1; d <= 6; d++) nights[isoDay(Date.now() - d * DAY)] = [1335, 1352, 1361, 1418, 1340, 1395][d - 1];
+  for (let d = 1; d <= 13; d++) nights[isoDay(Date.now() - d * DAY)] = [1335, 1352, 1361, 1418, 1340, 1395, 1320, 1338, 1405, 1347, 1329, 1356, 1371][d - 1];
+  if (new Date().getDay() === 1) { weekBack = 1; range = '30'; }   // on a Monday, show full weeks
 }
 setTab(new URLSearchParams(location.search).get('tab') || window.__TAB || 'stats');
 renderAll();

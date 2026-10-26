@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus MN</title>
+<style>
+:root{--ink:#1d1d1f;--muted:#6e6e73;--card:rgba(255,255,255,.72);--line:rgba(0,0,0,.08);--btn:#1d1d1f;--btnInk:#fff;--btn2:#fff;--accent:#2f6fdb;--break:#1fa99b;--outline:rgba(0,0,0,.14);--field:rgba(0,0,0,.05)}
+@media (prefers-color-scheme: dark){:root{--ink:#f5f5f7;--muted:#98989d;--card:rgba(255,255,255,.07);--line:rgba(255,255,255,.1);--btn:#f5f5f7;--btnInk:#1d1d1f;--btn2:rgba(255,255,255,.06);--outline:rgba(255,255,255,.22);--accent:#3b7cf0;--break:#3cc9b9;--field:rgba(255,255,255,.08)}}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;color:var(--ink);font:13px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;cursor:default}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+input{font:inherit;color:inherit;-webkit-user-select:text;user-select:text}
+[hidden]{display:none!important}
+/* In a browser the panel sits on a fake desktop; in the app the window draws the frosted background. */
+body.preview{background:linear-gradient(160deg,#34463d,#1f2a24 60%,#2b2a33);min-height:100vh;padding:30px}
+body.preview .panel{background:rgba(246,245,243,.9);border-radius:14px;box-shadow:0 22px 50px rgba(0,0,0,.45)}
+@media (prefers-color-scheme: dark){body.preview .panel{background:rgba(36,36,38,.92)}}
+.panel{width:320px;padding:16px;display:flex;flex-direction:column;gap:12px;position:relative}
+
+/* header */
+.head{display:flex;justify-content:space-between;align-items:flex-start}
+.state{font-size:13px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px}
+.state i{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.idle .state i{background:var(--muted);opacity:.5}
+.break .state i,.breakPaused .state i{background:var(--break)}
+.paused .state i,.breakPaused .state i{animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+.time{display:block;text-align:left;font:800 46px/1.05 -apple-system,system-ui;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:2px;border-radius:10px}
+.time.long{font-size:40px}
+.idle .time{cursor:pointer}
+.idle .time:hover{color:var(--accent)}
+.icon{width:30px;height:30px;border-radius:50%;background:var(--card);display:grid;place-items:center;color:var(--muted);box-shadow:0 0 0 .5px var(--line)}
+.icon:hover{color:var(--ink)}
+.icon svg{width:15px;height:15px}
+.prog{height:5px;border-radius:9px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;width:0;border-radius:9px;background:var(--accent);transition:width .25s linear}
+.break .prog i,.breakPaused .prog i{background:var(--break)}
+/* Always one line tall, even when empty, so nothing below moves when the text comes and goes. */
+.progmeta{display:flex;justify-content:space-between;font-size:11.5px;line-height:15px;height:15px;color:var(--muted);margin-top:6px;white-space:nowrap}
+
+/* the round radio: the live video, blurred and frosted, with the controls on top */
+.disc{position:relative;width:200px;height:200px;margin:0 auto;border-radius:50%;overflow:hidden;color:#fff;
+  box-shadow:0 10px 26px -8px rgba(0,0,0,.45),0 0 0 .5px rgba(0,0,0,.2)}
+.disc-bg{position:absolute;inset:0;background:#2a63c9}
+.ytbox{position:absolute;inset:0;opacity:0;transition:opacity .6s}
+.ytbox iframe{position:absolute;left:50%;top:50%;width:448px;height:252px;transform:translate(-50%,-50%);border:0;pointer-events:none}
+.playing .ytbox{opacity:1}
+/* Flat red with film grain; while the radio plays it turns see-through so the video shows under the red. */
+.disc-frost{position:absolute;inset:0;background-color:#2a63c9;transition:opacity .6s;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");background-blend-mode:multiply}
+.playing .disc-frost{opacity:.62}
+.disc button{position:absolute;color:#fff}
+.disc-pp{left:50%;top:20px;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:rgba(226,236,255,.92);color:#2a63c9!important;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.disc-pp svg{width:18px;height:18px}
+.disc-mid{left:16px;right:16px;top:72px;height:52px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.disc-mid:hover{background:rgba(255,255,255,.12)}
+.marq{width:100%;overflow:hidden;white-space:nowrap;font-size:16px;font-weight:700;color:rgba(255,255,255,.78);text-shadow:0 1px 6px rgba(0,0,0,.35);text-align:center}
+.marq span{display:inline-block}
+.marq.scroll span{padding-left:100%;animation:marq 9s linear infinite}
+@keyframes marq{to{transform:translateX(-100%)}}
+.disc-mid small{font-size:11.5px;font-weight:600;opacity:.6;letter-spacing:.04em;display:flex;align-items:center;gap:5px}
+.disc-mid small i{width:6px;height:6px;border-radius:50%;background:#ff453a;display:none}
+.playing .disc-mid small i{display:block}
+.disc-side{top:126px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;opacity:.75}
+.disc-side:hover{background:rgba(255,255,255,.15)}
+.disc-side svg{width:15px;height:15px}
+#prevSt{left:22px}#nextSt{right:22px}
+.disc-stop{left:50%;top:132px;transform:translateX(-50%);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.16)}
+.disc-stop:hover{background:rgba(255,255,255,.28)}
+.disc-stop svg{width:10px;height:10px}
+.vol{position:absolute;left:0;top:0;width:200px;height:200px;pointer-events:none}
+.vol .hit{pointer-events:stroke;cursor:pointer}
+.stations{position:absolute;left:16px;right:16px;z-index:5;background:var(--card);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);border-radius:13px;padding:6px;
+  box-shadow:0 0 0 .5px var(--line),0 12px 30px rgba(0,0,0,.25);max-height:260px;overflow:auto}
+@media (prefers-color-scheme: light){.stations{background:rgba(250,250,249,.96)}}
+@media (prefers-color-scheme: dark){.stations{background:rgba(44,44,46,.97)}}
+.stations button{display:flex;justify-content:space-between;width:100%;padding:7px 10px;border-radius:8px;text-align:left}
+.stations button:hover{background:var(--line)}
+.stations button span{color:var(--muted);font-variant-numeric:tabular-nums}
+.stations button[aria-current="true"]{font-weight:700;color:var(--accent)}
+
+/* status, buttons, stats */
+.msg{font-size:14px;color:var(--muted);text-align:center;margin:8px 4px 2px;min-height:19px;font-weight:500}
+.actions{display:flex;flex-direction:column;gap:12px}
+/* Main action: the accent with white text. Second action: same size, white with a thin outline. */
+.primary{background:var(--accent);color:#fff;border-radius:99px;padding:11px 0;text-align:center;font-weight:700;font-size:15px;width:100%;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.primary:hover{filter:brightness(1.06)}
+.secondary{background:var(--btn2);border-radius:99px;padding:11px 0;font-weight:600;font-size:15px;text-align:center;width:100%;box-shadow:inset 0 0 0 1px var(--outline)}
+.secondary:hover{background:var(--field)}
+.row{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px}
+/* One secondary button sits under the main one, narrower, so the main action stands out. */
+.primary:active,.secondary:active{transform:scale(.985)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--card);border-radius:12px;padding:9px 10px;box-shadow:0 0 0 .5px var(--line)}
+.stat small{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.stat b{display:block;font-size:17px;font-weight:700;margin:2px 0 1px;font-variant-numeric:tabular-nums}
+.stat span{font-size:10.5px;color:var(--muted)}
+.foot{display:grid;grid-template-columns:1fr auto 1fr;font-size:12px;color:var(--muted);border-top:.5px solid var(--line);padding:10px 2px 0}
+.foot button:hover{color:var(--ink)}
+.foot button:first-child{justify-self:start}.foot button:last-child{justify-self:end}
+
+/* questions (end of a block or break), shown here when the panel is open, otherwise in the Island (the black box under the notch) */
+.ask{display:flex;flex-direction:column;gap:9px;background:var(--card);border-radius:14px;padding:13px;box-shadow:0 0 0 .5px var(--line)}
+.ask h2{margin:0;font-size:16px;font-weight:700;text-align:center}
+.ask p{margin:-4px 0 2px;color:var(--muted);text-align:center}
+.ask input::-webkit-calendar-picker-indicator{display:none!important}
+.ask input{width:100%;padding:9px 11px;border-radius:9px;border:0;background:var(--field);box-shadow:inset 0 0 0 .5px var(--line);outline:none;font-size:14px}
+.ask input:focus{box-shadow:inset 0 0 0 .5px var(--line),0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+.ask input.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chips button{background:var(--card);box-shadow:0 0 0 .5px var(--line);border-radius:99px;padding:4px 10px;font-size:12px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips button:hover{background:var(--line)}
+.ask .primary{padding:10px 0;font-size:14px}
+.ask .secondary{padding:10px 0}
+</style>
+<link rel="stylesheet" href="panel-theme.css">
+</head>
+<body class="idle">
+<div class="panel" id="panel">
+  <div class="timecard">
+  <div class="head">
+    <div><div class="state"><i></i><span id="state">Pomodoro</span></div>
+      <button class="time" id="time" type="button" title="Click to switch: Count up, 30, 60 or 90 minutes">30:00</button></div>
+    <button class="icon" id="gear" type="button" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+  <div id="progWrap"><div class="prog"><i id="prog"></i></div><div class="progmeta"><span id="progA"></span><span id="progB"></span></div></div>
+  </div>
+
+  <div class="player" id="disc">
+    <div class="disc-bg"></div>
+    <div class="ytbox"><div id="ytFrame"></div></div>
+    <div class="disc-frost"></div>
+    <div class="shade"></div>
+    <div class="ptop">
+      <button class="pill" id="stationBtn" type="button" title="Choose a station"><span class="ava"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm3-5 9 5H7zm1 9a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm7 1h3v1.4h-3zm0 2.6h3V18h-3z"/></svg></span><span class="pt"><div class="marq" id="marq"><span id="stName">Lofi Girl: Study</span></div><small><i></i><span id="stSub">FM 88.6</span></small></span></button>
+      <button class="cb" id="stopRadio" type="button" title="Stop the radio"><svg viewBox="0 0 10 10"><rect width="10" height="10" rx="2.4" fill="currentColor"/></svg></button>
+    </div>
+    <div class="pbot">
+      <div class="volrow"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h4l5-4v14l-5-4H4z"/></svg><div class="vbar"><i></i></div><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h4l5-4v14l-5-4H4zm12.5-1.5a6 6 0 0 1 0 9l-1.2-1.2a4.3 4.3 0 0 0 0-6.6zM19 5a9.5 9.5 0 0 1 0 14l-1.2-1.2a7.8 7.8 0 0 0 0-11.6z"/></svg></div>
+      <div class="ctrls">
+        <button class="cb" id="prevSt" type="button" title="Previous station"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2.4v14H6zm3.6 7L19 5.5v13z"/></svg></button>
+        <button class="cb big" id="radioBtn" type="button" title="Play or pause the radio"></button>
+        <button class="cb" id="nextSt" type="button" title="Next station"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.6 5H18v14h-2.4zM5 5.5l9.4 6.5L5 18.5z"/></svg></button>
+      </div>
+    </div>
+    <svg class="vol" id="vol" viewBox="0 0 200 200" hidden><path id="volTrack"/><path id="volFill"/><line id="volKnob"/><path id="volHit"/></svg>
+  </div>
+  <div class="stations" id="stations" hidden role="menu"></div>
+
+  <div class="msg" id="msg"></div>
+  <div class="actions" id="actions"></div>
+  <div class="ask" id="ask" hidden>
+    <h2 id="askTitle"></h2><p id="askText"></p>
+    <input type="text" id="askInput" list="topicList" maxlength="80" placeholder="What did you work on?" hidden autocomplete="off">
+    <datalist id="topicList"></datalist>
+    <div class="chips" id="askChips"></div>
+    <div class="row" id="askBtns"></div>
+  </div>
+  <div class="stats">
+    <div class="stat"><small>Today</small><b id="tToday">0m</b><span id="tTodayN">0 sessions</span></div>
+    <div class="stat"><small>Streak</small><b id="tStreak">0</b><span>days</span></div>
+    <div class="stat"><small>This week</small><b id="tWeek">0m</b><span id="tWeekN">0 sessions</span></div>
+  </div>
+  <div class="foot"><button type="button" id="openLog">Dashboard</button><button type="button" id="openSettings">Settings</button><button type="button" id="quit">Quit</button></div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+// YouTube stations play a channel's live stream. A stream's ID changes when the channel restarts it, so each station
+// also names its channel and words from the stream's title; the app looks up the current ID on launch and whenever
+// a stream fails. yt is the last known ID.
+const STATIONS = [
+  {name:'Lofi Girl: Study',     f:88.6,  ch:'LofiGirl',      match:['lofi hip hop radio', 'study'], yt:'rFZHOHl-L8A'},
+  {name:'Lofi Girl: Jazz',      f:90.4,  ch:'LofiGirl',      match:['jazz lofi radio'],           yt:'E2vONfzoyRI'},
+  {name:'Lofi Girl: Piano',     f:92.2,  ch:'LofiGirl',      match:['piano radio'],               yt:'N0snMcR6aaA'},
+  {name:'Lofi Girl: Asian',     f:94.0,  ch:'LofiGirl',      match:['asian lofi radio'],          yt:'1Tl2FtV06qo'},
+  {name:'Lofi Girl: Rainy',     f:95.8,  ch:'LofiGirl',      match:['sad lofi radio'],            yt:'CwPCy1GLS38'},
+  {name:'Lofi Girl: Synthwave', f:97.6,  ch:'LofiGirl',      match:['synthwave radio'],           yt:'4xDzrJKXOOY'},
+  {name:'Chillhop: Radio',      f:99.4,  ch:'ChillhopMusic', match:['chillhop radio'],            yt:'5yx6BWlEVcY'},
+  {name:'Chillhop: Late Night', f:101.2, ch:'ChillhopMusic', match:['late night vibes'],          yt:'i6WzngxTnBA'},
+  {name:'Steezyasfuck: Lofi',   f:102.8, ch:'steezyasfvck',  match:['lofi hip hop radio'],        yt:'uWzSqdcfPZw'},
+  {name:'Bits & Hits: Gaming',  f:104.4, ch:'FantasyLofi',   match:['gaming lofi radio'],         yt:'Fo5BDohM9Fo'},
+];
+const MIN_LOG = 60e3, DAY = 864e5, MIN = 60e3;
+// Pomodoro blocks and the break that follows each.
+const BLOCKS = [30, 60, 90], BREAK_FOR = {30: 5, 60: 15, 90: 20}, KEEP_GOING = 30;
+const breakFor = min => (BREAK_FOR[min] || 5) * MIN;
+const STATUS = {idle: 'Ready when you are.', running: 'Time for deep work!', paused: 'Paused. Resume when you’re back.', break: 'Take a short break.', breakPaused: 'Break paused.'};
+
+// In the app, data lives in files the app reads and writes; in a browser it uses localStorage.
+const NATIVE = !!window.__NATIVE;
+const native = msg => { try { window.webkit.messageHandlers.native.postMessage(msg); } catch (e) {} };
+if (!NATIVE) document.body.classList.add('preview');
+const store = {
+  get(k, d) { try { const v = NATIVE ? (window.__STORE || {})[k] : localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { const s = JSON.stringify(v); if (NATIVE) { native({type: 'store', key: k, value: s}); return; } try { localStorage.setItem(k, s); } catch (e) {} },
+};
+let logs = store.get('studyradio.logs', []);
+// The dashboard window sends the log back when it deletes or restores a session.
+window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderStats(); };
+const S = Object.assign({status: 'idle', mode: 'pomo', pomoMin: 30, startedAt: 0, segStart: 0, acc: 0, carry: 0, chained: false, blockMin: 30,
+  breakEnds: 0, breakLeft: 0, breakTotal: 0, station: 0, vol: .6, lastSeen: 0}, store.get('studyradio.state', {}));
+if (!BLOCKS.includes(S.pomoMin)) S.pomoMin = 30;
+if (!S.blockMin) S.blockMin = S.pomoMin;
+let restored = false;
+// A session that was running when the app quit comes back paused, counting time up to the last save.
+if (S.status === 'running') { S.acc += Math.max(0, (S.lastSeen || S.segStart) - S.segStart); S.status = 'paused'; restored = true; }
+if (S.status === 'break' && Date.now() >= S.breakEnds) S.status = 'idle';
+function saveState() { S.lastSeen = Date.now(); store.set('studyradio.state', S); }
+function saveLogs() { store.set('studyradio.logs', logs); }
+const elapsed = () => S.acc + (S.status === 'running' ? Date.now() - S.segStart : 0);
+
+/* ---------- formatting ---------- */
+const pad = n => String(n).padStart(2, '0');
+function clock(ms, withHours) {
+  const t = Math.max(0, Math.round(ms / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return withHours ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(h * 60 + m)}:${pad(s)}`;
+}
+function dur(ms) { const m = Math.round(ms / MIN), h = Math.floor(m / 60); return h ? `${h}h ${m % 60}m` : `${m}m`; }
+const dayStart = d => { d = new Date(d); return +new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+const fmtTime = ts => new Date(ts).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'});
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+/* ---------- status line ---------- */
+let noteTimer = 0, note = '';
+// A short note replaces the status line for a few seconds.
+function say(text, hold = 5000) { note = text; clearTimeout(noteTimer); noteTimer = setTimeout(() => { note = ''; renderMsg(); }, hold); renderMsg(); }
+function renderMsg() { $('#msg').textContent = note || STATUS[S.status]; }
+
+/* ---------- focus and breaks ---------- */
+function beginFocus() {
+  present(null);
+  Object.assign(S, {status: 'running', acc: 0, carry: 0, chained: false, blockMin: S.mode === 'pomo' ? S.pomoMin : 0, startedAt: Date.now(), segStart: Date.now()});
+  saveState(); render();
+}
+function pauseFocus() { if (S.status !== 'running') return; S.acc += Date.now() - S.segStart; S.status = 'paused'; saveState(); render(); }
+function resumeFocus() { if (S.status !== 'paused') return; S.status = 'running'; S.segStart = Date.now(); saveState(); render(); }
+// Ending early: an unfinished Pomodoro isn't counted, and neither is under a minute of counting up.
+// Time spent "keeping going" after a full block is always offered for the log. then: 'break' to start a break after.
+function endFocus(then) {
+  const total = S.carry + elapsed(), st = S.startedAt, pomo = S.mode === 'pomo', chained = S.chained;
+  Object.assign(S, {status: 'idle', acc: 0, carry: 0, chained: false, segStart: 0, startedAt: 0});
+  saveState(); render();
+  if (pomo && chained) { pending = {start: st, end: Date.now(), ms: total}; afterTopic = 'next'; present(N.chainEnd()); return; }
+  if (pomo) say('Pomodoro ended early, so it wasn’t logged.');
+  else if (total < MIN_LOG) say('Under a minute, so it wasn’t logged.');
+  else { pending = {start: st, end: Date.now(), ms: total}; afterTopic = then === 'break' ? 'break' : ''; present(N.topic()); return; }
+  if (then === 'break') startBreak();
+}
+function startBreak(len) {
+  len = len || breakFor(S.mode === 'pomo' ? S.pomoMin : 0);
+  Object.assign(S, {status: 'break', breakTotal: len, breakEnds: Date.now() + len, breakLeft: 0});
+  saveState(); render();
+}
+function pauseBreak() { if (S.status !== 'break') return; S.breakLeft = Math.max(0, S.breakEnds - Date.now()); S.status = 'breakPaused'; saveState(); render(); }
+function resumeBreak() { if (S.status !== 'breakPaused') return; S.breakEnds = Date.now() + S.breakLeft; S.status = 'break'; saveState(); render(); }
+function skipBreak() { S.status = 'idle'; saveState(); render(); }
+// "Keep going" after a block: another 30 minutes, logged together with what came before.
+function keepGoing() {
+  const p = pending; pending = null; present(null);
+  Object.assign(S, {status: 'running', mode: 'pomo', carry: p ? p.ms : 0, startedAt: p ? p.start : Date.now(), chained: true, blockMin: KEEP_GOING, acc: 0, segStart: Date.now()});
+  saveState(); render();
+}
+// The menu bar shortcut and the main button: start, pause or resume whatever is going.
+function start() {
+  if (notice) return;
+  ({idle: beginFocus, running: pauseFocus, paused: resumeFocus, break: pauseBreak, breakPaused: resumeBreak})[S.status]();
+}
+// Clicking the time cycles the timer: count up, then 30, 60 and 90 minute Pomodoros.
+function cycleMode() {
+  if (S.status !== 'idle') { say('Stop the timer to switch.', 2500); return; }
+  const order = ['free', ...BLOCKS], now = S.mode === 'pomo' ? S.pomoMin : 'free', next = order[(order.indexOf(now) + 1) % order.length];
+  if (next === 'free') S.mode = 'free'; else { S.mode = 'pomo'; S.pomoMin = next; }
+  saveState(); render();
+}
+
+// After 30 minutes with nothing running, a macOS notification nudges you to start; its button starts counting up.
+const NUDGE_AFTER = 30 * MIN;
+const NUDGES = [
+  ['Start a session?', 'Time won\u2019t come back. Even 20 focused minutes counts.'],
+  ['Ready to focus?', 'The hardest part is starting. Let\u2019s go.'],
+  ['Your future self says hi', 'One focused session now beats an hour of scrolling.'],
+  ['Still here?', 'Pick one thing and give it your full attention.'],
+  ['Small steps, big progress', 'Start the timer and see where it takes you.'],
+];
+let idleSince = Date.now(), nudgeN = Math.floor(Math.random() * NUDGES.length);
+function nudgeCheck() {
+  if (S.status !== 'idle' || notice) { idleSince = Date.now(); return; }
+  if (Date.now() - idleSince < NUDGE_AFTER) return;
+  idleSince = Date.now();
+  const [title, body] = NUDGES[nudgeN++ % NUDGES.length];
+  native({type: 'nudge', title, body});
+}
+window.startCountUp = () => {
+  if (S.status !== 'idle') return;
+  present(null); S.mode = 'free'; beginFocus();
+};
+function tick() {
+  nudgeCheck();
+  if (S.status === 'running' && S.mode === 'pomo' && elapsed() >= S.blockMin * MIN) {
+    const total = S.carry + S.blockMin * MIN, st = S.startedAt;
+    Object.assign(S, {status: 'idle', acc: 0, carry: 0, chained: false, segStart: 0, startedAt: 0});
+    saveState(); render(); chime();
+    pending = {start: st, end: Date.now(), ms: total}; afterTopic = 'next';
+    present(N.done(total));
+  }
+  if (S.status === 'break' && Date.now() >= S.breakEnds) {
+    S.status = 'idle'; saveState(); render(); chime();
+    present(N.breakDone());
+  }
+  renderClock();
+}
+
+/* ---------- questions: finished blocks and breaks ---------- */
+let notice = null, noticeSeq = 0, pending = null, afterTopic = '', panelOpen = !NATIVE;
+const btn = (id, label, style) => ({id, label, style: style || 'secondary'});
+const N = {
+  done: total => ({title: 'Focus complete', text: `${Math.round(total / MIN)} minutes of deep work. Well done.`, buttons: [btn('log', 'Log it', 'primary'), btn('keep', 'Keep going')]}),
+  chainEnd: () => ({title: 'Focus works best in blocks', text: 'Take a break, you’ve earned it.', buttons: [btn('log', 'Log it', 'primary'), btn('keep', 'Keep going')]}),
+  topic: () => ({title: 'What did you work on?', text: sessionLine(pending), input: true, needsTopic: 'save', chips: recentTopics(4), buttons: [btn('discard', 'Discard'), btn('save', 'Save', 'primary')]}),
+  next: () => { const m = Math.round(breakFor(S.pomoMin) / MIN); return {title: 'Logged. Nice work.', text: `Take a ${m}-minute break, or keep the momentum?`, buttons: [btn('break', 'Take break', 'primary'), btn('focus', 'Start Focus')]}; },
+  breakDone: () => ({title: 'Break complete', text: 'Nice reset. Focus when you’re ready.', buttons: [btn('focus', 'Start Focus', 'primary'), btn('plus5', '+5 min')]}),
+};
+// A question shows in the panel while it's open, otherwise in the Island under the notch, until it's answered.
+function present(n) {
+  notice = n ? Object.assign({id: ++noticeSeq}, n) : null;
+  renderAsk();
+  native({type: 'notice', notice});
+}
+window.panelVisible = open => { panelOpen = open; renderAsk(); if (!open && notice) native({type: 'notice', notice}); };
+function renderAsk() {
+  const show = !!notice && panelOpen;
+  $('#ask').hidden = !show; $('#actions').hidden = show;
+  if (!show) return;
+  $('#askTitle').textContent = notice.title; $('#askText').textContent = notice.text || '';
+  $('#askInput').hidden = !notice.input;
+  $('#askChips').innerHTML = notice.input ? (notice.chips || []).map(t => `<button type="button">${esc(t)}</button>`).join('') : '';
+  $('#askBtns').innerHTML = notice.buttons.map(b => `<button type="button" class="${b.style}" data-id="${b.id}">${esc(b.label)}</button>`).join('');
+  if (notice.input) { $('#topicList').innerHTML = [...new Set(logs.map(l => l.topic))].map(t => `<option value="${esc(t)}">`).join(''); $('#askInput').value = ''; setTimeout(() => $('#askInput').focus(), 60); }
+}
+// Answers come from the panel's buttons or, through the app, from the Island.
+window.noticeAction = (id, topic) => {
+  switch (id) {
+    case 'log': present(N.topic()); break;
+    case 'keep': keepGoing(); break;
+    case 'save':
+    case 'discard':
+      if (pending && id === 'save' && topic) logs.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), start: pending.start, end: pending.end, ms: pending.ms, topic});
+      if (id === 'save') { saveLogs(); renderStats(); }
+      pending = null;
+      if (afterTopic === 'next') present(N.next());
+      else { present(null); say(id === 'save' ? 'Good job!' : 'Session discarded.', 3500); if (afterTopic === 'break') startBreak(); }
+      break;
+    case 'break': present(null); startBreak(breakFor(S.pomoMin)); break;
+    case 'focus': present(null); beginFocus(); break;
+    case 'plus5': present(null); Object.assign(S, {status: 'break', breakEnds: Date.now() + 5 * MIN, breakTotal: 5 * MIN}); saveState(); render(); break;
+  }
+};
+function askPress(id) {
+  const topic = $('#askInput').value.trim();
+  if (notice && notice.needsTopic === id && !topic) { const i = $('#askInput'); i.classList.remove('shake'); void i.offsetWidth; i.classList.add('shake'); i.focus(); return; }
+  noticeAction(id, topic);
+}
+$('#askBtns').onclick = e => { const b = e.target.closest('button'); if (b) askPress(b.dataset.id); };
+$('#askChips').onclick = e => { const b = e.target.closest('button'); if (b) { $('#askInput').value = b.textContent; $('#askInput').focus(); } };
+$('#askInput').addEventListener('keydown', e => { if (e.key === 'Enter' && notice) askPress(notice.needsTopic); });
+function recentTopics(n) {
+  const seen = [];
+  for (let i = logs.length - 1; i >= 0 && seen.length < n; i--) if (!seen.includes(logs[i].topic)) seen.push(logs[i].topic);
+  return seen;
+}
+// "1h 30m of focus, 8:31 to 10:05 PM", naming paused time so the clock times add up.
+function sessionLine(p) {
+  const paused = p.end - p.start - p.ms;
+  return `${dur(p.ms)} of focus${paused >= MIN ? `, ${dur(paused)} paused` : ''}, ${fmtTime(p.start)} to ${fmtTime(p.end)}`;
+}
+
+/* ---------- drawing ---------- */
+const PIE = ['○', '◔', '◑', '◕', '●'];
+let lastMenu = null;
+function renderClock() {
+  const st = S.status, pomo = S.mode === 'pomo';
+  let ms = 0, p = 0, hours = false;
+  if (st === 'break') { ms = S.breakEnds - Date.now(); p = 1 - ms / S.breakTotal; }
+  else if (st === 'breakPaused') { ms = S.breakLeft; p = 1 - ms / S.breakTotal; }
+  else if (st === 'idle') ms = pomo ? S.pomoMin * MIN : 0;
+  else if (pomo) { ms = S.blockMin * MIN - elapsed(); p = elapsed() / (S.blockMin * MIN); }
+  else { ms = elapsed(); hours = ms >= 36e5; }
+  p = Math.min(1, Math.max(0, p));
+  const text = clock(ms, hours);
+  $('#time').textContent = text; $('#time').classList.toggle('long', text.length > 5);
+  $('#prog').style.width = (p * 100).toFixed(2) + '%';
+  // The menu bar shows the time, with a filling circle for Pomodoro blocks and breaks.
+  const pie = pomo || st === 'break' || st === 'breakPaused' ? PIE[Math.min(4, Math.floor(p * 4 + .5))] + ' ' : '';
+  const menu = st === 'idle' ? '' : (st === 'paused' || st === 'breakPaused' ? '⏸ ' : pie) + text;
+  if (menu !== lastMenu) { lastMenu = menu; native({type: 'clock', text: menu}); }
+}
+function render() {
+  const st = S.status, pomo = S.mode === 'pomo';
+  document.body.classList.remove('idle', 'running', 'paused', 'break', 'breakPaused'); document.body.classList.add(st);
+  $('#state').textContent = st === 'idle' ? (pomo ? 'Pomodoro' : 'Count up')
+    : st === 'running' ? (pomo ? (S.chained ? `Keep going · ${S.blockMin} min` : `Pomodoro · ${S.blockMin} min`) : 'Count up')
+    : st === 'paused' ? 'Paused' : st === 'break' ? 'Break' : 'Break paused';
+  if (st === 'idle') { $('#progA').textContent = ''; $('#progB').textContent = pomo ? `${S.pomoMin} min · ${BREAK_FOR[S.pomoMin]} min break` : ''; }
+  else if (st === 'break' || st === 'breakPaused') { $('#progA').textContent = ''; $('#progB').textContent = ''; }
+  else { $('#progA').textContent = `Started ${fmtTime(S.startedAt)}`; $('#progB').textContent = pomo && st === 'running' ? `Ends ${fmtTime(Date.now() + S.blockMin * MIN - elapsed())}` : (S.carry ? `${dur(S.carry)} before this block` : ''); }
+  // Buttons for each state: [label, action, primary?]
+  const B = {
+    idle: [['Start Focus', beginFocus, 1]],
+    running: [['Pause', pauseFocus, 1]],
+    paused: [['Resume', resumeFocus, 1], ['End focus', () => endFocus()]],
+    break: [['Pause', pauseBreak, 1], ['Skip break', skipBreak]],
+    breakPaused: [['Resume', resumeBreak, 1], ['Start Focus', beginFocus]],
+  }[st];
+  const [first, ...rest] = B;
+  // One capsule: the main action filled, the second as a pill inside it.
+  $('#actions').innerHTML = `<div class="duo">${B.map((b, i) => `<button type="button" class="${i ? 'secondary' : 'primary'}" data-i="${i}">${b[0]}</button>`).join('')}</div>`;
+  $('#actions').onclick = e => { const b = e.target.closest('button'); if (b) B[+b.dataset.i][1](); };
+  native({type: 'status', status: st});
+  renderMsg(); renderClock(); renderStats();
+}
+
+/* ---------- today, streak and week ---------- */
+function renderStats() {
+  const today = dayStart(Date.now()), now = new Date(), weekStart = today - ((now.getDay() + 6) % 7) * DAY;
+  const sum = list => list.reduce((n, l) => n + l.ms, 0);
+  const t = logs.filter(l => l.start >= today), w = logs.filter(l => l.start >= weekStart);
+  $('#tToday').textContent = dur(sum(t)); $('#tTodayN').textContent = plural(t.length, 'session');
+  $('#tWeek').textContent = dur(sum(w)); $('#tWeekN').textContent = plural(w.length, 'session');
+  const days = new Set(logs.map(l => dayStart(l.start)));
+  let d = today, n = 0; if (!days.has(d)) d -= DAY;
+  while (days.has(d)) { n++; d = dayStart(d - DAY / 2); }
+  $('#tStreak').textContent = n;
+}
+
+/* ---------- sounds ---------- */
+let ac;
+function chime() {
+  try {
+    ac = ac || new AudioContext(); if (ac.state === 'suspended') ac.resume();
+    [880, 1320].forEach((f, i) => {
+      const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + i * .22;
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.25, t + .02); g.gain.exponentialRampToValueAtTime(.001, t + 1.2);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 1.3);
+    });
+  } catch (e) {}
+}
+
+/* ---------- radio (official YouTube embed, blurred behind the round player) ---------- */
+const playSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+const pauseSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+let radioOn = false, radioPaused = false, yt = null, ytReady = null, ytPlayerReady = null;
+const retried = {};
+const ytId = st => (S.ytIds && S.ytIds[st.name]) || st.yt;
+function loadYT() {
+  if (!ytReady) ytReady = new Promise(resolve => {
+    window.onYouTubeIframeAPIReady = resolve;
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api'; tag.onerror = () => resolve();
+    document.head.append(tag);
+  });
+  return ytReady;
+}
+// YouTube starts a freshly created player muted (autoplay rules) but switches streams in an existing one with sound,
+// so the player is created idle at launch and every play takes the switch-streams path.
+function makePlayer() {
+  if (!ytPlayerReady) ytPlayerReady = loadYT().then(() => new Promise(resolve => {
+    if (!window.YT || !YT.Player) return resolve(null);
+    yt = new YT.Player('ytFrame', {
+      playerVars: {autoplay: 0, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, modestbranding: 1, playsinline: 1, rel: 0},
+      events: {
+        onReady: () => resolve(yt),
+        onStateChange: e => {
+          if (!radioOn) return;
+          if (e.data === YT.PlayerState.PLAYING) { unmuteYT(); setTimeout(unmuteYT, 600); retried[STATIONS[S.station].name] = false; document.body.classList.add('playing'); }
+          else if (e.data === YT.PlayerState.BUFFERING || e.data === YT.PlayerState.PAUSED) document.body.classList.remove('playing');
+        },
+        onError: () => { if (radioOn) ytFailed(); },
+      },
+    });
+  }));
+  return ytPlayerReady;
+}
+function unmuteYT() { if (!yt || !yt.isMuted) return; if (yt.isMuted()) yt.unMute(); yt.setVolume(Math.round(S.vol * 100)); }
+async function playYT(id) {
+  const player = await makePlayer();
+  if (!radioOn) return;
+  if (!player) { say('YouTube didn’t load. Check your connection.'); return; }
+  player.unMute(); player.setVolume(Math.round(S.vol * 100)); player.loadVideoById(id);
+}
+function resolveStation(i) { const st = STATIONS[i]; if (st.ch) native({type: 'resolve', i, ch: st.ch, match: st.match}); }
+function ytResolved(i, id) {
+  const st = STATIONS[i]; if (!st || !id) return;
+  const changed = id !== ytId(st);
+  S.ytIds = Object.assign({}, S.ytIds, {[st.name]: id}); saveState();
+  if (changed && i === S.station && radioOn && retried[st.name]) playYT(id);
+}
+function ytFailed() {
+  const st = STATIONS[S.station];
+  if (NATIVE && st.ch && !retried[st.name]) { retried[st.name] = true; say(`Finding ${st.name}’s live stream…`); resolveStation(S.station); }
+  else say(`${st.name} isn’t live right now. Try another station.`);
+}
+function showStation() {
+  const st = STATIONS[S.station];
+  $('#stName').textContent = st.name;
+  $('#stSub').textContent = `FM ${st.f.toFixed(1)}${radioOn ? ' · LIVE' : ''}`;
+  requestAnimationFrame(() => $('#marq').classList.toggle('scroll', $('#stName').offsetWidth > $('#marq').clientWidth));
+  $('#radioBtn').innerHTML = radioOn && !radioPaused ? pauseSvg : playSvg;
+}
+function tuneTo(i) {
+  S.station = (i + STATIONS.length) % STATIONS.length; saveState();
+  if (radioOn) { radioPaused = false; document.body.classList.remove('playing'); playYT(ytId(STATIONS[S.station])); }
+  showStation();
+}
+// Play/pause keeps the stream loaded; stop unloads it.
+function playPause() {
+  if (radioOn && !radioPaused) { radioPaused = true; if (yt && yt.pauseVideo) yt.pauseVideo(); document.body.classList.remove('playing'); }
+  else if (radioOn && radioPaused) { radioPaused = false; if (yt && yt.playVideo) yt.playVideo(); }
+  else { radioOn = true; radioPaused = false; tuneTo(S.station); }
+  showStation();
+}
+function stopRadio() { radioOn = false; radioPaused = false; if (yt && yt.stopVideo) { try { yt.stopVideo(); } catch (e) {} } document.body.classList.remove('playing'); showStation(); }
+function playStation(i) { radioOn = true; tuneTo(i); }
+$('#radioBtn').onclick = playPause;
+$('#stopRadio').onclick = stopRadio;
+$('#prevSt').onclick = () => playStation(S.station - 1);
+$('#nextSt').onclick = () => playStation(S.station + 1);
+$('#stationBtn').onclick = e => {
+  e.stopPropagation();
+  const list = $('#stations');
+  list.innerHTML = STATIONS.map((s, i) => `<button type="button" data-i="${i}" aria-current="${i === S.station}">${esc(s.name)}<span>${s.f.toFixed(1)}</span></button>`).join('');
+  list.style.top = ($('#disc').offsetTop + 130) + 'px';
+  list.hidden = !list.hidden;
+};
+$('#stations').onclick = e => { const b = e.target.closest('button'); if (b) { $('#stations').hidden = true; playStation(+b.dataset.i); } };
+addEventListener('click', e => { if (!e.target.closest('#stations, #stationBtn')) $('#stations').hidden = true; });
+
+// Volume: a thin arc along the bottom of the disc, from the left (silent) to the right (full).
+const CX = 100, CY = 100, R = 85, A0 = 150, A1 = 30;   // degrees, measured clockwise from the right
+const pt = a => [CX + R * Math.cos(a * Math.PI / 180), CY + R * Math.sin(a * Math.PI / 180)];
+const arc = (a, b) => { const [x0, y0] = pt(a), [x1, y1] = pt(b); return `M${x0.toFixed(1)} ${y0.toFixed(1)} A${R} ${R} 0 0 0 ${x1.toFixed(1)} ${y1.toFixed(1)}`; };
+function drawVol() {
+  const a = A0 - (A0 - A1) * S.vol, [kx, ky] = pt(a), [ix, iy] = [CX + (R - 7) * Math.cos(a * Math.PI / 180), CY + (R - 7) * Math.sin(a * Math.PI / 180)];
+  $('#volTrack').setAttribute('d', arc(A0, A1)); $('#volHit').setAttribute('d', arc(A0, A1));
+  $('#volFill').setAttribute('d', S.vol > .005 ? arc(A0, a) : '');
+  Object.entries({x1: ix, y1: iy, x2: kx + (kx - ix) * .15, y2: ky + (ky - iy) * .15}).forEach(([k, v]) => $('#volKnob').setAttribute(k, v.toFixed(1)));
+}
+function volFrom(e) {
+  const r = $('#vol').getBoundingClientRect(), x = (e.clientX - r.left) * 200 / r.width - CX, y = (e.clientY - r.top) * 200 / r.height - CY;
+  let a = Math.atan2(y, x) * 180 / Math.PI; if (a < 0) a = y < 0 && x < 0 ? A0 : A1;
+  S.vol = Math.min(1, Math.max(0, (A0 - Math.min(A0, Math.max(A1, a))) / (A0 - A1)));
+  if (yt && yt.setVolume) yt.setVolume(Math.round(S.vol * 100));
+  drawVol();
+}
+$('#volHit').addEventListener('pointerdown', e => { e.target.setPointerCapture(e.pointerId); volFrom(e); });
+$('#volHit').addEventListener('pointermove', e => { if (e.buttons) volFrom(e); });
+$('#volHit').addEventListener('pointerup', saveState);
+
+/* ---------- controls ---------- */
+$('#time').onclick = cycleMode;
+$('#gear').onclick = $('#openSettings').onclick = () => native({type: 'openDashboard', tab: 'settings'});
+$('#openLog').onclick = () => native({type: 'openDashboard', tab: 'stats'});
+$('#quit').onclick = () => native({type: 'quit'});
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); start(); }
+  if (e.key === 'Escape') native({type: 'hidePanel'});
+});
+// The app's window follows the panel's height.
+new ResizeObserver(() => native({type: 'resize', h: Math.ceil($('#panel').getBoundingClientRect().height)})).observe($('#panel'));
+
+/* ---------- boot ---------- */
+showStation(); drawVol(); render();
+if (restored) say('Timer paused while the app was closed. Press Resume.', 10000);
+if (NATIVE) { STATIONS.forEach((st, i) => { if (st.ch) setTimeout(() => resolveStation(i), 400 * i); }); makePlayer(); }
+setInterval(tick, 250);
+setInterval(() => { if (S.status === 'running') saveState(); }, 5000);
+addEventListener('pagehide', saveState);
+// ?demo previews states for screenshots: focus (default), idle, paused, break, done, topic.
+const params = new URLSearchParams(location.search);
+if (params.has('play')) addEventListener('load', () => setTimeout(() => { document.body.classList.add('playing'); $('#radioBtn').innerHTML = pauseSvg; }, 50));
+if (params.has('demo')) {
+  const kind = params.get('demo') || 'focus', d0 = dayStart(Date.now());
+  const mk = (day, h, min, topic) => ({id: day + '-' + h, start: d0 - day * DAY + h * 36e5, end: d0 - day * DAY + h * 36e5 + min * MIN, ms: min * MIN, topic});
+  logs = [mk(0, .1, 30, 'Security+ notes'), mk(0, .05, 60, 'Linear algebra'), mk(1, 9, 60, 'AWS AI Practitioner'), mk(2, 10, 30, 'Reading'), mk(3, 11, 90, 'System design')];
+  Object.assign(S, {mode: 'pomo', pomoMin: 60, blockMin: 60, status: 'idle'});
+  if (kind === 'focus' || kind === 'paused') Object.assign(S, {status: 'running', startedAt: Date.now() - 23 * MIN - 47e3, segStart: Date.now() - 23 * MIN - 47e3, acc: 0});
+  if (kind === 'paused') pauseFocus();
+  if (kind === 'break') Object.assign(S, {status: 'break', breakTotal: 15 * MIN, breakEnds: Date.now() + 11 * MIN + 12e3});
+  radioOn = kind !== 'idle'; document.body.classList.toggle('playing', radioOn); showStation();
+  render();
+  if (kind === 'done') { pending = {start: Date.now() - 60 * MIN, end: Date.now(), ms: 60 * MIN}; afterTopic = 'next'; present(N.done(60 * MIN)); }
+  if (kind === 'topic') { pending = {start: Date.now() - 60 * MIN, end: Date.now(), ms: 60 * MIN}; afterTopic = 'next'; present(N.topic()); }
+}
+</script>
+</body>
+</html>

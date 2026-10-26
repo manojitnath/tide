@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tide Island</title>
+<style>
+/* Manrope (bundled, SIL Open Font License) for all text. In the app it is added from the bundle; this rule is for the browser preview. */
+@font-face{font-family:"Manrope Preview";src:url(fonts/Manrope.ttf) format("truetype");font-weight:200 800}
+:root{--font:Manrope,"Manrope Preview",ui-rounded,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;font:580 13px/1.35 var(--font);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;cursor:default}
+body.preview{background:linear-gradient(#6cc4f7,#9bd6f8);min-height:100vh}
+/* A card dropping from the notch: bright blue in light mode, near-black in dark mode, like the panel's clock card. */
+/* --top is the menu bar's height (the notch on newer Macs), so the card starts below it. */
+.island{width:360px;margin:0 auto;padding:calc(var(--top, 0px) + 8px) 8px 8px}
+.card{position:relative;overflow:hidden;color:#fff;background:#1f5cf2;border-radius:24px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,40,.2);
+  background-image:linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,0) 45%),
+    radial-gradient(circle at 100% 0,transparent 0 70px,rgba(255,255,255,.16) 70px 71px,transparent 71px 112px,rgba(255,255,255,.12) 112px 113px,transparent 113px),
+    radial-gradient(circle at 100% 0,rgba(255,255,255,.07) 0 112px,transparent 112px)}
+.top{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:50%;background:#fff;color:#1f5cf2;display:grid;place-items:center;flex:none;box-shadow:0 3px 10px rgba(0,0,40,.25)}
+.logo svg{width:22px;height:22px}
+h1{margin:0;font:700 19px/1.15 var(--font)}
+p{margin:2px 0 0;color:rgba(255,255,255,.8);font-size:13px;font-weight:580}
+input{width:100%;padding:9px 13px;border-radius:14px;border:0;background:rgba(255,255,255,.14);color:#fff;font:580 15px var(--font);outline:none;box-shadow:inset 0 1px 2px rgba(0,0,40,.25),inset 0 0 0 1px rgba(255,255,255,.2);-webkit-user-select:text;user-select:text}
+input::placeholder{color:rgba(255,255,255,.6)}
+input:focus{box-shadow:inset 0 1px 2px rgba(0,0,40,.25),inset 0 0 0 1px rgba(255,255,255,.6)}
+input.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips:empty{display:none}
+.chips button{transition:background .15s,transform .15s;background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:99px;padding:5px 11px;font:580 12px var(--font);cursor:pointer;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.chips button:hover{background:rgba(255,255,255,.26)}
+/* Two buttons: the main action a white pill, the other an outlined pill. */
+.btns{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px;margin-top:2px}
+.btns button{border:0;border-radius:99px;height:42px;font:700 15px var(--font);cursor:pointer;background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5)}
+.btns .primary{background:linear-gradient(#fff,#eef3ff);color:#1f5cf2;box-shadow:inset 0 -1px 0 rgba(0,0,40,.1),0 6px 14px -6px rgba(0,0,40,.45)}
+.btns button{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,background-color .18s,filter .18s}
+.btns button:hover{transform:translateY(-1px);background-color:rgba(255,255,255,.12)}
+.btns .primary:hover{filter:brightness(1.05);box-shadow:inset 0 -1px 0 rgba(0,0,40,.1),0 10px 20px -6px rgba(0,0,40,.5)}
+.btns button:active{transform:scale(.97);transition-duration:.08s}
+.chips button:active{transform:scale(.96)}
+/* dark mode last, so it wins over the light rules above */
+@media (prefers-color-scheme: dark){
+  .card{background-color:#1c1c1c;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.08);
+    background-image:linear-gradient(rgba(255,255,255,.04),rgba(255,255,255,0) 45%),
+      radial-gradient(circle at 100% 0,transparent 0 70px,rgba(255,255,255,.06) 70px 71px,transparent 71px 112px,rgba(255,255,255,.045) 112px 113px,transparent 113px),
+      radial-gradient(120% 90% at 50% 125%,rgba(58,115,255,.28),transparent 70%)}
+  .logo{color:#161616}
+  p{color:rgba(255,255,255,.65)}
+  input{background:rgba(255,255,255,.07);box-shadow:inset 0 1px 2px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1)}
+  .chips button{background:rgba(255,255,255,.08)}
+  .chips button:hover{background:rgba(255,255,255,.15)}
+  .btns button{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.22)}
+  .btns .primary{background:linear-gradient(#3a72ff,#1f5cf2);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 18px -8px rgba(31,92,242,.8)}
+  .btns .primary:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 22px -8px rgba(31,92,242,.9)}
+}
+</style>
+</head>
+<body>
+<div class="island" id="island">
+  <div class="card">
+    <div class="top"><div class="logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 12V5.5a6.5 6.5 0 0 1 6.5 6.5z" fill="currentColor"/></svg></div>
+      <div><h1 id="title"></h1><p id="text"></p></div></div>
+    <input id="topic" type="text" maxlength="80" hidden autocomplete="off">
+    <div class="chips" id="chips"></div>
+    <div class="btns" id="btns"></div>
+  </div>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const native = msg => { try { window.webkit.messageHandlers.native.postMessage(msg); } catch (e) {} };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+let notice = null;
+// The panel page decides what to ask; this page only shows it and reports which button was pressed.
+function setNotice(n) {
+  notice = n;
+  $('#title').textContent = n.title || '';
+  $('#text').textContent = n.text || '';
+  $('#topic').hidden = !n.input;
+  $('#topic').value = '';
+  $('#topic').placeholder = n.placeholder || 'What did you work on?';
+  $('#chips').innerHTML = (n.input && n.chips || []).map(t => `<button type="button">${esc(t)}</button>`).join('');
+  $('#btns').innerHTML = n.buttons.map(b => `<button type="button" class="${b.style || 'secondary'}" data-id="${esc(b.id)}">${esc(b.label)}</button>`).join('');
+  if (n.input) setTimeout(() => $('#topic').focus(), 60);
+  report();
+}
+function press(id) {
+  const topic = $('#topic').value.trim();
+  // Saving needs a topic; shake the field instead of sending an empty one.
+  if (notice && notice.input && notice.needsTopic === id && !topic) {
+    const i = $('#topic'); i.classList.remove('shake'); void i.offsetWidth; i.classList.add('shake'); i.focus(); return;
+  }
+  native({type: 'noticeAction', id, topic});
+}
+$('#btns').onclick = e => { const b = e.target.closest('button'); if (b) press(b.dataset.id); };
+$('#chips').onclick = e => { const b = e.target.closest('button'); if (b) { $('#topic').value = b.textContent; $('#topic').focus(); } };
+$('#topic').addEventListener('keydown', e => { if (e.key === 'Enter' && notice) press(notice.needsTopic || notice.buttons[notice.buttons.length - 1].id); });
+window.setTopInset = px => document.documentElement.style.setProperty('--top', px + 'px');
+function report() { native({type: 'resize', h: Math.ceil($('#island').getBoundingClientRect().height)}); }
+new ResizeObserver(report).observe($('#island'));
+// ?demo previews a notice in a browser.
+const q = new URLSearchParams(location.search);
+if (!window.__NATIVE) document.body.classList.add('preview');
+if (q.has('top')) setTopInset(+q.get('top'));
+if (q.has('demo')) {
+  const demos = {
+    badge: {title: 'Badge unlocked: Early bird', text: 'You focused before 7 AM. Nice start.', buttons: [{id: 'ok', label: 'Nice!', style: 'primary'}, {id: 'see', label: 'See badges'}]},
+    break: {title: 'Break complete', text: 'Nice reset. Focus when you’re ready.', buttons: [{id: 'focus', label: 'Start Focus', style: 'primary'}, {id: 'plus5', label: '+5 min'}]},
+    done: {title: 'Focus complete', text: '30 minutes of deep work. Well done.', buttons: [{id: 'log', label: 'Log it', style: 'primary'}, {id: 'keep', label: 'Keep going'}]},
+    topic: {title: 'What did you work on?', text: '30m of focus, 9:10 to 9:40 AM', input: true, needsTopic: 'save', chips: ['Security+ notes', 'Linear algebra', 'AWS AI Practitioner'],
+      buttons: [{id: 'discard', label: 'Discard'}, {id: 'save', label: 'Save', style: 'primary'}]},
+  };
+  setNotice(demos[q.get('demo')] || demos.break);
+}
+</script>
+</body>
+</html>

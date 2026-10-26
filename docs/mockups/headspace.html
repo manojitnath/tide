@@ -1,0 +1,114 @@
+<!doctype html>
+<!-- Headspace-style mascot ("Moko"): rounded flat shapes, muted pastels, big eyes, rosy cheeks, on a soft circle.
+     Four states: Ready, Focus, Break, Done. ?dark shows the dark panel; ?animate blinks and bobs. -->
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+:root{--teal:#6cc5bd;--tealD:#4fa9a1;--coral:#ef6b5e;--coralD:#d4564a;--peach:#f5a66b;--pink:#f48c8c;--brown:#4a3a38;--cream:#f3e6d6}
+body{margin:0;background:#ece5da;font:13px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#2b2523;padding:26px 32px;-webkit-font-smoothing:antialiased}
+body.dark{background:#141212;color:#f3ece2}
+h1{font:800 22px 'Bricolage Grotesque',system-ui;margin:0 0 2px}.sub{color:#8a8077;margin:0 0 18px}
+.row{display:flex;gap:20px;align-items:flex-start}
+.panel{width:290px;border-radius:22px;overflow:hidden;box-shadow:0 16px 36px -14px rgba(0,0,0,.3),0 0 0 .5px rgba(0,0,0,.08);background:var(--bg);color:var(--ink);
+  --bg:#fbf6ef;--ink:#2b2523;--muted:#8a8077;--card:#f2e9de;--track:#eadfd1;--accent:var(--coral);--outline:#dccfbf;--heroBg:#fbf6ef;--disc:var(--cream)}
+.dark .panel{--bg:#23201f;--ink:#f3ece2;--muted:#a59c92;--card:#2e2a29;--track:#3a3534;--outline:#4a4442;--heroBg:#23201f;--disc:#e9dccb}
+.hero{height:196px;position:relative;background:var(--heroBg)}
+.hero svg{position:absolute;inset:0;width:100%;height:100%}
+.chip{position:absolute;left:14px;top:12px;z-index:2;font:700 10.5px -apple-system,system-ui;letter-spacing:.05em;padding:4px 9px;border-radius:99px;background:var(--card);color:var(--muted)}
+.gear{position:absolute;right:12px;top:10px;z-index:2;width:28px;height:28px;border-radius:50%;background:var(--card);color:var(--muted);display:grid;place-items:center;font-size:13px}
+.body{padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px}
+.line{display:flex;justify-content:space-between;align-items:baseline}
+.time{font:800 48px/1 'Bricolage Grotesque',system-ui;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.line span{color:var(--muted);font-size:12px}
+.prog{height:6px;border-radius:9px;background:var(--track);overflow:hidden}.prog i{display:block;height:100%;border-radius:9px;background:var(--accent)}
+.radio{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:8px 10px}
+.pp{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--teal);color:#fff;font-size:11px;flex:none}
+.radio b{display:block;font-size:12.5px}.radio small{color:var(--muted);font-size:11px}.radio .grow{flex:1;min-width:0}
+.vol{width:48px;height:4px;border-radius:9px;background:var(--track)}.vol i{display:block;width:60%;height:100%;border-radius:9px;background:var(--teal)}
+.btn{border-radius:99px;padding:12px 0;text-align:center;font:700 15px -apple-system,system-ui}
+.main{background:var(--accent);color:#fff}
+.second{box-shadow:inset 0 0 0 1.5px var(--outline);color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stat{background:var(--card);border-radius:12px;padding:8px 10px}.stat small{display:block;color:var(--muted);font-size:10.5px;font-weight:600}.stat b{font:800 16px 'Bricolage Grotesque',system-ui}
+.foot{display:grid;grid-template-columns:1fr auto 1fr;color:var(--muted);font-size:12px}.foot span:last-child{justify-self:end}
+.cap{text-align:center;color:#8a8077;font-size:12px;margin-top:8px}
+.anim .blink{transform-box:fill-box;transform-origin:50% 50%;animation:blink 4.4s infinite}
+.anim .bob{animation:bob 3.8s ease-in-out infinite}
+.anim .float text,.anim .float path{animation:rise 3.2s linear infinite;opacity:0}.anim .float :nth-child(2){animation-delay:1.6s}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+@keyframes bob{50%{transform:translateY(3px)}}
+@keyframes rise{0%{opacity:0;transform:translate(0,0)}20%{opacity:1}100%{opacity:0;transform:translate(8px,-22px)}}
+</style>
+<body>
+<h1>Focus MN: Headspace-style mascot</h1>
+<p class="sub">Moko: rounded flat shapes, muted pastels, big eyes and rosy cheeks on a soft circle. Ready, Focus, Break and Done.</p>
+<div class="row" id="row"></div>
+<script>
+if (location.search.includes('dark')) document.body.classList.add('dark');
+if (location.search.includes('animate')) document.body.classList.add('anim');
+const C = {teal: '#6cc5bd', tealD: '#4fa9a1', coral: '#ef6b5e', coralD: '#d4564a', peach: '#f5a66b', peachD: '#e48c4f', pink: '#f48c8c', brown: '#4a3a38', white: '#fff'};
+// eyes: open (look x,y), half, closed, happy
+function eyes(kind, lx = 0, ly = 0) {
+  const one = cx => {
+    if (kind === 'closed') return `<path d="M${cx - 10} 104 q10 9 20 0" fill="none" stroke="${C.brown}" stroke-width="4" stroke-linecap="round"/>`;
+    if (kind === 'happy') return `<path d="M${cx - 10} 108 q10 -11 20 0" fill="none" stroke="${C.brown}" stroke-width="4" stroke-linecap="round"/>`;
+    const lid = kind === 'half' ? `<path d="M${cx - 13} 102 a13 13 0 0 1 26 0 z" fill="${C.teal}"/>` : '';
+    return `<g class="blink"><circle cx="${cx}" cy="102" r="13" fill="#fff"/><circle cx="${cx + lx}" cy="${102 + ly}" r="6.5" fill="${C.brown}"/><circle cx="${cx + lx + 2}" cy="${100 + ly}" r="2" fill="#fff"/>${lid}</g>`;
+  };
+  return one(132) + one(168);
+}
+function moko(state) {
+  const look = {ready: [3, -3], focus: [-1, 5]}[state] || [0, 0];
+  const eyeKind = {ready: 'open', focus: 'half', break: 'closed', done: 'happy'}[state];
+  const mouth = {
+    ready: `<path d="M144 126 q6 5 12 0" fill="none" stroke="${C.brown}" stroke-width="3.4" stroke-linecap="round"/>`,
+    focus: `<path d="M145 128 h10" stroke="${C.brown}" stroke-width="3.4" stroke-linecap="round"/>`,
+    break: `<path d="M143 125 q7 6 14 0" fill="none" stroke="${C.brown}" stroke-width="3.4" stroke-linecap="round"/>`,
+    done: `<path d="M136 122 q14 0 28 0 q-2 16 -14 16 q-12 0 -14 -16 z" fill="${C.brown}"/><path d="M142 132 q8 6 16 0 q-4 6 -8 6 q-4 0 -8 -6z" fill="${C.pink}"/>`,
+  }[state];
+  const tuft = state === 'break'
+    ? `<path d="M150 58 c-4 -14 -22 -20 -30 -12 c10 2 18 6 22 14 z" fill="${C.peach}"/><path d="M152 58 c6 -12 24 -14 30 -6 c-10 0 -20 2 -26 8 z" fill="${C.peachD}"/>`
+    : `<path d="M148 58 c-6 -18 -24 -24 -32 -18 c12 4 20 10 24 20 z" fill="${C.peach}"/><path d="M152 58 c4 -20 22 -30 32 -24 c-12 6 -20 14 -24 26 z" fill="${C.peachD}"/>`;
+  const phones = state === 'focus' ? `<path d="M104 104 c0 -54 92 -54 92 0" fill="none" stroke="${C.coral}" stroke-width="7" stroke-linecap="round"/><rect x="94" y="96" width="16" height="28" rx="8" fill="${C.coral}"/><rect x="190" y="96" width="16" height="28" rx="8" fill="${C.coral}"/>` : '';
+  const props = {
+    ready: `<g class="float"><circle cx="210" cy="62" r="4" fill="${C.teal}"/><circle cx="222" cy="48" r="6" fill="${C.teal}"/></g>`,
+    focus: `<g><rect x="114" y="160" width="72" height="34" rx="6" fill="${C.peach}"/><path d="M150 160 v34" stroke="${C.peachD}" stroke-width="3"/><path d="M122 170 h20 M122 178 h16 M158 170 h20 M158 178 h16" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".8"/></g>`,
+    break: `<g class="float" fill="${C.tealD}" font-weight="800" font-family="Bricolage Grotesque,system-ui"><text x="200" y="74" font-size="20">z</text><text x="216" y="56" font-size="14">z</text></g>`,
+    done: `<g fill="${C.peach}"><path d="M94 60 l4 9 9 4-9 4-4 9-4-9-9-4 9-4z"/><path d="M212 52 l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><path d="M222 104 l2.5 5.5 5.5 2.5-5.5 2.5-2.5 5.5-2.5-5.5-5.5-2.5 5.5-2.5z"/></g>`,
+  }[state];
+  const tilt = state === 'break' ? 'rotate(-6 150 120)' : '';
+  return `<svg viewBox="0 0 290 196">
+    <defs><clipPath id="disc"><circle cx="145" cy="104" r="86"/></clipPath></defs><circle cx="145" cy="104" r="86" fill="var(--disc)"/>
+    <g clip-path="url(#disc)"><g transform="translate(-5 -8)">
+    <g class="bob" transform="${tilt}">
+      <path d="M96 196 c0 -36 22 -52 54 -52 c32 0 54 16 54 52 z" fill="${C.pink}"/>
+      <path d="M118 160 q32 14 64 0" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="1 7" stroke-linecap="round" opacity=".7"/>
+      ${tuft}
+      <rect x="106" y="58" width="88" height="96" rx="38" fill="${C.teal}"/>
+      <path d="M106 112 h88 v4 c0 20 -17 38 -38 38 h-12 c-21 0 -38 -18 -38 -38z" fill="${C.tealD}" opacity=".35"/>
+      ${phones}
+      ${eyes(eyeKind, look[0], look[1])}
+      <ellipse cx="120" cy="120" rx="8" ry="5" fill="${C.pink}" opacity=".85"/><ellipse cx="180" cy="120" rx="8" ry="5" fill="${C.pink}" opacity=".85"/>
+      ${mouth}
+    </g></g></g>
+    ${props}
+  </svg>`;
+}
+const S = {
+  ready: {chip: 'POMODORO', time: '30:00', r: '30 min · 5 min break', prog: 0, main: 'Start Focus', second: 'Take break', playing: false, cap: 'Ready'},
+  focus: {chip: 'DEEP WORK', time: '18:42', r: 'Ends 9:35', prog: 38, main: 'Pause', second: '', playing: true, cap: 'Focus'},
+  break: {chip: 'BREAK', time: '03:12', r: '', prog: 36, main: 'Pause', second: 'Skip break', playing: true, cap: 'Break'},
+  done: {chip: 'FOCUS COMPLETE', time: '30:00', r: 'Well done!', prog: 100, main: 'Log it', second: 'Keep going', playing: true, cap: 'Done'},
+};
+document.getElementById('row').innerHTML = Object.entries(S).map(([st, s]) => `<div><div class="panel">
+  <div class="hero"><span class="chip">${s.chip}</span><span class="gear">⚙︎</span>${moko(st)}</div>
+  <div class="body">
+    <div class="line"><div class="time">${s.time}</div><span>${s.r}</span></div>
+    <div class="prog"><i style="width:${s.prog}%"></i></div>
+    <div class="radio"><span class="pp">${s.playing ? '❚❚' : '▶'}</span><div class="grow"><b>Lofi Girl: Study</b><small>FM 88.6${s.playing ? ' · LIVE' : ''}</small></div><span style="color:var(--muted)">⏭</span><span class="vol"><i></i></span></div>
+    <div class="btn main">${s.main}</div>${s.second ? `<div class="btn second">${s.second}</div>` : ''}
+    <div class="stats"><div class="stat"><small>Today</small><b>1h 30m</b></div><div class="stat"><small>Streak</small><b>4 days</b></div><div class="stat"><small>Week</small><b>4h 30m</b></div></div>
+    <div class="foot"><span>Dashboard</span><span>Settings</span><span>Quit</span></div>
+  </div></div><div class="cap">${s.cap}</div></div>`).join('');
+</script>
+</body>

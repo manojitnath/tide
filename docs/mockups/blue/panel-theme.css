@@ -1,0 +1,110 @@
+/* Blue card theme for the panel (mockup). Light: TeamReach colours. Dark: the moody black of the recorder reference. */
+@font-face{font-family:Rounded;src:url(file:///System/Library/Fonts/SFNSRounded.ttf)}
+:root{--round:ui-rounded,Rounded,-apple-system,system-ui,sans-serif;
+  --ink:#16181d;--muted:#6b7183;--card:#fff;--line:rgba(20,40,90,.08);--field:#eef2fb;
+  --accent:#1f5cf2;--outline:transparent;--btn2:#fff;
+  --pBlue:#d6e6fd;--pGreen:#e5f5cd;--pCream:#fbf0d9;--tBlue:#0f2b4f;--tGreen:#21400f;--tCream:#4c3b19;
+  --tagInk:#fff;--shadow:0 1px 2px rgba(20,40,90,.05),0 6px 18px rgba(20,40,90,.06);
+  --cap:#1f5cf2;--capInk:#fff;--capIn:#fff;--capInInk:#1f5cf2}
+@media (prefers-color-scheme: dark){:root{
+  --ink:#f2f2f2;--muted:#8a8a8a;--card:#1f1f1f;--line:rgba(255,255,255,.08);--field:#2a2a2a;
+  --accent:#3a73ff;--btn2:#262626;
+  --pBlue:#1f1f1f;--pGreen:#1f1f1f;--pCream:#1f1f1f;--tBlue:#9ec2ff;--tGreen:#b4e38a;--tCream:#f4d38f;
+  --tagInk:#121212;--shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 .5px rgba(255,255,255,.09);
+  --cap:#f2f2f2;--capInk:#121212;--capIn:#161616;--capInInk:#f2f2f2}}
+
+body.preview{background:#dde5f8}
+body.preview .panel{background:#f4f6fc;border-radius:22px;box-shadow:0 22px 50px rgba(20,40,90,.22)}
+@media (prefers-color-scheme: dark){body.preview{background:#0a0a0a}body.preview .panel{background:#161616;box-shadow:0 0 0 .5px rgba(255,255,255,.1),0 22px 50px rgba(0,0,0,.6)}}
+.panel{gap:10px;padding:12px}
+
+/* the timer card: pastel in light; in dark a black card with a soft glow of the state's colour */
+.timecard{border-radius:22px;padding:14px 16px 12px;background:var(--pCream);--tag:var(--tCream);--glow:244,211,143}
+.running .timecard{background:var(--pBlue);--tag:var(--tBlue);--glow:58,115,255}
+.break .timecard,.breakPaused .timecard{background:var(--pGreen);--tag:var(--tGreen);--glow:120,200,80}
+@media (prefers-color-scheme: dark){.timecard{background-image:radial-gradient(120% 90% at 50% 120%,rgba(var(--glow),.22),transparent 70%);box-shadow:var(--shadow)}}
+.state{display:inline-flex;background:var(--tag);color:var(--tagInk);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:600}
+.state i{display:none}
+.time{font:600 52px/1.05 var(--round);letter-spacing:-.01em;margin-top:10px;color:var(--tag)}
+@media (prefers-color-scheme: dark){.time{color:var(--ink)}}
+.time.long{font-size:44px}
+.icon{width:36px;height:36px;background:rgba(255,255,255,.75);box-shadow:none;color:var(--tag)}
+@media (prefers-color-scheme: dark){.icon{background:rgba(255,255,255,.07);color:var(--muted)}}
+#progWrap{margin-top:10px}
+.prog{height:6px;background:rgba(255,255,255,.7)}
+@media (prefers-color-scheme: dark){.prog{background:rgba(255,255,255,.08)}}
+.prog i,.break .prog i,.breakPaused .prog i{background:var(--tag)}
+.progmeta{color:var(--tag);opacity:.75;font-weight:500}
+@media (prefers-color-scheme: dark){.progmeta{color:var(--muted);opacity:1}}
+
+/* the radio: a rounded square like the music widget; the live video fills it, controls float on top */
+.player{position:relative;height:244px;border-radius:24px;overflow:hidden;color:#fff;box-shadow:0 14px 30px -14px rgba(31,92,242,.6)}
+@media (prefers-color-scheme: dark){.player{box-shadow:0 0 0 .5px rgba(255,255,255,.1)}}
+.player .disc-bg,.player .disc-frost{position:absolute;inset:0;background-color:#1f5cf2}
+.player .disc-frost{transition:opacity .6s;
+  background-image:radial-gradient(circle at 100% 0,transparent 0 70px,rgba(255,255,255,.16) 70px 71px,transparent 71px 118px,rgba(255,255,255,.12) 118px 119px,transparent 119px),
+    radial-gradient(circle at 100% 0,rgba(255,255,255,.07) 0 118px,transparent 118px)}
+@media (prefers-color-scheme: dark){.player .disc-bg,.player .disc-frost{background-color:#1f1f1f}
+  .player .disc-frost{background-image:radial-gradient(circle at 100% 0,transparent 0 70px,rgba(255,255,255,.07) 70px 71px,transparent 71px 118px,rgba(255,255,255,.05) 118px 119px,transparent 119px),radial-gradient(120% 80% at 50% 120%,rgba(58,115,255,.25),transparent 70%)}}
+.playing .player .disc-frost{opacity:0}
+.player .ytbox{position:absolute;inset:0;opacity:0;transition:opacity .6s;background:url(lofi.jpg) center/cover}
+.player .ytbox iframe{width:434px;height:244px}
+.playing .player .ytbox{opacity:1}
+.shade{position:absolute;inset:0;opacity:0;transition:opacity .6s;background:linear-gradient(rgba(0,0,0,.35),transparent 38%,transparent 50%,rgba(0,0,0,.6))}
+.playing .shade{opacity:1}
+.ptop{position:absolute;left:10px;right:10px;top:10px;display:flex;gap:8px}
+.pill{flex:1;min-width:0;display:flex;align-items:center;gap:9px;padding:5px 14px 5px 5px;border-radius:99px;background:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);text-align:left;color:#fff}
+.ava{width:36px;height:36px;border-radius:50%;background:#fff;color:#1f5cf2;display:grid;place-items:center;flex:none}
+@media (prefers-color-scheme: dark){.ava{color:#161616}}
+.ava svg{width:18px;height:18px}
+.pt{min-width:0;flex:1}
+.player .marq{font:600 14px/1.2 var(--round);color:#fff;text-shadow:none;text-align:left}
+.pt small{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;opacity:.75}
+.pt small i{width:6px;height:6px;border-radius:50%;background:#ff453a;display:none}
+.playing .pt small i{display:block}
+.cb{width:46px;height:46px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.cb svg{width:17px;height:17px}
+#stopRadio svg{width:12px;height:12px}
+.cb.big{width:56px;height:56px;background:#fff;color:#1f5cf2}
+@media (prefers-color-scheme: dark){.cb.big{color:#161616}}
+.cb.big svg{width:22px;height:22px}
+.pbot{position:absolute;left:16px;right:16px;bottom:12px}
+.volrow{display:flex;align-items:center;gap:9px}
+.volrow svg{width:15px;height:15px;opacity:.8;flex:none}
+.vbar{flex:1;height:5px;border-radius:9px;background:rgba(255,255,255,.3);overflow:hidden}
+.vbar i{display:block;width:62%;height:100%;border-radius:9px;background:#fff}
+.ctrls{display:flex;justify-content:center;align-items:center;gap:20px;margin-top:12px}
+
+/* buttons: one capsule; the main action is the filled part, the second is a pill inside it */
+.msg{font-family:var(--round);font-weight:500;color:var(--muted);margin:4px 4px 0}
+.duo{display:flex;background:var(--cap);border-radius:99px;padding:3px}
+.duo button{flex:1;height:48px;border-radius:99px;font:600 17px var(--round);letter-spacing:-.01em;box-shadow:none;padding:0;width:auto}
+.duo .primary{background:transparent;color:var(--capInk)}
+.duo .secondary{background:var(--capIn);color:var(--capInInk)}
+
+/* stats: plain cards, rounded numbers */
+.stat{background:var(--card);border-radius:16px;padding:10px 12px;box-shadow:var(--shadow)}
+.stat small{font-weight:500}
+.stat b{font:600 19px var(--round)}
+.foot{border-top:0;padding:4px 6px 2px}
+.ask{background:var(--card);border-radius:20px;box-shadow:var(--shadow)}
+.ask h2{font-family:var(--round);font-weight:600}
+.ask input{background:var(--field);box-shadow:none;border-radius:12px}
+.chips button{background:var(--field);box-shadow:none}
+
+/* Light mode with the same bevel as dark: a lit top edge, a soft lower edge, and depth under each card. Dark mode is untouched. */
+@media (prefers-color-scheme: light){
+  :root{--bevel:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(20,40,90,.06),0 0 0 .5px rgba(20,40,90,.08),0 1px 2px rgba(20,40,90,.06),0 10px 24px -8px rgba(20,40,90,.16)}
+  body.preview .panel{background:linear-gradient(#f7f8fc,#eceff6);box-shadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(20,40,90,.12),0 22px 50px rgba(20,40,90,.25)}
+  .timecard{box-shadow:var(--bevel);background-image:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,0) 55%),radial-gradient(120% 90% at 50% 125%,rgba(var(--glow),.28),transparent 70%)}
+  .icon{background:linear-gradient(#fff,#f1f3f8);box-shadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(20,40,90,.1),0 2px 6px rgba(20,40,90,.1)}
+  .prog{box-shadow:inset 0 1px 2px rgba(20,40,90,.12)}
+  .player{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 .5px rgba(20,40,90,.15),0 16px 30px -12px rgba(31,92,242,.55)}
+  .player .disc-frost{background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,0) 45%,rgba(0,0,40,.12)),
+    radial-gradient(circle at 100% 0,transparent 0 70px,rgba(255,255,255,.16) 70px 71px,transparent 71px 118px,rgba(255,255,255,.12) 118px 119px,transparent 119px),
+    radial-gradient(circle at 100% 0,rgba(255,255,255,.07) 0 118px,transparent 118px)}
+  .cb.big{box-shadow:inset 0 -2px 0 rgba(20,40,90,.08),0 4px 12px rgba(0,0,40,.3)}
+  .duo{background-image:linear-gradient(rgba(255,255,255,.2),rgba(255,255,255,0) 55%);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,0,40,.15),0 8px 18px -6px rgba(31,92,242,.55)}
+  .duo .secondary{background:linear-gradient(#fff,#f2f5fc);box-shadow:inset 0 1px 0 #fff,0 1px 3px rgba(0,0,40,.18)}
+  .stat,.ask{background:linear-gradient(#fff,#f6f7fb);box-shadow:var(--bevel)}
+}

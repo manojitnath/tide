@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tide</title>
+<style>
+/* Manrope (bundled, SIL Open Font License) for all text. In the app it is added from the bundle; this rule is for the browser preview. */
+@font-face{font-family:"Manrope Preview";src:url(fonts/Manrope.ttf) format("truetype");font-weight:200 800}
+:root{--font:Manrope,"Manrope Preview",ui-rounded,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --bg:#eaeef6;--card:#fff;--cardFill:linear-gradient(#fff,#f6f7fb);--ink:#16181d;--muted:#6b7183;--line:rgba(20,40,90,.08);--soft:#eef2fb;
+  --accent:#1f5cf2;--accentFill:linear-gradient(#3a72ff,#1f5cf2);--purpleFill:linear-gradient(#a07dff,#8a5cf6);--pill:#1f5cf2;--pillInk:#fff;
+  --pBlue:#d6e6fd;--pGreen:#e5f5cd;--pCream:#fbf0d9;--tBlue:#0f2b4f;--tGreen:#21400f;--tCream:#4c3b19;--tagInk:#fff;
+  --sheen:linear-gradient(rgba(255,255,255,.5),rgba(255,255,255,0) 55%);--blue:#1f5cf2;
+  --shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(20,40,90,.05),0 0 0 .5px rgba(20,40,90,.08),0 1px 2px rgba(20,40,90,.05),0 12px 28px -10px rgba(20,40,90,.16);
+  --blueShadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 .5px rgba(20,40,90,.12),0 14px 28px -10px rgba(31,92,242,.55);--track:inset 0 1px 2px rgba(20,40,90,.1)}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121212;--card:#1c1c1c;--cardFill:linear-gradient(#202020,#1a1a1a);--ink:#f2f2f2;--muted:#8a8a8a;--line:rgba(255,255,255,.07);--soft:#262626;
+  --accent:#3a73ff;--accentFill:linear-gradient(#4a7fff,#2f66f0);--purpleFill:linear-gradient(#a888ff,#8f68f5);--pill:#3a73ff;--pillInk:#fff;
+  --pBlue:#1c1c1c;--pGreen:#1c1c1c;--pCream:#1c1c1c;--tBlue:#9ec2ff;--tGreen:#b4e38a;--tCream:#f4d38f;--tagInk:#121212;
+  --sheen:linear-gradient(rgba(255,255,255,.03),rgba(255,255,255,0) 55%);--blue:#2f66f0;
+  --shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.4),0 0 0 .5px rgba(255,255,255,.08),0 1px 2px rgba(0,0,0,.4),0 12px 28px -10px rgba(0,0,0,.6);
+  --blueShadow:inset 0 1px 0 rgba(255,255,255,.25),0 0 0 .5px rgba(255,255,255,.08),0 14px 28px -10px rgba(0,0,0,.7);--track:inset 0 1px 2px rgba(0,0,0,.5)}}
+*{box-sizing:border-box}
+/* The scrollbar's space is always kept, so the page doesn't shift sideways when a long tab needs scrolling. */
+html{overflow-y:scroll}
+::-webkit-scrollbar{width:12px;background:transparent}
+::-webkit-scrollbar-thumb{background:transparent;border-radius:9px;border:3px solid transparent;background-clip:padding-box}
+:hover::-webkit-scrollbar-thumb{background-color:rgba(128,128,128,.35)}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:580 13px/1.4 var(--font);-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+button{border:0;background:none;padding:0;cursor:pointer}
+[hidden]{display:none!important}
+.wrap{max-width:980px;margin:0 auto;padding:22px 32px 40px}
+.tabs{display:flex;justify-content:center;margin-bottom:26px}
+.tabs div{display:flex;gap:2px;background:var(--card);border-radius:99px;padding:4px;box-shadow:var(--shadow)}
+.tabs button{display:flex;align-items:center;gap:7px;padding:7px 16px;border-radius:99px;font-weight:600;color:var(--muted)}
+.tabs button svg{width:15px;height:15px}
+.tabs button[aria-pressed="true"]{background:var(--soft);color:var(--ink);box-shadow:inset 0 0 0 .5px var(--line)}
+.title{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px}
+h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em}
+.title p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.tools{display:flex;gap:10px;align-items:center}
+.range{display:flex;gap:2px;background:var(--card);border-radius:99px;padding:4px;box-shadow:var(--shadow)}
+.range button{padding:6px 13px;border-radius:99px;font-weight:600}
+.range button[aria-pressed="true"]{background:var(--pill);color:var(--pillInk)}
+.range{position:relative}
+.range .more svg{width:11px;height:11px;margin-left:4px;vertical-align:-1px}
+.menu{position:absolute;right:0;top:calc(100% + 6px);z-index:10;min-width:190px;background:var(--card);border-radius:14px;padding:6px;box-shadow:0 0 0 .5px var(--line),0 14px 34px rgba(0,0,0,.18)}
+.menu button{display:block;width:100%;text-align:left;padding:7px 10px;border-radius:8px;font-weight:580}
+.menu button:hover{background:var(--soft)}
+.menu button[aria-checked="true"]::after{content:"\2713";float:right;color:var(--accent);font-weight:700}
+.menu hr{border:0;border-top:.5px solid var(--line);margin:5px 4px}
+.menu .dates{display:grid;gap:6px;padding:6px 6px 4px}
+.menu .dates label{display:grid;grid-template-columns:40px 1fr;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.menu input[type=date]{background:var(--soft);border:0;border-radius:8px;padding:5px 7px;box-shadow:inset 0 0 0 .5px var(--line)}
+.menu .apply{margin-top:2px;text-align:center;background:var(--pill);color:var(--pillInk);font-weight:600}
+.menu .apply:hover{background:var(--pill);opacity:.9}
+.round{width:36px;height:36px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center}
+.round svg{width:16px;height:16px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.card{background:var(--card);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow)}
+.card small{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.card b{display:block;font-size:24px;font-weight:700;margin:6px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card span{font-size:12px;color:var(--muted)}
+.panel{background:var(--card);border-radius:20px;padding:20px 22px;box-shadow:var(--shadow);margin-bottom:14px}
+.ph{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.ph h2{margin:0;font-size:17px;font-weight:700}
+.ph span{color:var(--muted);font-size:12.5px}
+.chart{display:grid;grid-template-columns:52px 1fr;height:230px}
+.yax{position:relative}.yax span{position:absolute;right:10px;transform:translateY(-50%);font-size:11.5px;color:var(--muted);white-space:nowrap}
+.plot{position:relative;border-bottom:1px solid var(--line)}
+.plot .grid{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
+.bars{position:absolute;inset:0;display:flex;align-items:flex-end;gap:6px;padding:0 4px}
+.bars div{flex:1;height:100%;display:flex;align-items:flex-end;position:relative}
+.bars i{display:block;width:100%;max-width:46px;margin:0 auto;border-radius:6px 6px 2px 2px;background:var(--accent);min-height:0}
+.bars div:hover i{filter:brightness(1.08)}
+.bars div:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--pill);color:var(--pillInk);font-size:11px;padding:3px 7px;border-radius:6px;white-space:nowrap;z-index:2}
+.xax{display:flex;gap:6px;padding:8px 4px 0 56px}.xax span{flex:1;text-align:center;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.empty{color:var(--muted);padding:10px 0 2px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.trow{display:grid;grid-template-columns:minmax(0,1fr) 120px 62px;gap:12px;align-items:center;padding:7px 0;border-top:.5px solid var(--line)}
+.trow:first-child{border-top:0}
+.trow .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.track{height:7px;border-radius:9px;background:var(--soft);overflow:hidden}.track i{display:block;height:100%;border-radius:9px;background:var(--accent)}
+.trow .h{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.hours{display:flex;align-items:flex-end;gap:3px;height:110px;padding-top:6px}
+.hours div{flex:1;height:100%;display:flex;align-items:flex-end}.hours i{display:block;width:100%;border-radius:3px 3px 1px 1px;background:var(--accent);opacity:.85}
+.hlab{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:6px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 8px 8px}
+td{padding:9px 8px;border-top:.5px solid var(--line);font-variant-numeric:tabular-nums}
+td.t{font-weight:600;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td.x{width:28px;text-align:right}
+.del{width:22px;height:22px;border-radius:6px;color:var(--muted);font-size:16px;line-height:1}.del:hover{background:var(--soft);color:#ff3b30}
+.filters{display:flex;gap:10px;align-items:center}
+select{background:var(--card);border:0;border-radius:99px;padding:7px 12px;box-shadow:var(--shadow)}
+.btn{background:var(--card);border-radius:99px;padding:8px 14px;font-weight:600;box-shadow:var(--shadow)}
+.btn.dark{background:var(--pill);color:var(--pillInk)}
+.group{background:var(--card);border-radius:16px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.group h3{margin:0;padding:14px 18px 6px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.set{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 18px;border-top:.5px solid var(--line)}
+.set:first-of-type{border-top:0}
+.set b{display:block;font-weight:600}.set span{color:var(--muted);font-size:12.5px}
+.set code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);word-break:break-all}
+.switch{width:38px;height:22px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .2s}
+.switch[aria-checked="true"]{background:#34c759}.switch[aria-checked="true"]::after{left:18px}
+kbd{font:600 12px var(--font);background:var(--soft);border-radius:6px;padding:3px 7px;box-shadow:inset 0 0 0 .5px var(--line)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--pill);color:var(--pillInk);border-radius:99px;padding:9px 16px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.toast button{font-weight:700;color:var(--accent)}
+/* ---------- look: bevelled cards (a lit top edge, a soft lower edge, depth below), the same in light and dark ---------- */
+h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
+.ph h2{font:600 18px var(--font)}
+.tabs div,.range,.round,select,.btn,.panel,.group,.menu{background:var(--cardFill);box-shadow:var(--shadow)}
+.menu{box-shadow:var(--shadow),0 14px 34px rgba(0,0,0,.18)}
+.tabs button[aria-pressed="true"],.range button[aria-pressed="true"],.btn.dark,.menu .apply,.menu .apply:hover{background:var(--accentFill);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 8px -2px rgba(31,92,242,.5)}
+.round{width:40px;height:40px}
+/* the four numbers: one blue card, then pastel cards (black with a coloured glow in dark) with dark tags */
+.card{border-radius:14px;padding:16px 18px 14px;--tag:var(--tBlue);--glow:58,115,255;box-shadow:var(--shadow);background-image:var(--sheen),radial-gradient(120% 90% at 50% 125%,rgba(var(--glow),.22),transparent 70%)}
+.card small{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:580;color:var(--tag);opacity:.85}
+.card b{font:600 34px/1.1 var(--font);margin:10px 0 10px;color:var(--tag)}
+@media (prefers-color-scheme: dark){.card b{color:var(--ink)}}
+.card span{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top;background:var(--tag);color:var(--tagInk);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:600}
+.card span:empty{display:none}
+.card:nth-child(1){background-color:var(--blue);--tag:#fff;box-shadow:var(--blueShadow);
+  background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,0) 50%),radial-gradient(circle at 100% 0,transparent 0 44px,rgba(255,255,255,.16) 44px 45px,transparent 45px 78px,rgba(255,255,255,.12) 78px 79px,transparent 79px),radial-gradient(circle at 100% 0,rgba(255,255,255,.07) 0 78px,transparent 78px)}
+.card:nth-child(1) small,.card:nth-child(1) b{color:#fff}
+.card:nth-child(1) span{background:rgba(255,255,255,.2);color:#fff}
+.card:nth-child(2){background-color:var(--pBlue);--tag:var(--tBlue);--glow:58,115,255}
+.card:nth-child(3){background-color:var(--pGreen);--tag:var(--tGreen);--glow:120,200,80}
+.card:nth-child(4){background-color:var(--pCream);--tag:var(--tCream);--glow:244,211,143}
+.panel,.group{border-radius:14px}
+.bars i{border-radius:9px 9px 3px 3px;background:var(--accentFill);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.bars div:last-child i{background:var(--purpleFill)}
+.track{height:9px;background:var(--soft);box-shadow:var(--track)}
+.trow:nth-child(4n+1) .track i{background:var(--accent)}
+.trow:nth-child(4n+2) .track i{background:#8a5cf6}
+.trow:nth-child(4n+3) .track i{background:#3e8a1c}
+.trow:nth-child(4n+4) .track i{background:#e0a23a}
+.hours i{background:var(--purpleFill);border-radius:5px 5px 2px 2px;opacity:1}
+.switch[aria-checked="true"]{background:var(--accent)}
+.group h3{text-transform:none;letter-spacing:0;font:600 14px var(--font);color:var(--ink)}
+.toast{background:#1d1d1f;color:#fff}.toast button{color:#9ec2ff}
+/* ---------- game v2 (mockup) ---------- */
+.title .hello h1{font-size:30px}
+.streakchip{display:flex;align-items:center;gap:6px;padding:8px 16px 8px 12px;border-radius:99px;background:var(--cardFill);box-shadow:var(--shadow)}
+.streakchip .gf{width:24px;height:24px;filter:drop-shadow(0 0 6px rgba(255,90,40,.5))}
+.streakchip b{font:800 20px var(--font)}.streakchip span{color:var(--muted);font-size:12.5px;font-weight:600}
+.hp{margin:8px 0 12px}
+.hcards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.hcard{border-radius:14px;padding:16px;background:var(--cardFill);box-shadow:var(--shadow)}
+.hh{display:flex;align-items:center;gap:12px}
+.hic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;background:var(--c);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 6px 14px -6px var(--c);flex:none}
+.hic svg{width:20px;height:20px}
+.hn{flex:1;min-width:0}.hn b{display:block;font-size:15px;font-weight:700}.hn span{font-size:12px;color:var(--muted)}
+.autoc{font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:var(--soft);color:var(--muted)}
+.donebtn{display:flex;align-items:center;gap:6px;padding:7px 14px 7px 10px;border-radius:99px;font-weight:700;background:var(--soft);box-shadow:var(--track)}
+.donebtn svg{width:14px;height:14px}
+.donebtn.on{color:#fff;background:linear-gradient(#5fd068,#2fae5a);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 6px 14px -6px rgba(47,174,90,.8)}
+.hst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.hst div{border-radius:10px;padding:8px 10px;background:var(--soft);text-align:center}
+.hst b{display:block;font-size:15px;font-weight:700}.hst span{font-size:11px;color:var(--muted)}
+.hgrid{display:flex;gap:6px}
+.wd{display:grid;grid-template-rows:repeat(7,1fr);gap:3px}
+.wd i{font-style:normal;font-size:9.5px;color:var(--muted);line-height:13px}
+.heat{flex:1;display:grid;grid-template-columns:repeat(18,1fr);grid-template-rows:repeat(7,13px);grid-auto-flow:column;gap:3px}
+.heat i{border-radius:3.5px;background:var(--soft)}
+.heat .l1{background:color-mix(in srgb,var(--c) 35%,var(--soft))}
+.heat .l2{background:color-mix(in srgb,var(--c) 65%,var(--soft))}
+.heat .l3{background:var(--c);box-shadow:0 0 6px -1px var(--c)}
+.heat .l-1{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+/* ---------- game (mockup) ---------- */
+.g3{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.g3 .panel{margin:0}
+.lvl{position:relative;overflow:hidden;border-radius:14px;padding:18px 20px;color:#fff;background-color:var(--blue);box-shadow:var(--blueShadow);
+  background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,0) 50%),radial-gradient(circle at 100% 0,transparent 0 50px,rgba(255,255,255,.16) 50px 51px,transparent 51px 90px,rgba(255,255,255,.12) 90px 91px,transparent 91px)}
+.lvl small{font-size:13.5px;opacity:.85}
+.lvl b{display:block;font:700 40px/1.1 var(--font);margin:6px 0 14px}
+.lvl .xpbar{height:8px;border-radius:9px;background:rgba(255,255,255,.25);overflow:hidden}
+.lvl .xpbar i{display:block;height:100%;border-radius:9px;background:#fff}
+.lvl span{display:block;font-size:12px;margin-top:8px;opacity:.85}
+.lvl em{position:absolute;right:16px;top:16px;font-style:normal;font-size:12px;font-weight:700;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:99px}
+.ring{transform:rotate(-90deg)}
+.ring circle{fill:none;stroke:var(--soft);stroke-width:5}
+.ring .on{stroke:var(--accent);stroke-linecap:round}
+.ring .on.full{stroke:#2fae5a}
+.big{display:flex;align-items:center;gap:14px;margin:4px 0 14px}
+.big .ring{width:64px;height:64px}
+.big b{display:block;font:700 26px var(--font)}
+.big span{color:var(--muted);font-size:12.5px}
+.bigflame{width:58px;height:58px;flex:none}
+.week{display:flex;justify-content:space-between}
+.week div{display:flex;flex-direction:column;align-items:center;gap:3px}
+.week .ring{width:26px;height:26px}
+.week small{font-size:11px;color:var(--muted)}
+.skip{margin:0;font-size:12px;color:var(--muted);display:flex;gap:7px;align-items:center}
+.skip i{width:9px;height:9px;border-radius:50%;background:#2fae5a;flex:none}
+.hint{margin:-6px 0 10px;color:var(--muted);font-size:12.5px}
+.hab,.habhead{display:grid;grid-template-columns:minmax(0,1fr) 220px 120px;gap:12px;align-items:center;padding:9px 0;border-top:.5px solid var(--line)}
+.habhead{border:0;padding:0 0 2px}
+.hab b{display:block;font-weight:700}.hab span{font-size:12px;color:var(--muted)}
+.hab em,.habhead em{font-style:normal;text-align:right;color:var(--muted);font-size:12.5px}
+.dots{display:flex;justify-content:space-between}
+.dots i{width:22px;height:22px;border-radius:7px;background:var(--soft);box-shadow:var(--track)}
+.dots i.on{background:linear-gradient(#3a72ff,#1f5cf2);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.dots.days i{background:none;box-shadow:none;font-style:normal;font-size:11px;color:var(--muted);text-align:center}
+.badges{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.badge{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:12px 6px;border-radius:12px;background:var(--soft)}
+.medal{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;margin-bottom:6px;background:var(--c);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.15),0 6px 14px -6px var(--c)}
+.medal svg{width:26px;height:26px}
+.badge b{font-size:12.5px}.badge span{font-size:11px;color:var(--muted)}
+.badge.locked .medal{background:#c3c8d4;box-shadow:inset 0 2px 0 rgba(255,255,255,.35)}
+@media (prefers-color-scheme: dark){.badge.locked .medal{background:#3a3a3e}}
+.badge.locked b,.badge.locked span{opacity:.55}
+@media (max-width:760px){.cards{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tabs"><div id="tabs">
+    <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="11" width="3.5" height="9" rx="1"/><rect x="10.25" y="5" width="3.5" height="15" rx="1"/><rect x="16.5" y="8" width="3.5" height="12" rx="1"/></svg>Stats</button>
+    <button type="button" data-tab="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Habits</button>
+    <button type="button" data-tab="sessions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".6"/><circle cx="4" cy="12" r=".6"/><circle cx="4" cy="18" r=".6"/></svg>Sessions</button>
+    <button type="button" data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+  </div></div>
+
+  <section id="stats">
+    <div class="title">
+      <div><h1>Focus Analytics</h1><p>Your focus time, sessions and topics.</p></div>
+      <div class="tools"><div class="range" data-range></div>
+        <button class="round" type="button" data-export title="Export CSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button></div>
+    </div>
+    <div class="cards">
+      <div class="card"><small>Focus time</small><b id="cTime">0m</b><span id="cTimeSub"></span></div>
+      <div class="card"><small>Sessions</small><b id="cCount">0</b><span>focus blocks</span></div>
+      <div class="card"><small>Streak</small><b id="cStreak">0</b><span>days</span></div>
+      <div class="card"><small>Top topic</small><b id="cTop">None</b><span id="cTopSub"></span></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><h2>Focused Time</h2><span id="chartSub"></span></div>
+      <div class="chart"><div class="yax" id="yax"></div><div class="plot" id="plot"><div class="bars" id="bars"></div></div></div>
+      <div class="xax" id="xax"></div>
+      <div class="empty" id="chartEmpty" hidden>Start a focus session to build your analytics.</div>
+    </div>
+    <div class="split">
+      <div class="panel"><div class="ph"><h2>Topics</h2><span id="topicSub"></span></div><div id="topics"></div></div>
+      <div class="panel"><div class="ph"><h2>Best Hours</h2><span>when you focus</span></div>
+        <div class="hours" id="hours"></div><div class="hlab"><span>12 am</span><span>6 am</span><span>12 pm</span><span>6 pm</span><span>11 pm</span></div></div>
+    </div>
+  </section>
+
+  <section id="progress" hidden>
+    <div class="title"><div class="hello"><h1>Good evening, Manojit</h1><p>3 of 5 habits done today. Keep the streak going.</p></div><div class="streakchip"><svg class="gf" viewBox="0 0 24 24"><defs><linearGradient id="gfl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d2e"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#gfl)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#fff3c4"/></svg><b>4</b><span>day streak</span></div></div>
+    <div class="g3">
+      <div class="lvl"><small>Level 7</small><b>Swell</b><div class="xpbar"><i style="width:84%"></i></div><span>1,260 / 1,500 XP · 1 XP for every focused minute</span><em>Next: Current</em></div>
+      <div class="panel goalc"><div class="ph"><h2>Daily goal</h2><span>2h a day</span></div>
+        <div class="big"><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="75 100"/></svg><div><b>1h 30m</b><span>30m to go today</span></div></div>
+        <div class="week"><div><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on full" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="100 100"/></svg><small>M</small></div><div><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on full" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="100 100"/></svg><small>T</small></div><div><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="60 100"/></svg><small>W</small></div><div><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on full" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="100 100"/></svg><small>T</small></div><div><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="85 100"/></svg><small>F</small></div><div><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="30 100"/></svg><small>S</small></div><div><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="75 100"/></svg><small>S</small></div></div></div>
+      <div class="panel streakc"><div class="ph"><h2>Streak</h2><span>best 9 days</span></div>
+        <div class="big"><svg class="bigflame" viewBox="0 0 24 24"><defs><linearGradient id="fl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff5e3a"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#fl2)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#ffe08a"/></svg><div><b>4 days</b><span>Focus today to make it 5</span></div></div>
+        <p class="skip"><i></i>1 rest day left this week, so one missed day won't break it</p></div>
+    </div>
+    <div class="ph hp"><h2>Habits</h2><span><button class="btn dark">+ New habit</button></span></div>
+    <div class="hcards">
+<div class="hcard" style="--c:#3a72ff"><div class="hh"><div class="hic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13V9M9 2h6M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/></svg></div><div class="hn"><b>Focus 2h a day</b><span>Daily goal · from your sessions</span></div><span class="autoc">Auto</span></div>
+  <div class="hst"><div><b>4 days</b><span>Streak</span></div><div><b>75%</b><span>This month</span></div><div><b>42h</b><span>Total</span></div></div>
+  <div class="hgrid"><div class="wd"><i>S</i><i>M</i><i>T</i><i>W</i><i>T</i><i>F</i><i>S</i></div><div class="heat" style="--c:#3a72ff"><i class="l0"></i><i class="l2"></i><i class="l1"></i><i class="l2"></i><i class="l2"></i><i class="l0"></i><i class="l0"></i><i class="l3"></i><i class="l1"></i><i class="l0"></i><i class="l3"></i><i class="l2"></i><i class="l3"></i><i class="l2"></i><i class="l2"></i><i class="l0"></i><i class="l2"></i><i class="l3"></i><i class="l2"></i><i class="l3"></i><i class="l2"></i><i class="l0"></i><i class="l3"></i><i class="l2"></i><i class="l1"></i><i class="l0"></i><i class="l3"></i><i class="l2"></i><i class="l3"></i><i class="l3"></i><i class="l3"></i><i class="l3"></i><i class="l1"></i><i class="l3"></i><i class="l1"></i><i class="l-1"></i><i class="l3"></i><i class="l3"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l3"></i><i class="l1"></i><i class="l2"></i><i class="l1"></i><i class="l2"></i><i class="l1"></i><i class="l1"></i><i class="l2"></i><i class="l2"></i><i class="l3"></i><i class="l2"></i><i class="l3"></i><i class="l-1"></i><i class="l3"></i><i class="l3"></i><i class="l2"></i><i class="l0"></i><i class="l3"></i><i class="l3"></i><i class="l3"></i><i class="l2"></i><i class="l3"></i><i class="l0"></i><i class="l3"></i><i class="l2"></i><i class="l1"></i><i class="l0"></i><i class="l3"></i><i class="l3"></i><i class="l0"></i><i class="l-1"></i><i class="l3"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l3"></i><i class="l3"></i><i class="l0"></i><i class="l2"></i><i class="l0"></i><i class="l3"></i><i class="l1"></i><i class="l3"></i><i class="l3"></i><i class="l2"></i><i class="l3"></i><i class="l1"></i><i class="l0"></i><i class="l-1"></i><i class="l2"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l0"></i><i class="l0"></i><i class="l3"></i><i class="l1"></i><i class="l3"></i><i class="l3"></i><i class="l1"></i><i class="l2"></i><i class="l2"></i><i class="l2"></i><i class="l2"></i><i class="l2"></i><i class="l-1"></i><i class="l2"></i><i class="l3"></i><i class="l2"></i><i class="l1"></i><i class="l3"></i><i class="l0"></i><i class="l1"></i><i class="l3"></i><i class="l2"></i><i class="l2"></i><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l0"></i><i class="l2"></i><i class="l2"></i><i class="l0"></i><i class="l-1"></i></div></div></div>
+<div class="hcard" style="--c:#8a5cf6"><div class="hh"><div class="hic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20"/></svg></div><div class="hn"><b>Reading</b><span>20m a day · from focus on "Reading"</span></div><span class="autoc">Auto</span></div>
+  <div class="hst"><div><b>12 days</b><span>Streak</span></div><div><b>86%</b><span>This month</span></div><div><b>9h 40m</b><span>Total</span></div></div>
+  <div class="hgrid"><div class="wd"><i>S</i><i>M</i><i>T</i><i>W</i><i>T</i><i>F</i><i>S</i></div><div class="heat" style="--c:#8a5cf6"><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l3"></i><i class="l3"></i><i class="l3"></i><i class="l0"></i><i class="l2"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l3"></i><i class="l3"></i><i class="l3"></i><i class="l3"></i><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l3"></i><i class="l3"></i><i class="l0"></i><i class="l2"></i><i class="l2"></i><i class="l2"></i><i class="l0"></i><i class="l2"></i><i class="l0"></i><i class="l3"></i><i class="l3"></i><i class="l2"></i><i class="l-1"></i><i class="l1"></i><i class="l3"></i><i class="l2"></i><i class="l3"></i><i class="l3"></i><i class="l2"></i><i class="l1"></i><i class="l2"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l3"></i><i class="l0"></i><i class="l0"></i><i class="l2"></i><i class="l1"></i><i class="l2"></i><i class="l-1"></i><i class="l2"></i><i class="l1"></i><i class="l3"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l2"></i><i class="l1"></i><i class="l1"></i><i class="l3"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l3"></i><i class="l-1"></i><i class="l2"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l2"></i><i class="l0"></i><i class="l2"></i><i class="l3"></i><i class="l3"></i><i class="l3"></i><i class="l3"></i><i class="l0"></i><i class="l1"></i><i class="l3"></i><i class="l3"></i><i class="l1"></i><i class="l3"></i><i class="l-1"></i><i class="l2"></i><i class="l3"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l3"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l3"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l3"></i><i class="l-1"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l2"></i><i class="l0"></i><i class="l0"></i><i class="l2"></i><i class="l0"></i><i class="l3"></i><i class="l0"></i><i class="l2"></i><i class="l3"></i><i class="l1"></i><i class="l3"></i><i class="l2"></i><i class="l-1"></i></div></div></div>
+<div class="hcard" style="--c:#ff6a3d"><div class="hh"><div class="hic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/></svg></div><div class="hn"><b>Workout</b><span>3 days a week · tick when done</span></div><button class="donebtn on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Done today</button></div>
+  <div class="hst"><div><b>2 weeks</b><span>Streak</span></div><div><b>67%</b><span>This month</span></div><div><b>26</b><span>Times</span></div></div>
+  <div class="hgrid"><div class="wd"><i>S</i><i>M</i><i>T</i><i>W</i><i>T</i><i>F</i><i>S</i></div><div class="heat" style="--c:#ff6a3d"><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l-1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l-1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l-1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l-1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l-1"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l-1"></i></div></div></div>
+<div class="hcard" style="--c:#1fa9d6"><div class="hh"><div class="hic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/></svg></div><div class="hn"><b>Water</b><span>8 glasses a day · tick when done</span></div><button class="donebtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Done</button></div>
+  <div class="hst"><div><b>6 days</b><span>Streak</span></div><div><b>90%</b><span>This month</span></div><div><b>184</b><span>Times</span></div></div>
+  <div class="hgrid"><div class="wd"><i>S</i><i>M</i><i>T</i><i>W</i><i>T</i><i>F</i><i>S</i></div><div class="heat" style="--c:#1fa9d6"><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l-1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l-1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l-1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l-1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l-1"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l0"></i><i class="l0"></i><i class="l1"></i><i class="l0"></i><i class="l1"></i><i class="l-1"></i></div></div></div>
+    </div>
+    <div class="panel"><div class="ph"><h2>Badges</h2><span>6 of 12</span></div><div class="badges"><div class="badge" style="--c:#3a72ff"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 5 5.6.8-4 3.9.9 5.5L12 16.6 7.1 19.2l.9-5.5-4-3.9 5.6-.8z"/></svg></div><b>First steps</b><span>Your first session</span></div><div class="badge" style="--c:#f6a93b"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v2M5 12H3M21 12h-2M6.3 6.3l1.4 1.4M17.7 6.3l-1.4 1.4M7 16a5 5 0 0 1 10 0"/></svg></div><b>Early bird</b><span>Focus before 7 AM</span></div><div class="badge" style="--c:#8a5cf6"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5 7.5 7.5 0 1 0 19 14.5z"/></svg></div><b>Night owl</b><span>Focus after 11 PM</span></div><div class="badge" style="--c:#1fa99b"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c2 0 2-2 4.5-2s2.5 2 4.5 2 2-2 4.5-2 2.5 2 4.5 2M3 18c2 0 2-2 4.5-2s2.5 2 4.5 2 2-2 4.5-2 2.5 2 4.5 2M12 4v6"/></svg></div><b>Deep diver</b><span>A full 90-minute block</span></div><div class="badge" style="--c:#3a72ff"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z"/></svg></div><b>10 hours</b><span>10 hours of focus</span></div><div class="badge" style="--c:#ff6a3d"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.5 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3 2-4 .2 1.5.9 2.4 2 2.7-.4-2.6.1-5.2.5-8.2z"/></svg></div><b>Week on fire</b><span>7-day streak</span></div><div class="badge locked" style="--c:#2fae5a"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><b>Goal getter</b><span>Hit your goal 7 days</span></div><div class="badge locked" style="--c:#3a72ff"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z"/></svg></div><b>50 hours</b><span>50 hours of focus</span></div><div class="badge locked" style="--c:#e0a23a"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20h14M7 20V9l5-4 5 4v11M10 20v-5h4v5"/></svg></div><b>Centurion</b><span>100 sessions</span></div><div class="badge locked" style="--c:#e8336b"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l4-7 3 4 3-6 6 9"/></svg></div><b>Marathon</b><span>6 hours in one day</span></div><div class="badge locked" style="--c:#ff6a3d"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.5 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3 2-4 .2 1.5.9 2.4 2 2.7-.4-2.6.1-5.2.5-8.2z"/></svg></div><b>Month of tides</b><span>30-day streak</span></div><div class="badge locked" style="--c:#1f5cf2"><div class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 3 3M12 3v6M9 6l3-3 3 3"/></svg></div><b>High tide</b><span>Reach level 10</span></div></div></div>
+  </section>
+  <section id="sessions" hidden>
+    <div class="title">
+      <div><h1>Sessions</h1><p>Every logged focus session.</p></div>
+      <div class="tools"><select id="topicSel"></select><div class="range" data-range></div></div>
+    </div>
+    <div class="panel">
+      <table><thead><tr><th>Date</th><th>Time</th><th>Topic</th><th>Focus</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+    </div>
+    <div class="filters"><button class="btn dark" id="copyToday" type="button">Copy today's hours</button><button class="btn" type="button" data-export>Export CSV</button></div>
+  </section>
+
+  <section id="settings" hidden>
+    <div class="title"><div><h1>Settings</h1><p>Tide lives in the menu bar. Click its time to open the timer.</p></div></div>
+    <div class="group"><h3>General</h3>
+      <div class="set"><div><b>Open at login</b><span>Start Tide when you log in to your Mac.</span></div><button class="switch" id="loginSw" role="switch" aria-checked="false" type="button"></button></div>
+      <div class="set"><div><b>Start or pause from anywhere</b><span>Works in any app.</span></div><kbd>⌃ ⌥ Space</kbd></div>
+    </div>
+    <div class="group"><h3>Your log</h3>
+      <div class="set"><div><b>Log folder</b><code id="folder"></code></div><div style="display:flex;gap:8px;flex:none"><button class="btn" id="reveal" type="button">Show in Finder</button><button class="btn" id="chooseFolder" type="button">Choose…</button></div></div>
+      <div class="set"><div><b>Export</b><span>Save every session as a CSV file in the log folder.</span></div><button class="btn" type="button" data-export>Export CSV</button></div>
+    </div>
+    <div class="group"><h3>About</h3>
+      <div class="set"><div><b>Tide <span id="ver"></span></b><span>A focus timer and lofi radio for your menu bar.</span></div><button class="btn" id="updates" type="button">Check for Updates</button></div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const NATIVE = !!window.__NATIVE, DAY = 864e5;
+const native = msg => { try { window.webkit.messageHandlers.native.postMessage(msg); } catch (e) {} };
+const store = {
+  get(k, d) { try { const v = NATIVE ? (window.__STORE || {})[k] : localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { const s = JSON.stringify(v); if (NATIVE) { native({type: 'store', key: k, value: s}); return; } try { localStorage.setItem(k, s); } catch (e) {} },
+};
+let logs = store.get('studyradio.logs', []);
+let settings = Object.assign({launchAtLogin: false, logFolder: '~/Library/Application Support/Tide', version: ''}, window.__SETTINGS || {});
+// The panel sends the log here whenever it saves a session.
+window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderAll(); };
+window.settingsChanged = s => { settings = Object.assign(settings, s); renderSettings(); };
+window.showTab = tab => setTab(tab);
+
+const pad = n => String(n).padStart(2, '0');
+const dur = ms => { const m = Math.round(ms / 60e3), h = Math.floor(m / 60); return h ? `${h}h ${m % 60}m` : `${m}m`; };
+const dayStart = d => { d = new Date(d); return +new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+const fmtDate = ts => new Date(ts).toLocaleDateString(undefined, {weekday: 'short', day: 'numeric', month: 'short'});
+const fmtTime = ts => new Date(ts).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'});
+const isoDay = ts => { const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+/* ---------- tabs and range ---------- */
+function setTab(tab) {
+  if (!['stats', 'progress', 'sessions', 'settings'].includes(tab)) tab = 'stats';
+  $$('#tabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === tab));
+  ['stats', 'progress', 'sessions', 'settings'].forEach(id => $('#' + id).hidden = id !== tab);
+}
+$('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); };
+// Today and 7D are buttons; Range opens a menu of longer spans and a custom date range.
+const SPANS = [[30, '30 Days'], [90, '90 Days'], [180, '180 Days'], [360, '360 Days']];
+let range = '7d', custom = null;   // range: 'today', '7d', '30', '90', '180', '360' or 'custom'
+const rangeLabel = () => range === 'custom' && custom ? `${fmtShort(custom[0])} – ${fmtShort(custom[1] - DAY)}` : SPANS.some(([d]) => String(d) === range) ? `${range} Days` : 'Range';
+const fmtShort = ts => new Date(ts).toLocaleDateString(undefined, {day: 'numeric', month: 'short'});
+const dateValue = ts => isoDay(ts);
+function drawRanges() {
+  $$('[data-range]').forEach(el => {
+    const long = range !== 'today' && range !== '7d';
+    el.innerHTML = `<button type="button" data-r="today" aria-pressed="${range === 'today'}">Today</button><button type="button" data-r="7d" aria-pressed="${range === '7d'}">7D</button>` +
+      `<button type="button" class="more" data-r="menu" aria-pressed="${long}">${esc(rangeLabel())}<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4.5l3 3 3-3"/></svg></button>`;
+  });
+}
+function openMenu(host) {
+  closeMenu();
+  const [a, b] = custom || [dayStart(Date.now()) - 29 * DAY, dayStart(Date.now()) + DAY];
+  host.insertAdjacentHTML('beforeend', `<div class="menu" id="menu">${SPANS.map(([d, l]) => `<button type="button" data-span="${d}" role="menuitemradio" aria-checked="${range === String(d)}">${l}</button>`).join('')}
+    <hr><button type="button" data-span="custom" aria-checked="${range === 'custom'}">Custom range\u2026</button>
+    <div class="dates" id="dates" hidden><label>From <input type="date" id="fromD" value="${dateValue(a)}"></label><label>To <input type="date" id="toD" value="${dateValue(b - DAY)}"></label><button type="button" class="apply" id="applyD">Apply</button></div></div>`);
+}
+function closeMenu() { const m = $('#menu'); if (m) m.remove(); }
+$$('[data-range]').forEach(el => el.addEventListener('click', e => {
+  e.stopPropagation();
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.r === 'menu') { $('#menu') ? closeMenu() : openMenu(el); return; }
+  if (b.dataset.r) { range = b.dataset.r; closeMenu(); renderAll(); return; }
+  if (b.dataset.span === 'custom') { $('#dates').hidden = false; return; }
+  if (b.dataset.span) { range = b.dataset.span; closeMenu(); renderAll(); return; }
+  if (b.id === 'applyD') {
+    const f = $('#fromD').valueAsDate, t = $('#toD').valueAsDate; if (!f || !t) return;
+    const day = d => +new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    const x = day(f), y = day(t);
+    custom = [Math.min(x, y), Math.max(x, y) + DAY]; range = 'custom'; closeMenu(); renderAll();
+  }
+}));
+document.addEventListener('click', e => { if (!e.target.closest('#menu')) closeMenu(); });
+function bounds() {
+  const today = dayStart(Date.now()), end = today + DAY;
+  if (range === 'today') return [today, end];
+  // 7D is this week, Monday to Sunday.
+  if (range === '7d') { const mon = today - ((new Date().getDay() + 6) % 7) * DAY; return [mon, dayStart(mon + 7.5 * DAY)]; }
+  if (range === 'custom' && custom) return custom;
+  return [today - (+range - 1) * DAY, end];
+}
+function inRange() { const [a, b] = bounds(); return logs.filter(l => l.start >= a && l.start < b); }
+
+/* ---------- stats ---------- */
+function streak() {
+  const days = new Set(logs.map(l => dayStart(l.start)));
+  let d = dayStart(Date.now()); if (!days.has(d)) d -= DAY;
+  let n = 0; while (days.has(d)) { n++; d = dayStart(d - DAY / 2); }
+  return n;
+}
+// Buckets for the chart: hours for one day, days up to two months, months beyond that.
+function buckets(a, b) {
+  const span = Math.round((b - a) / DAY), out = [];
+  if (span <= 1) { for (let h = 0; h < 24; h++) out.push({s: a + h * 36e5, e: a + (h + 1) * 36e5, label: h % 6 === 0 ? `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}` : '', tip: `${pad(h)}:00`}); return {unit: 'hourly', out}; }
+  if (span <= 62) {
+    for (let d = a; d < b; d = dayStart(d + DAY * 1.5)) {
+      const dt = new Date(d);
+      out.push({s: d, e: dayStart(d + DAY * 1.5), label: span <= 7 ? dt.toLocaleDateString(undefined, {weekday: 'narrow'}) : (dt.getDate() % 5 === 1 ? String(dt.getDate()) : ''), tip: fmtDate(d)});
+    }
+    return {unit: 'daily', out};
+  }
+  if (span <= 200) {
+    for (let d = a; d < b; d = dayStart(d + 7.5 * DAY)) {
+      const e = Math.min(b, dayStart(d + 7.5 * DAY)), dt = new Date(d);
+      out.push({s: d, e, label: dt.getDate() <= 7 ? dt.toLocaleDateString(undefined, {month: 'short'}) : '', tip: `Week of ${fmtDate(d)}`});
+    }
+    return {unit: 'weekly', out};
+  }
+  for (let d = new Date(new Date(a).getFullYear(), new Date(a).getMonth(), 1); +d < b; d = new Date(d.getFullYear(), d.getMonth() + 1, 1))
+    out.push({s: +d, e: +new Date(d.getFullYear(), d.getMonth() + 1, 1), label: d.toLocaleDateString(undefined, {month: 'short'}), tip: d.toLocaleDateString(undefined, {month: 'long', year: 'numeric'})});
+  return {unit: 'monthly', out};
+}
+// A round top for the chart's scale: 15m, 30m, 45m, 1h, 2h ...
+function niceMax(ms) {
+  const steps = [15, 30, 45, 60, 90, 120, 180, 240, 360, 480, 600, 900, 1200, 1800, 2400, 3600, 6000, 9000, 12000].map(m => m * 60e3);
+  return steps.find(s => s >= ms) || Math.ceil(ms / 36e6) * 36e6;
+}
+function renderStats() {
+  const list = inRange(), [a, b] = bounds(), total = list.reduce((n, l) => n + l.ms, 0);
+  const days = Math.max(1, Math.round((Math.min(b, dayStart(Date.now()) + DAY) - a) / DAY));
+  const byTopic = {}; list.forEach(l => byTopic[l.topic] = (byTopic[l.topic] || 0) + l.ms);
+  const topics = Object.entries(byTopic).sort((x, y) => y[1] - x[1]);
+  $('#cTime').textContent = dur(total);
+  $('#cTimeSub').textContent = range === 'today' ? 'today' : `${plural(days, 'day')} · ${dur(total / days)} a day`;
+  $('#cCount').textContent = list.length;
+  $('#cStreak').textContent = streak();
+  $('#cTop').textContent = topics[0] ? topics[0][0] : 'None'; $('#cTop').title = topics[0] ? topics[0][0] : '';
+  $('#cTopSub').textContent = topics[0] ? dur(topics[0][1]) : '';
+
+  const {unit, out} = buckets(a, b);
+  out.forEach(k => k.ms = list.filter(l => l.start >= k.s && l.start < k.e).reduce((n, l) => n + l.ms, 0));
+  const top = niceMax(Math.max(...out.map(k => k.ms), 0) || 1);
+  const ticks = [0, .25, .5, .75, 1];
+  // Short axis labels: 45m, 2h, 1.5h.
+  const axis = ms => { const m = Math.round(ms / 60e3); return m < 60 ? `${m}m` : m % 60 ? `${(m / 60).toFixed(1)}h` : `${m / 60}h`; };
+  $('#yax').innerHTML = ticks.map(t => `<span style="top:${(1 - t) * 100}%">${axis(top * t)}</span>`).join('');
+  $('#plot').querySelectorAll('.grid').forEach(g => g.remove());
+  ticks.slice(1).forEach(t => $('#plot').insertAdjacentHTML('afterbegin', `<div class="grid" style="top:${(1 - t) * 100}%"></div>`));
+  $('#bars').innerHTML = out.map(k => `<div data-tip="${esc(k.tip)} · ${dur(k.ms)}"><i style="height:${k.ms / top * 100}%"></i></div>`).join('');
+  $('#xax').innerHTML = out.map(k => `<span>${esc(k.label)}</span>`).join('');
+  $('#chartSub').textContent = `${dur(total)} across ${plural(days, 'day')} · ${unit}`;
+  $('#chartEmpty').hidden = list.length > 0;
+
+  const tmax = topics[0] ? topics[0][1] : 1;
+  $('#topicSub').textContent = plural(topics.length, 'topic');
+  $('#topics').innerHTML = topics.length ? topics.slice(0, 8).map(([t, ms]) =>
+    `<div class="trow"><span class="n" title="${esc(t)}">${esc(t)}</span><span class="track"><i style="width:${ms / tmax * 100}%"></i></span><span class="h">${dur(ms)}</span></div>`).join('')
+    : '<div class="empty">Topics show up here once you log a session.</div>';
+
+  // Focus minutes by hour of day: each session's time is spread across the hours it covered.
+  const hrs = Array(24).fill(0);
+  list.forEach(l => { let t = l.start; const end = l.start + l.ms; while (t < end) { const h = new Date(t).getHours(), next = Math.min(end, dayStart(t) + (h + 1) * 36e5); hrs[h] += next - t; t = next; } });
+  const hmax = Math.max(...hrs) || 1;
+  $('#hours').innerHTML = hrs.map((ms, h) => `<div title="${pad(h)}:00 · ${dur(ms)}"><i style="height:${Math.max(ms ? 4 : 0, ms / hmax * 100)}%"></i></div>`).join('');
+}
+
+/* ---------- sessions ---------- */
+function renderSessions() {
+  const sel = $('#topicSel'), cur = sel.value;
+  const all = [...new Set(logs.map(l => l.topic))].sort((x, y) => x.localeCompare(y));
+  sel.innerHTML = '<option value="">All topics</option>' + all.map(t => `<option${t === cur ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  const list = inRange().filter(l => !sel.value || l.topic === sel.value).sort((x, y) => y.start - x.start).slice(0, 500);
+  $('#rows').innerHTML = list.map(l => `<tr><td>${fmtDate(l.start)}</td><td>${fmtTime(l.start)} – ${fmtTime(l.end)}</td><td class="t" title="${esc(l.topic)}">${esc(l.topic)}</td><td>${dur(l.ms)}</td><td class="x"><button class="del" data-id="${l.id}" title="Delete" type="button">×</button></td></tr>`).join('')
+    || '<tr><td colspan="5" class="empty">Nothing logged in this range.</td></tr>';
+}
+$('#topicSel').onchange = renderSessions;
+$('#rows').onclick = e => {
+  const b = e.target.closest('.del'); if (!b) return;
+  const i = logs.findIndex(l => l.id === b.dataset.id); if (i < 0) return;
+  const [gone] = logs.splice(i, 1); store.set('studyradio.logs', logs); renderAll();
+  toast(`Deleted ${gone.topic} (${dur(gone.ms)})`, () => { logs.splice(i, 0, gone); store.set('studyradio.logs', logs); renderAll(); });
+};
+let toastT;
+function toast(text, undo) {
+  const el = $('#toast');
+  el.innerHTML = `<span>${esc(text)}</span>` + (undo ? '<button type="button">Undo</button>' : '');
+  if (undo) el.querySelector('button').onclick = () => { undo(); el.hidden = true; };
+  el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 5000);
+}
+$('#copyToday').onclick = async () => {
+  const a = dayStart(Date.now()), ms = logs.filter(l => l.start >= a).reduce((n, l) => n + l.ms, 0);
+  const hours = String(Math.round(ms / 36e5 * 4) / 4);
+  if (NATIVE) native({type: 'copy', text: hours}); else try { await navigator.clipboard.writeText(hours); } catch (e) {}
+  toast(`Copied ${hours} h (${dur(ms)} today)`);
+};
+$$('[data-export]').forEach(b => b.onclick = () => {
+  const rows = [['date', 'start', 'end', 'minutes', 'topic'], ...logs.map(l => [isoDay(l.start), fmtTime(l.start), fmtTime(l.end), Math.round(l.ms / 60e3), '"' + l.topic.replace(/"/g, '""') + '"'])];
+  const text = rows.map(r => r.join(',')).join('\n');
+  if (NATIVE) { native({type: 'csv', text}); toast('Saved Study Log.csv in the log folder'); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: 'text/csv'})); a.download = `focus-log-${isoDay(Date.now())}.csv`; a.click();
+});
+
+/* ---------- settings ---------- */
+function renderSettings() {
+  $('#loginSw').setAttribute('aria-checked', !!settings.launchAtLogin);
+  $('#folder').textContent = settings.logFolder;
+  $('#ver').textContent = settings.version;
+}
+$('#loginSw').onclick = () => native({type: 'setLaunchAtLogin', on: !settings.launchAtLogin});
+$('#chooseFolder').onclick = () => native({type: 'chooseLogFolder'});
+$('#reveal').onclick = () => native({type: 'revealLogFolder'});
+$('#updates').onclick = () => native({type: 'checkUpdates'});
+
+function renderAll() {
+  drawRanges();
+  renderStats(); renderSessions(); renderSettings();
+}
+// ?demo fills the dashboard with two weeks of sample sessions, for screenshots.
+if (new URLSearchParams(location.search).has('demo')) {
+  const topics = ['AWS AI Practitioner', 'Linear algebra', 'System design', 'Security+ notes', 'Reading'];
+  let seed = 3; const r = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  logs = [];
+  for (let d = 13; d >= 0; d--) {
+    const n = d === 0 ? 2 : Math.floor(r() * 4) + (d % 6 === 0 ? 0 : 1);
+    for (let i = 0; i < n; i++) {
+      const start = dayStart(Date.now() - d * DAY) + (8 + Math.floor(r() * 12)) * 36e5 + Math.floor(r() * 50) * 6e4, ms = [20, 40, 40, 60][Math.floor(r() * 4)] * 6e4;
+      logs.push({id: d + '-' + i, start, end: start + ms, ms, topic: topics[Math.floor(r() * topics.length)]});
+    }
+  }
+  settings.version = '2.0';
+}
+setTab(new URLSearchParams(location.search).get('tab') || window.__TAB || 'stats');
+renderAll();
+</script>
+</body>
+</html>
