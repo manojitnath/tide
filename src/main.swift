@@ -420,17 +420,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
             if !fromDash { showPanel() }
         case "hidePanel":
             hidePanel()
-        case "nudge":
-            if !fromDash && !quietHours {
-                // Replace an earlier nudge instead of piling them up.
-                UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["nudge"])
-                let content = UNMutableNotificationContent()
-                content.title = body["title"] as? String ?? "Start a session?"
-                content.body = body["body"] as? String ?? ""
-                content.categoryIdentifier = "NUDGE"
-                content.sound = .default
-                UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "nudge", content: content, trigger: nil))
-            }
         case "notify":
             notify(title: body["title"] as? String ?? "Tide", body: body["body"] as? String ?? "")
             if body["show"] as? Bool ?? false { showPanel() }
@@ -627,13 +616,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     func setUpNotifications() {
         let center = UNUserNotificationCenter.current()
         center.delegate = self
-        // The idle nudge gets a "Let's start" button (shown when you hover over the notification).
-        let start = UNNotificationAction(identifier: "START", title: "Let\u{2019}s start", options: [])
-        center.setNotificationCategories([UNNotificationCategory(identifier: "NUDGE", actions: [start], intentIdentifiers: [])])
         center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
-    // No macOS notifications from 9 PM to 5 AM, unless you asked (Check for Updates). The Island handles bedtime.
+    // No update notices from 9 PM to 5 AM, unless you asked (Check for Updates). The Island handles bedtime.
     var quietHours: Bool { let h = Calendar.current.component(.hour, from: Date()); return h >= 21 || h < 5 }
 
     func notify(title: String, body: String, url: URL? = nil, category: String? = nil, sound: Bool = false) {
@@ -655,9 +641,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     // Clicking an update notice opens the download page; any other opens the panel.
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
-        if response.actionIdentifier == "START" {
-            web.evaluateJavaScript("startCountUp()")   // starts counting up without opening the panel
-        } else if let link = response.notification.request.content.userInfo["url"] as? String, let url = URL(string: link) {
+        if let link = response.notification.request.content.userInfo["url"] as? String, let url = URL(string: link) {
             NSWorkspace.shared.open(url)
         } else {
             showPanel()

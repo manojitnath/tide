@@ -411,7 +411,7 @@ function cycleMode() {
   saveState(); render();
 }
 
-// After 30 minutes with nothing running, a macOS notification nudges you to start; its button starts counting up.
+// After 30 minutes with nothing running, the Island nudges you to start; Let's start starts counting up.
 const NUDGE_AFTER = 30 * MIN;
 const NUDGES = [
   ['Start a session?', 'Time won\u2019t come back. Even 20 focused minutes counts.'],
@@ -425,8 +425,9 @@ function nudgeCheck() {
   if (S.status !== 'idle' || notice || bedNow()) { idleSince = Date.now(); return; }
   if (Date.now() - idleSince < NUDGE_AFTER) return;
   idleSince = Date.now();
-  const [title, body] = NUDGES[nudgeN++ % NUDGES.length];
-  native({type: 'nudge', title, body});
+  const h = new Date().getHours(); if (h >= 21 || h < 5) return;   // quiet in the evening; bedtime has its own reminders
+  const [title, text] = NUDGES[nudgeN++ % NUDGES.length];
+  present({kind: 'nudge', title, text, buttons: [btn('ok', 'Later'), btn('start', 'Let’s start', 'primary')]});
 }
 window.startCountUp = () => {
   if (S.status !== 'idle') return;
@@ -503,6 +504,7 @@ window.noticeAction = (id, topic) => {
     case 'ok': case 'bedmore': case 'bedok': present(null); break;
     case 'lock': present(null); native({type: 'lockScreen'}); break;
     case 'bedlog': present(null); stopForBed(); break;
+    case 'start': startCountUp(); break;
     case 'last': case 'block30': startBlock(30); break;
     case 'block': present(null); beginFocus(); break;
     case 'take5': present(null); pauseFocus(); S.resumeAt = Date.now() + 5 * MIN; saveState(); say('Paused for 5 minutes. Stretch!', 4000); break;
@@ -615,6 +617,7 @@ window.testIsland = kind => {
   pending = {start: Date.now() - ms, end: Date.now(), ms};
   const b = Game.badges(logs, nights, G)[0];
   const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : kind === 'bed' ? bedNotice() : kind === 'lock' ? lockNotice() : kind === 'wind' ? windNotice()
+    : kind === 'nudge' ? {kind: 'nudge', title: NUDGES[0][0], text: NUDGES[0][1], buttons: [btn('ok', 'Later'), btn('start', 'Let’s start', 'primary')]}
     : kind === 'heads' ? {kind: 'bed', title: 'Bedtime in 30 minutes', text: 'Start your last block now, or start winding down. Tide turns off at 10:00 PM.', buttons: [btn('ok', 'Wind down'), btn('last', 'Start last block', 'primary')]}
     : kind === 'morning' ? {kind: 'morning', title: `Good morning${NAME ? ', ' + NAME : ''}`, text: 'Laptop closed at 10:24 PM. Lights out 5 nights in a row. 🌙', buttons: [btn('ok', 'Thanks'), btn('block', 'Start first block', 'primary')]}
     : kind === 'goal' ? {kind: 'goal', title: '30m to your daily goal', text: 'One more block keeps your 6-day streak going.', buttons: [btn('ok', 'Not today'), btn('block30', 'Start 30 min', 'primary')]}
