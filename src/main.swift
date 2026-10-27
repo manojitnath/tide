@@ -421,7 +421,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         case "hidePanel":
             hidePanel()
         case "nudge":
-            if !fromDash {
+            if !fromDash && !quietHours {
                 // Replace an earlier nudge instead of piling them up.
                 UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["nudge"])
                 let content = UNMutableNotificationContent()
@@ -633,6 +633,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
+    // No macOS notifications from 9 PM to 5 AM, unless you asked (Check for Updates). The Island handles bedtime.
+    var quietHours: Bool { let h = Calendar.current.component(.hour, from: Date()); return h >= 21 || h < 5 }
+
     func notify(title: String, body: String, url: URL? = nil, category: String? = nil, sound: Bool = false) {
         let content = UNMutableNotificationContent()
         content.title = title
@@ -732,7 +735,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         }
         updateItem?.title = "Update Available: \(latest)…"
         // Each new version is announced once; a manual check always answers.
-        if manual || UserDefaults.standard.string(forKey: "NotifiedVersion") != latest {
+        // Outside quiet hours; the daily check tries again tomorrow.
+        if manual || (!quietHours && UserDefaults.standard.string(forKey: "NotifiedVersion") != latest) {
             UserDefaults.standard.set(latest, forKey: "NotifiedVersion")
             notify(title: "Tide \(latest) is out", body: "Click to download it. Your log and settings are kept.", url: page)
         }

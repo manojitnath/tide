@@ -31,7 +31,7 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
   - *Focus complete:* **Log it** (type the topic right there, then choose a break or another block) or **Keep going** (30 more minutes, logged together).
   - *Break complete:* **Start Focus** or **+5 min**.
   (System *notifications* in Notification Center are only used for the idle nudge below and app updates.)
-- **A nudge when you're idle:** after 30 minutes with no timer or break running, a macOS notification (with a sound) suggests starting a session. Hover over it and press **Let's start** to start counting up without opening the panel. Notifications use the **Alerts** style, so they stay on screen until you answer; you can change that in System Settings → Notifications → Tide.
+- **A nudge when you're idle:** after 30 minutes with no timer or break running, a macOS notification (with a sound) suggests starting a session. Hover over it and press **Let's start** to start counting up without opening the panel. Notifications use the **Alerts** style, so they stay on screen until you answer; you can change that in System Settings → Notifications → Tide. There are no notifications between 9 PM and 5 AM; the Island takes over at bedtime.
 - **Fair logging:** a Pomodoro you end early isn't counted, and neither is under a minute of counting up.
 - **Radio:** ten lofi live streams (Lofi Girl, Chillhop and others) in a compact player: the station's cover art, play/pause, previous and next, stop, a volume button that slides a slider open, and the station list when you click the station's name. It keeps playing when the panel is closed.
 - **Study log:** every counted session is saved with its topic. Recent topics are one click away.
