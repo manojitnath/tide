@@ -50,8 +50,8 @@ p.sub{position:absolute;left:44px;right:44px;margin:0;font-size:19px;font-weight
 /* 5 · bedtime */
 .t5 .f1{left:50%;top:250px;margin-left:-216px}
 .t5 .f1 iframe{width:432px;height:180px}
-.t5 .f2{left:24px;top:440px}
-.t5 .f2 iframe{width:380px;height:110px;transform:scale(1.32)}
+.t5 .f2{left:50%;top:440px;margin-left:-216px}
+.t5 .f2 iframe{width:432px;height:180px}
 /* 6 · the dashboard */
 .t6 .frame{left:44px;top:250px;border-radius:22px;overflow:hidden;box-shadow:0 0 0 1px rgba(20,40,90,.08)}
 .t6 .frame{width:470px;height:370px}
@@ -82,13 +82,13 @@ p.sub{position:absolute;left:44px;right:44px;margin:0;font-size:19px;font-weight
     <div class="frame"><iframe id="s1" src="../../src/panel.html?demo=focus"></iframe></div>
     <div class="coins" id="coins"></div>
     <h2>Build a <b>streak</b>, earn <b>badges</b></h2>
-    <p class="sub">Reach your daily goal, level up with every focused minute, unlock 21 badges.</p>
+    <p class="sub">Reach your daily goal, level up with every focused minute, unlock 16 badges.</p>
   </div>
   <div class="tile t5 dark top">
-    <h2>Close the laptop <b>on time</b></h2>
-    <div class="frame f1"><iframe id="b1" src="../../src/island.html?demo=lock"></iframe></div>
-    <div class="frame f2"><iframe id="b2" src="../../src/panel.html?demo=night"></iframe></div>
-    <p class="sub" style="top:auto;bottom:44px">After bedtime the timer turns off, and the Island nudges you to lock the screen with a fact about sleep.</p>
+    <h2>Breaks that <b>actually happen</b></h2>
+    <div class="frame f1"><iframe id="b1" src="../../src/island.html?demo=break"></iframe></div>
+    <div class="frame f2"><iframe id="b2" src="../../src/island.html?demo=stretch"></iframe></div>
+    <p class="sub" style="top:auto;bottom:44px">Pomodoro blocks end with a 5, 15 or 20 minute break, and long sessions remind you to stretch.</p>
   </div>
   <div class="tile t6 top">
     <h2>See where your <b>focus goes</b></h2>
@@ -110,7 +110,7 @@ function prep(id, css) {
 }
 // A few coins: the first unlocked, the next ones locked, as they'd look early on.
 const MIN = 60e3, now = Date.now(), logs = [...Array(12)].map((_, i) => ({start: now - i * 864e5, ms: 130 * MIN}));
-const b = Game.badges(logs, {}, Game.settings({}));
+const b = Game.badges(logs, Game.settings({}));
 const pick = ['first', 'hours10', 'streak7', 'deep'];
 document.getElementById('coins').innerHTML = pick.map((id, i) => { const x = b.find(y => y.id === id); return `<div class="${i < 4 ? '' : 'locked'}">${x.art}</div>`; }).join('');
 addEventListener('load', () => setTimeout(() => {
@@ -118,7 +118,7 @@ addEventListener('load', () => setTimeout(() => {
   prep('i1'); prep('i2');
   prep('r1', only('#disc'));
   prep('s1', only('.today'));
-  prep('b1'); prep('b2', only('#actions'));
+  prep('b1'); prep('b2');
   prep('d1', '.wrap{padding-top:16px!important}');
   const dd = document.getElementById('d1').contentDocument; dd.querySelector('#stats [data-r="menu"]').click(); dd.querySelector('[data-span="30"]').click();
 }, 400));

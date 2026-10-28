@@ -1,6 +1,6 @@
 # Tide
 
-A focus timer and lofi radio that lives in your Mac's menu bar. Click the time in the menu bar to open the timer: Pomodoro or count-up, a live lofi station, and your streak and daily goal at a glance. Every session is logged by topic, a dashboard shows where your time went, and at bedtime Tide turns off and nudges you to close the laptop.
+A focus timer and lofi radio that lives in your Mac's menu bar. Click the time in the menu bar to open the timer: Pomodoro or count-up, a live lofi station, and your streak and daily goal at a glance. Every session is logged by topic, a dashboard shows where your time went, and a daily goal, streak and badges keep you coming back.
 
 **[Download Tide for macOS](https://github.com/manojitnath/tide/releases/latest/download/Tide.zip)** (macOS 13 or later, see [Install](#install))
 
@@ -10,12 +10,12 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 
 <p>
   <img src="docs/screenshots/island-done.png" width="48%" alt="The Island under the notch: Focus complete, with Log it and Keep going">
-  <img src="docs/screenshots/island-lock.png" width="48%" alt="The bedtime Island after 10:30 PM: a sleep fact and Lock now">
+  <img src="docs/screenshots/island-break.png" width="48%" alt="The Island: Break complete, with Start Focus and +5 min">
 </p>
 
 <p>
   <img src="docs/screenshots/panel-focus.png" width="32%" alt="The menu bar panel while focusing: the greeting, the clock card, the radio and the streak card">
-  <img src="docs/screenshots/panel-night.png" width="32%" alt="The panel in dark mode after bedtime: the timer is off">
+  <img src="docs/screenshots/panel-paused.png" width="32%" alt="The panel when paused: Resume and End focus">
   <img src="docs/screenshots/panel-break.png" width="32%" alt="The panel in dark mode during a break">
 </p>
 
@@ -35,13 +35,10 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 - **Fair logging:** a Pomodoro you end early isn't counted, and neither is under a minute of counting up.
 - **Radio:** ten lofi live streams (Lofi Girl, Chillhop and others) in a compact player: the station's cover art, play/pause, previous and next, stop, a volume button that slides a slider open, and the station list when you click the station's name. It keeps playing when the panel is closed.
 - **Study log:** every counted session is saved with its topic. Recent topics are one click away.
-- **Daily goal, streak and level:** the panel greets you and shows your streak (days you reach your daily goal, 2 hours by default) and today's progress. Every focused minute is 1 XP; levels go from Drop to King tide. Vacation mode pauses the streak. Bedtime counts too: quitting Tide and not having it back on by bedtime, or taking 3 nights off in a row, resets the streak. Tide says so before you quit it or take a night off.
-- **Badges:** 21 to unlock for early nights, focus hours, streaks and a few specials, in the **Progress** tab of the dashboard. Hover over one to see what it's for.
-- **Bedtime:** from 10 PM (you can change it) the timer turns off until 5 AM, and while you keep using the Mac the Island reminds you every 5 minutes to close the laptop, with a short fact about sleep. If a session is still going at 10 PM, the Island offers **Log hours** or **5 more minutes**; at 10:30 PM the session stops by itself and asks for its topic. From 10:30 PM the Island only offers to lock the screen (**Lock & Rest**), and it gives a small shake every 25 seconds with a new fact until you lock the screen, and comes back when you unlock it. Hover over "Tide is off" in the panel to take a night off for a movie or a party. The Progress tab shows when you closed the laptop each night, and a **Nights** list for each week: on time, late, night off or not tracked.
+- **Daily goal, streak and level:** the panel greets you and shows your streak (days you reach your daily goal, 2 hours by default) and today's progress. Every focused minute is 1 XP; levels go from Drop to King tide. Vacation mode pauses the streak.
+- **Badges:** 16 to unlock for focus hours, streaks and a few specials, in the **Progress** tab of the dashboard. Hover over one to see what it's for.
 - **Gentle nudges in the Island:**
-  - *30 minutes before bedtime:* a heads-up, with **Start last block** if nothing is running.
-  - *Morning report:* the first time you use the Mac after 5 AM, how last night went: when you closed the laptop and your lights-out run, that you took the night off, or that Tide was quit so the night wasn't tracked. With **Start first block**.
-  - *Close to your goal in the evening* (within an hour of it, 2 hours before bedtime): **Start 30 min** to keep the streak.
+  - *Close to your goal in the evening* (within an hour of it, between 8 and 10 PM): **Start 30 min** to keep the streak.
   - *Long count-up sessions:* every 90 minutes, a reminder to stretch, drink water or rest your eyes; **Take 5** pauses and asks you to resume after 5 minutes.
 - **Dashboard:** focus time, sessions, streak and top topic for today, 7 days, 30 to 360 days or a custom date range; a focused-time chart; time by topic; the hours you focus best; and a full session list you can tidy up. Export to CSV, or copy today's hours.
 - **Shortcut:** ⌃⌥Space (Control-Option-Space) starts or pauses the timer from any app.
@@ -73,8 +70,7 @@ Everything is in `~/Library/Application Support/Tide/` (the app was called Focus
 
 - `Study Log.json`: your sessions
 - `studyradio.state.json`: timer mode, station, volume
-- `tide.game.json`: daily goal, bedtime, vacation mode
-- `tide.nights.json`: the last time the Mac was used each night
+- `tide.game.json`: daily goal, vacation mode
 
 To keep the log somewhere else, such as a synced notes folder, choose a folder in **Settings → Your log**. Your current log is copied there if the folder doesn't have one yet.
 

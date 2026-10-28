@@ -82,15 +82,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             self?.web.evaluateJavaScript("window.tick && tick()")
         }
-        clearQuitIfBackInTime()
-        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.willPowerOffNotification, object: nil, queue: .main) { [weak self] _ in self?.poweringOff = true }
-        // Bedtime: every 30 seconds, note when the Mac is in use at night and remind after bedtime.
-        Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in self?.bedtimeCheck() }
-        // Unlocking the Mac after bedtime brings the reminder straight back.
-        DistributedNotificationCenter.default().addObserver(forName: NSNotification.Name("com.apple.screenIsUnlocked"), object: nil, queue: .main) { [weak self] _ in
-            self?.lastBedNudge = .distantPast
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { self?.bedtimeCheck() }
-        }
         // Look for a newer release now and once a day.
         checkForUpdate()
         Timer.scheduledTimer(withTimeInterval: 24 * 60 * 60, repeats: true) { [weak self] _ in self?.checkForUpdate() }
@@ -109,7 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     // Both pages get the saved data before their script runs; the dashboard also gets its settings and first tab.
     func pageConfig(extra: String = "") -> WKWebViewConfiguration {
         var saved: [String: String] = [:]
-        for key in ["studyradio.logs", "studyradio.state", "tide.game", "tide.nights"] {
+        for key in ["studyradio.logs", "studyradio.state", "tide.game"] {
             if let text = try? String(contentsOf: fileURL(for: key), encoding: .utf8) { saved[key] = text }
         }
         let json = String(data: try! JSONSerialization.data(withJSONObject: saved), encoding: .utf8)!
@@ -134,7 +125,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     }
 
     // Pages are loaded from a web address, so they can't read the bundled font file: it goes in as data instead.
-    // The game and bedtime rules (game.js), shared by the panel and the dashboard.
+    // The game rules (game.js), shared by the panel and the dashboard.
     lazy var gameScript: String = {
         guard let url = Bundle.main.url(forResource: "game", withExtension: "js") else { return "" }
         return (try? String(contentsOf: url, encoding: .utf8)) ?? ""
@@ -319,112 +310,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         showPanel()
     }
 
-    // MARK: bedtime
-
-    var lastBedNudge = Date.distantPast
-    func readJSON(_ key: String) -> [String: Any] {
-        guard let data = try? Data(contentsOf: fileURL(for: key)),
-              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return [:] }
-        return object
-    }
-    func minutes(_ text: Any?, _ fallback: Int) -> Int {
-        let parts = (text as? String ?? "").split(separator: ":").compactMap { Int($0) }
-        return parts.count == 2 ? parts[0] * 60 + parts[1] : fallback
-    }
-    // A night runs until 5 AM. While the Mac is in use from 6 PM, the latest time is kept for that night
-    // (the dashboard's Lights out card). After bedtime, the Island reminds every 5 minutes while you keep using it.
-    // Quitting Tide is remembered against that night (tide.nights "quit"): if it isn't back on before bedtime, the night
-    // isn't tracked and the streak resets. Reopening before bedtime, or within 10 minutes (a restart or an update), clears it.
-    // Shutting down or logging out isn't a quit: in the evening it counts as closing the laptop.
-    var poweringOff = false
-    func nightNow() -> (key: String, value: Int) {
-        let now = Date(), cal = Calendar.current, m = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
-        let night = m < 300 ? now.addingTimeInterval(-86400) : now
-        return (String(format: "%04d-%02d-%02d", cal.component(.year, from: night), cal.component(.month, from: night), cal.component(.day, from: night)), m < 300 ? m + 1440 : m)
-    }
-    func saveNights(_ nights: [String: Any]) {
-        let text = json(nights)
-        try? text.write(to: fileURL(for: "tide.nights"), atomically: true, encoding: .utf8)
-        for view in [web, dashWeb] { view?.evaluateJavaScript("window.__syncNights && __syncNights(\(text))") }
-    }
-    // Before a quit you chose (the menu or ⌘Q), say what it costs: if Tide isn't back on by bedtime, the night isn't
-    // tracked and the streak resets. Quits sent by scripts, updates, logout or shutdown go straight through.
-    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        let game = readJSON("tide.game")
-        guard !poweringOff, NSAppleEventManager.shared().currentAppleEvent == nil, game["bedOn"] as? Bool ?? true else { return .terminateNow }
-        let (key, value) = nightNow()
-        guard (game["nightOff"] as? String) != key else { return .terminateNow }
-        let bed = minutes(game["bedAt"], 22 * 60)
-        let bedText = DateFormatter.localizedString(from: Calendar.current.startOfDay(for: Date()).addingTimeInterval(Double(bed) * 60), dateStyle: .none, timeStyle: .short)
-        let alert = NSAlert()
-        alert.messageText = "Quit Tide?"
-        alert.informativeText = value >= bed
-            ? "It’s after bedtime, so quitting now means tonight isn’t tracked and your streak resets."
-            : "If Tide isn’t running again by \(bedText), tonight won’t be tracked and your streak resets."
-        alert.addButton(withTitle: "Keep Tide Running")
-        alert.addButton(withTitle: "Quit Anyway")
-        NSApp.activate(ignoringOtherApps: true)
-        return alert.runModal() == .alertSecondButtonReturn ? .terminateNow : .terminateCancel
-    }
-
-    func applicationWillTerminate(_ notification: Notification) {
-        let (key, value) = nightNow()
-        var nights = readJSON("tide.nights")
-        if poweringOff {
-            if value >= 18 * 60, (nights[key] as? Int ?? -1) < value { nights[key] = value }
-        } else {
-            var quit = nights["quit"] as? [String: Any] ?? [:]
-            quit[key] = value; nights["quit"] = quit
-        }
-        saveNights(nights)
-    }
-    func clearQuitIfBackInTime() {
-        let (key, value) = nightNow()
-        var nights = readJSON("tide.nights")
-        guard var quit = nights["quit"] as? [String: Any], let at = quit[key] as? Int else { return }
-        let bed = minutes(readJSON("tide.game")["bedAt"], 22 * 60)
-        if value < bed || value - at <= 10 { quit[key] = nil; nights["quit"] = quit; saveNights(nights) }
-    }
-
-    func bedtimeCheck() {
-        let game = readJSON("tide.game"), now = Date(), cal = Calendar.current
-        let m = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
-        let night = m < 300 ? now.addingTimeInterval(-86400) : now
-        let key = String(format: "%04d-%02d-%02d", cal.component(.year, from: night), cal.component(.month, from: night), cal.component(.day, from: night))
-        let idle = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: CGEventType(rawValue: ~0)!)
-        let nightOff = (game["nightOff"] as? String) == key
-        if idle < 60, !nightOff, m >= 18 * 60 || m < 300 {
-            let value = m < 300 ? m + 1440 : m
-            var nights = readJSON("tide.nights")
-            if (nights[key] as? Int ?? -1) < value {
-                nights[key] = value
-                saveNights(nights)
-            }
-        }
-        // The first use of the Mac in the morning: the panel shows last night's report (once a day).
-        if idle < 60, m >= 300, m < 12 * 60 { web.evaluateJavaScript("window.morningReport && morningReport()") }
-        guard game["bedOn"] as? Bool ?? true, !nightOff else { return }
-        let bed = minutes(game["bedAt"], 22 * 60)
-        guard m >= bed || m < 300, idle < 120, now.timeIntervalSince(lastBedNudge) >= 290 else { return }
-        web.evaluateJavaScript("window.bedtimeNudge && bedtimeNudge()") { [weak self] result, _ in
-            if result as? Bool == true { self?.lastBedNudge = Date() }
-        }
-    }
-
-    // Locks the screen like Control-Command-Q. Falls back to sleeping the display, which locks if a password is required.
-    func lockScreen() {
-        if let login = dlopen("/System/Library/PrivateFrameworks/login.framework/Versions/Current/login", RTLD_NOW),
-           let lock = dlsym(login, "SACLockScreenImmediate") {
-            typealias Lock = @convention(c) () -> Int32
-            _ = unsafeBitCast(lock, to: Lock.self)()
-            return
-        }
-        let sleep = Process()
-        sleep.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
-        sleep.arguments = ["displaysleepnow"]
-        try? sleep.run()
-    }
-
     // MARK: messages from the pages
 
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -494,8 +379,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
                 UserDefaults.standard.set(value, forKey: "theme")
                 applyTheme()
             }
-        case "lockScreen":
-            lockScreen()
         case "quit":
             NSApp.terminate(nil)
         case "copy":
@@ -679,7 +562,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
-    // No macOS notifications from 9 PM to 5 AM, unless you asked (Check for Updates). The Island handles bedtime.
+    // No macOS notifications from 9 PM to 5 AM, unless you asked (Check for Updates).
     var quietHours: Bool { let h = Calendar.current.component(.hour, from: Date()); return h >= 21 || h < 5 }
 
     func notify(title: String, body: String, url: URL? = nil, category: String? = nil, sound: Bool = false) {

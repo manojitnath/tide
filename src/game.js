@@ -1,56 +1,16 @@
-// Tide's game and bedtime rules, shared by the panel and the dashboard.
+// Tide's game rules (daily goal, streak, levels, badges), shared by the panel and the dashboard.
 // In the app this file is added to both pages before they load; in a browser preview the pages load it themselves.
-// Everything is worked out from the session log, the nights the Mac was last used (tide.nights) and a few settings (tide.game).
+// Everything is worked out from the session log and a few settings (tide.game).
 (function () {
-  const MIN = 60e3, DAY = 864e5, MORNING = 5 * 60;   // a "night" runs until 5 AM
+  const MIN = 60e3, DAY = 864e5;
 
   const pad = n => String(n).padStart(2, '0');
   const dayStart = ts => { const d = new Date(ts); return +new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
   const dayKey = ts => { const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
   const minutesOf = ts => { const d = new Date(ts); return d.getHours() * 60 + d.getMinutes(); };
-  const hhmm = s => { const [h, m] = String(s || '').split(':').map(Number); return (h || 0) * 60 + (m || 0); };
-  // The night a moment belongs to: before 5 AM it's still the evening before.
-  const nightKey = ts => dayKey(minutesOf(ts) < MORNING ? ts - DAY : ts);
 
-  const DEFAULTS = {goalMin: 120, bedOn: true, bedAt: '22:00', factsAt: '22:01', nightOff: '', nightsOff: [], vacation: []};
-  const settings = g => Object.assign({}, DEFAULTS, g || {}, {vacation: Array.isArray(g && g.vacation) ? g.vacation : [], nightsOff: [...new Set([...(Array.isArray(g && g.nightsOff) ? g.nightsOff : []), ...(g && g.nightOff ? [g.nightOff] : [])])]});
-
-  /* ---------- bedtime ---------- */
-  const isBedtime = (g, ts = Date.now()) => {
-    if (!g.bedOn || g.nightOff === nightKey(ts)) return false;
-    const m = minutesOf(ts); return m >= hhmm(g.bedAt) || m < MORNING;
-  };
-  const factsOn = (g, ts = Date.now()) => { const m = minutesOf(ts); return m >= hhmm(g.factsAt) || m < MORNING; };
-  // A night counts as "lights out" when the Mac was last used within 30 minutes of bedtime.
-  const lightsOutBy = g => hhmm(g.bedAt) + 30;
-  // From lights-out time the reminder only offers to lock the screen.
-  const isLockTime = (g, ts = Date.now()) => {
-    const m = minutesOf(ts), by = lightsOutBy(g);
-    return isBedtime(g, ts) && (by >= 1440 ? m >= by - 1440 && m < MORNING : m >= by || m < MORNING);
-  };
-  // What we know about a night (its key is the evening's date):
-  //   off  – you took it off;  quit – Tide was quit and not back on before bedtime, so it wasn't tracked;
-  //   ok / late – the last time the Mac was used, on time or not;  none – nothing recorded (the Mac wasn't used, or Tide wasn't running).
-  function nightStatus(g, nights, key) {
-    nights = nights || {};
-    const v = typeof nights[key] === 'number' ? nights[key] : null, quit = nights.quit && nights.quit[key];
-    if (g.nightOff === key || g.nightsOff.includes(key)) return {state: 'off', v, quit};
-    if (quit != null) return {state: 'quit', v, quit};
-    if (v == null) return {state: 'none', v, quit};
-    return {state: v <= lightsOutBy(g) ? 'ok' : 'late', v, quit};
-  }
-  // Nights that count towards lights out: tracked, not taken off.
-  const trackedNights = (g, nights) => Object.keys(nights || {}).filter(k => /^\d{4}-/.test(k)).map(k => ({key: k, ...nightStatus(g, nights, k)})).filter(n => n.state === 'ok' || n.state === 'late');
-  const FACTS = [
-    'Adults need at least 7 hours of sleep a night to stay healthy.',
-    'People who sleep under 6 hours are about 4 times more likely to catch a cold.',
-    'After 17 to 19 hours awake, your reactions slow as much as after a couple of drinks.',
-    'Screens before bed delay your sleep hormone and leave you groggier in the morning.',
-    'Deep sleep is when your brain clears out waste linked to Alzheimer’s.',
-    'A single night of lost sleep raises a brain protein linked to Alzheimer’s.',
-    'Short sleep raises your hunger hormone, so you crave more food the next day.',
-    'Regularly sleeping too little is linked to heart disease, diabetes and depression.',
-  ];
+  const DEFAULTS = {goalMin: 120, vacation: []};
+  const settings = g => Object.assign({}, DEFAULTS, g || {}, {vacation: Array.isArray(g && g.vacation) ? g.vacation : []});
 
   /* ---------- goal and streak ---------- */
   function totals(logs) {
@@ -59,25 +19,14 @@
     return t;
   }
   const onVacation = (g, key) => g.vacation.some(([a, b]) => key >= a && (!b || key <= b));
-  // A night breaks the streak if Tide was quit (not tracking means stepping away from the goals),
-  // or if it's the third night off in a row.
-  function nightBreaks(g, nights, day) {
-    const st = k => nightStatus(g, nights, k).state;
-    if (st(dayKey(day)) === 'quit') return 'quit';
-    if ([0, 1, 2].every(i => st(dayKey(day - i * DAY + DAY / 2)) === 'off')) return 'off3';
-    return '';
-  }
   // Days that close the daily goal keep the streak; vacation days are skipped, today can still be closed.
-  // A night that breaks the streak ends it, even after a goal day.
-  function streak(logs, g, now = Date.now(), nights = null) {
-    const broke = d => nights ? nightBreaks(g, nights, d) : '';
+  function streak(logs, g, now = Date.now()) {
     const t = totals(logs), goal = g.goalMin * MIN, today = dayStart(now);
     const met = d => (t.get(d) || 0) >= goal;
     const prev = d => dayStart(d - DAY / 2);
     let current = 0, d = met(today) ? today : prev(today);
     const first = logs.length ? Math.min(...logs.map(l => dayStart(l.start))) : today;
     while (d >= first) {
-      if (d < today && broke(d)) break;
       if (met(d)) current++;
       else if (!onVacation(g, dayKey(d))) break;
       d = prev(d);
@@ -87,7 +36,6 @@
       if (met(x)) run++;
       else if (!onVacation(g, dayKey(x)) && x !== today) run = 0;
       best = Math.max(best, run);
-      if (x < today && broke(x)) run = 0;
     }
     const monday = today - ((new Date(now).getDay() + 6) % 7) * DAY;
     const week = [...Array(7)].map((_, i) => {
@@ -113,17 +61,9 @@
     const v = [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
     return '#' + v.map(x => Math.round(f < 1 ? x * f : x + (255 - x) * (f - 1))).map(x => pad(Math.max(0, Math.min(255, x)).toString(16))).join('');
   };
-  const star = (cx, cy, r, ri, n = 5) => [...Array(2 * n)].map((_, i) => {
-    const a = (-90 + 180 * i / n) * Math.PI / 180, rr = i % 2 ? ri : r; return `${(cx + rr * Math.cos(a)).toFixed(1)},${(cy + rr * Math.sin(a)).toFixed(1)}`;
-  }).join(' ');
   const Y = '#ffd36b';
   // Two-tone pictures on a 100 x 100 coin: L is a light tint of the coin's colour, D a dark one.
   const ART = {
-    candle: `<rect x="42" y="44" width="16" height="28" rx="3" fill="L"/><path d="M40 72h20" stroke="D" stroke-width="4" stroke-linecap="round"/><path d="M50 26c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z" fill="${Y}"/><rect x="49" y="40" width="2" height="5" fill="D"/>`,
-    lantern: `<path d="M44 26h12M50 22v4" stroke="D" stroke-width="3.5" stroke-linecap="round"/><path d="M40 32h20l-2 6H42z" fill="D"/><rect x="40" y="38" width="20" height="26" rx="4" fill="L"/><path d="M50 44c3 4 4 6 4 8a4 4 0 0 1-8 0c0-2 1-4 4-8z" fill="${Y}"/><path d="M38 64h24l-3 8H41z" fill="D"/>`,
-    lighthouse: `<path d="M42 72l3-36h10l3 36z" fill="L"/><path d="M43.5 52h13l.6 7h-14.2zM44.5 40h11l.4 5h-11.8z" fill="D"/><rect x="40" y="28" width="20" height="8" rx="2" fill="${Y}"/><path d="M42 28l8-8 8 8z" fill="L"/><path d="M60 31l16-6v14zM40 31l-16-6v14z" fill="${Y}" opacity=".6"/><rect x="34" y="72" width="32" height="5" rx="2.5" fill="L"/>`,
-    moontide: `<circle cx="50" cy="40" r="15" fill="${Y}"/><path d="M22 60c5 0 5-4 10-4s5 4 10 4 5-4 10-4 5 4 10 4 5-4 10-4 5 4 6 4M24 70c5 0 5-4 10-4s5 4 10 4 5-4 10-4 5 4 10 4 5-4 10-4" stroke="L" stroke-width="5" fill="none" stroke-linecap="round"/>`,
-    starcrown: `<path d="M28 66l-3-24 13 11 12-17 12 17 13-11-3 24z" fill="${Y}"/><rect x="28" y="68" width="44" height="6" rx="3" fill="${Y}"/><g fill="L"><polygon points="${star(30, 28, 6, 2.6)}"/><polygon points="${star(50, 22, 7, 3)}"/><polygon points="${star(70, 28, 6, 2.6)}"/></g><circle cx="50" cy="58" r="3.5" fill="D"/>`,
     seed: '<path d="M22 66c8-6 48-6 56 0v6H22z" fill="D"/><ellipse cx="50" cy="56" rx="9" ry="12" fill="L" transform="rotate(25 50 56)"/><path d="M47 50c2 3 3 7 2 11" stroke="D" stroke-width="2" fill="none" stroke-linecap="round"/>',
     sprout: '<path d="M22 66c8-6 48-6 56 0v6H22z" fill="D"/><path d="M50 64V44" stroke="L" stroke-width="4.5" stroke-linecap="round"/><path d="M50 48c-2-10-14-14-20-10 2 8 12 12 20 10zM50 44c2-10 14-14 20-10-2 8-12 12-20 10z" fill="L"/>',
     sapling: '<path d="M22 70c8-6 48-6 56 0v4H22z" fill="D"/><path d="M50 68V34" stroke="D" stroke-width="5" stroke-linecap="round"/><path d="M50 56c-4-8-16-10-20-4 4 6 14 8 20 4zM50 46c4-8 16-10 20-4-4 6-14 8-20 4zM50 36c-3-8-12-10-16-5 3 5 11 7 16 5z" fill="L"/>',
@@ -150,11 +90,6 @@
   }
   // [id, colour, picture, what it's for, test(facts)]
   const BADGES = [
-    ['night7', '#5b6cf0', 'candle', 'Lights out · 7 nights with the laptop closed on time', f => f.nights >= 7],
-    ['night30', '#4a55d8', 'lantern', 'Lights out · 30 nights', f => f.nights >= 30],
-    ['night90', '#3a44bf', 'lighthouse', 'Lights out · 90 nights', f => f.nights >= 90],
-    ['night180', '#2f369f', 'moontide', 'Lights out · 180 nights', f => f.nights >= 180],
-    ['night365', '#262b80', 'starcrown', 'Lights out · 365 nights', f => f.nights >= 365],
     ['hours10', '#8a6a3d', 'seed', 'Focus · 10 hours', f => f.hours >= 10],
     ['hours50', '#5aa64a', 'sprout', 'Focus · 50 hours', f => f.hours >= 50],
     ['hours100', '#3f9a46', 'sapling', 'Focus · 100 hours', f => f.hours >= 100],
@@ -172,12 +107,11 @@
     ['goals', '#8a5cf6', 'target', 'Goal getter · your daily goal reached on 25 days', f => f.goalDays >= 25],
     ['hightide', '#1f5cf2', 'wave', 'High tide · reach level 10', f => f.level >= 10],
   ];
-  function badges(logs, nights, g) {
+  function badges(logs, g) {
     const t = totals(logs);
     const facts = {
-      nights: trackedNights(g, nights).filter(n => n.state === 'ok').length,
       hours: logs.reduce((n, l) => n + l.ms, 0) / 36e5,
-      best: streak(logs, g, Date.now(), nights).best,
+      best: streak(logs, g).best,
       sessions: logs.length,
       early: logs.some(l => { const m = minutesOf(l.start); return m >= 4 * 60 && m < 7 * 60; }),
       longest: Math.max(0, ...logs.map(l => l.ms)),
@@ -188,11 +122,11 @@
     return BADGES.map(([id, color, pic, tip, test]) => ({id, tip, color, art: coin(color, pic), got: !!test(facts)}));
   }
 
-  const greeting = (name, ts = Date.now(), bed = false) => {
+  const greeting = (name, ts = Date.now()) => {
     const h = new Date(ts).getHours();
-    const part = bed ? 'Good night' : h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    const part = h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
     return name ? `${part}, ${name}` : part;
   };
 
-  window.Game = {MIN, DAY, dayStart, dayKey, nightKey, hhmm, settings, isBedtime, isLockTime, factsOn, lightsOutBy, nightStatus, trackedNights, nightBreaks, FACTS, streak, level, badges, greeting, onVacation};
+  window.Game = {MIN, DAY, dayStart, dayKey, settings, streak, level, badges, greeting, onVacation};
 })();

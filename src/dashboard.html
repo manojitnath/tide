@@ -149,9 +149,9 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
 .wstep button:disabled{opacity:.3;cursor:default}
 .wstep span{min-width:84px;text-align:center;font-weight:600;color:var(--ink)}
 .lweek{margin:-8px 0 8px;font-size:12px;color:var(--muted)}
-.bgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:18px 10px;padding-top:4px}
+.bgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:18px 10px;padding-top:4px}
 .bgrid .bd{width:auto;height:auto;display:flex;flex-direction:column;align-items:center;gap:6px}
-.bgrid .bd svg{width:86px;height:86px}
+.bgrid .bd svg{width:80px;height:80px}
 .bgrid .bd b{font-size:12.5px;font-weight:700;text-align:center}
 .bgrid .bd.locked b{color:var(--muted);opacity:.6}
 /* the label sits on the coin itself, in the coin's colour; locked coins get a grey one */
@@ -185,23 +185,14 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
 .skwk small{font-size:11px;color:var(--muted)}
 .vac{margin:0;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}
 .vac i{width:8px;height:8px;border-radius:50%;background:var(--muted);opacity:.6}
-.g2{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin-bottom:14px}.g2 .panel{margin:0}
-.fbars,.nbars{display:flex;align-items:flex-end;gap:10px;height:130px}
-.fbars .b,.nbars .n{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}
-.fbars i,.nbars i{position:relative;display:block;width:100%;border-radius:10px;background:color-mix(in srgb,var(--accent) 22%,var(--soft))}
+.g2{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:14px}.g2 .panel{margin:0}
+.fbars{display:flex;align-items:flex-end;gap:10px;height:130px}
+.fbars .b{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}
+.fbars i{position:relative;display:block;width:100%;border-radius:10px;background:color-mix(in srgb,var(--accent) 22%,var(--soft))}
 .fbars .now i{background:linear-gradient(#5b8cff,#1f5cf2);box-shadow:0 8px 18px -6px rgba(31,92,242,.7)}
 .fbars .fut i{background:var(--soft);opacity:.6}
 .fbars i span{position:absolute;left:50%;top:-26px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:700;color:#fff;background:#16181d;padding:3px 8px;border-radius:99px}
-.fbars small,.nbars small{font-size:11px;color:var(--muted)}
-.moon{display:inline-grid;width:22px;height:22px;margin-right:8px;vertical-align:-4px;color:#8a7cff}.moon svg{width:20px}
-.bedrow{display:flex;gap:16px;align-items:flex-end}
-.bedrow b{display:block;font:700 26px var(--font)}.bedrow b span{font-size:13px;color:var(--muted);font-weight:600}
-.bedrow small{font-size:12px;color:var(--muted)}
-.nbars{flex:1;height:90px;gap:6px}
-.nbars .ok i{background:linear-gradient(#a99bff,#7a66f0)}
-.nbars .late i{background:linear-gradient(#ffb36b,#ff7a3d)}
-.nbars .skip i{background:none;box-shadow:inset 0 0 0 1.5px var(--line);border:1.5px dashed color-mix(in srgb,var(--muted) 50%,transparent)}
-.nbars .fut i{background:var(--soft);opacity:.6}
+.fbars small{font-size:11px;color:var(--muted)}
 
 .streakchip{display:flex;align-items:center;gap:6px;padding:8px 16px 8px 12px;border-radius:99px;background:var(--cardFill);box-shadow:var(--shadow)}
 .streakchip .gf{width:24px;height:24px;filter:drop-shadow(0 0 6px rgba(255,90,40,.5))}
@@ -240,15 +231,6 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
 .switch:hover{filter:brightness(1.08)}
 .tabs button:not([aria-pressed="true"]):hover,.range button:not([aria-pressed="true"]):hover{color:var(--ink);background:var(--soft)}
 .btn:active,select:active,.round:active,.switch:active,.tabs button:active,.range button:active{transform:scale(.97);transition-duration:.08s}
-.nlog{display:grid;grid-template-columns:1fr 1fr;column-gap:28px}
-.nrow{display:grid;grid-template-columns:96px 92px 1fr;align-items:center;gap:8px;padding:9px 0;border-top:.5px solid var(--line)}
-.nrow:nth-child(-n+2){border-top:0}
-.nrow b{font-weight:700}.nrow .nd{color:var(--muted);font-size:12.5px}
-.nrow .br{grid-column:2/4;font-size:12px;font-weight:700;color:#e5484d}.nrow .br:empty{display:none}
-.chip{justify-self:start;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--soft);color:var(--muted)}
-.chip.ok{background:color-mix(in srgb,#7a66f0 18%,transparent);color:#6a55e8}
-.chip.late{background:color-mix(in srgb,#ff7a3d 18%,transparent);color:#e0601f}
-.chip.quit{background:color-mix(in srgb,#e5484d 16%,transparent);color:#e5484d}
 @media (max-width:760px){.cards{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}}
 </style>
 <script>if (!window.Game) document.write('<script src="game.js"><\/script>');</script>
@@ -298,10 +280,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
     </div>
     <div class="g2">
       <div class="panel wkc"><div class="ph"><h2>Focus</h2><span class="wstep"><button type="button" class="wPrev" title="Previous week">‹</button><span class="wName">This week</span><button type="button" class="wNext" title="Next week">›</button></span></div><p class="lweek" id="wTotal"></p><div class="fbars" id="wBars"></div></div>
-      <div class="panel bedc"><div class="ph"><h2><span class="moon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg></span>Lights out</h2><span id="lBy"></span></div><p class="lweek" id="lWeek"></p>
-        <div class="bedrow"><div><b id="lN"></b><small id="lAvg"></small></div><div class="nbars" id="lBars"></div></div></div>
     </div>
-    <div class="panel"><div class="ph"><h2>Nights</h2><span class="wstep"><button type="button" class="wPrev" title="Previous week">‹</button><span class="wName">This week</span><button type="button" class="wNext" title="Next week">›</button></span></div><p class="lweek" id="nSum"></p><div class="nlog" id="nLog"></div></div>
     <div class="panel"><div class="ph"><h2>Badges</h2><span id="bCount"></span></div><div class="bgrid" id="bGrid"></div></div>
   </section>
   <section id="sessions" hidden>
@@ -320,12 +299,6 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
     <div class="group"><h3>General</h3>
       <div class="set"><div><b>Open at login</b><span>Start Tide when you log in to your Mac.</span></div><button class="switch" id="loginSw" role="switch" aria-checked="false" type="button"></button></div>
       <div class="set"><div><b>Start or pause from anywhere</b><span>Works in any app.</span></div><kbd>⌃ ⌥ Space</kbd></div>
-    </div>
-    <div class="group"><h3>Bedtime</h3>
-      <div class="set"><div><b>Bedtime reminders</b><span>While you're using the Mac after bedtime, the Island reminds you every 5 minutes to close the laptop.</span></div><button class="switch" id="bedSw" role="switch"></button></div>
-      <div class="set"><div><b>Bedtime</b><span>Reminders start, and the timer turns off until 5 AM.</span></div><input type="time" id="bedAt"></div>
-      <div class="set"><div><b>Sleep facts from</b><span>Each reminder adds a short fact about why sleep matters.</span></div><input type="time" id="factsAt"></div>
-      <div class="set"><div><b>Night off</b><span id="offText">For movie nights and parties: no reminders tonight. A third night off in a row resets your streak.</span></div><button class="btn" id="offBtn">Take tonight off</button></div>
     </div>
     <div class="group"><h3>Streaks and goals</h3>
       <div class="set"><div><b>Daily focus goal</b><span>Reach it to keep your streak going.</span></div><select id="goalSel"><option value="30">30 minutes</option><option value="60">1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option></select></div>
@@ -356,10 +329,9 @@ let settings = Object.assign({launchAtLogin: false, logFolder: '~/Library/Applic
 window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderAll(); };
 window.settingsChanged = s => { settings = Object.assign(settings, s); renderSettings(); };
 window.showTab = tab => setTab(tab);
-// The game (game.js): its settings are shared with the panel; the app records the nights the Mac was last used.
-let G = Game.settings(store.get('tide.game', {})), nights = store.get('tide.nights', {});
+// The game (game.js): its settings are shared with the panel.
+let G = Game.settings(store.get('tide.game', {}));
 window.__syncGame = data => { G = Game.settings(data); renderAll(); };
-window.__syncNights = data => { nights = data || {}; renderProgress(); };
 function saveGame() { store.set('tide.game', G); renderAll(); }
 
 const pad = n => String(n).padStart(2, '0');
@@ -426,7 +398,7 @@ function bounds() {
 function inRange() { const [a, b] = bounds(); return logs.filter(l => l.start >= a && l.start < b); }
 
 /* ---------- stats ---------- */
-const streak = () => Game.streak(logs, G, Date.now(), nights).current;
+const streak = () => Game.streak(logs, G).current;
 // Buckets for the chart: hours for one day, days up to two months, months beyond that.
 function buckets(a, b) {
   const span = Math.round((b - a) / DAY), out = [];
@@ -534,24 +506,10 @@ function renderSettings() {
   $('#loginSw').setAttribute('aria-checked', !!settings.launchAtLogin);
   $('#folder').textContent = settings.logFolder;
   $('#ver').textContent = settings.version;
-  $('#bedSw').setAttribute('aria-checked', !!G.bedOn);
-  $('#bedAt').value = G.bedAt; $('#factsAt').value = G.factsAt;
   $('#goalSel').value = String(G.goalMin);
   $('#vacSw').setAttribute('aria-checked', Game.onVacation(G, Game.dayKey(Date.now())));
-  const off = G.nightOff === Game.nightKey(Date.now());
-  $('#offBtn').textContent = off ? 'Turn reminders back on' : 'Take tonight off';
-  let offRun = 0; for (let d = 1; d < 4; d++) { if (Game.nightStatus(G, nights, Game.dayKey(Date.now() - d * DAY)).state !== 'off') break; offRun++; }
-  $('#offText').textContent = off ? 'Tonight is off: no reminders, and the timer works as usual.' : offRun >= 2 ? 'You’ve had 2 nights off in a row: a third resets your streak.' : 'For movie nights and parties: no reminders tonight. A third night off in a row resets your streak.';
-  if (!off && offRun >= 2) $('#offBtn').textContent = 'Take it off anyway';
 }
-$('#bedSw').onclick = () => { G.bedOn = !G.bedOn; saveGame(); };
-$('#bedAt').onchange = e => { if (e.target.value) { G.bedAt = e.target.value; saveGame(); } };
-$('#factsAt').onchange = e => { if (e.target.value) { G.factsAt = e.target.value; saveGame(); } };
 $('#goalSel').onchange = e => { G.goalMin = +e.target.value; saveGame(); };
-$('#offBtn').onclick = () => {
-  const k = Game.nightKey(Date.now()), on = G.nightOff === k;
-  G.nightOff = on ? '' : k; G.nightsOff = on ? G.nightsOff.filter(x => x !== k) : [...new Set([...G.nightsOff, k])]; saveGame();
-};
 // Vacation mode keeps a list of date ranges, so past vacations still don't count against the streak.
 $('#vacSw').onclick = () => {
   const k = Game.dayKey(Date.now()), open = G.vacation.find(v => !v[1]);
@@ -567,7 +525,6 @@ $('#updates').onclick = () => native({type: 'checkUpdates'});
 /* ---------- progress ---------- */
 const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const ring = (p, cls) => `<svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on${cls || ''}" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="${(p * 100).toFixed(1)} 100"/></svg>`;
-const clockOf = m => new Date(dayStart(Date.now()) + (m % 1440) * 6e4).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'});
 const WD = d => new Date(d).toLocaleDateString(undefined, {weekday: 'short'});
 let weekBack = 0;   // 0 is this week, 1 last week, and so on
 // Monday to Sunday of a week, with each day's focus and how much of the goal it reached.
@@ -581,8 +538,8 @@ function weekOf(back) {
 $$('.wPrev').forEach(b => b.onclick = () => { weekBack++; renderProgress(); });
 $$('.wNext').forEach(b => b.onclick = () => { weekBack = Math.max(0, weekBack - 1); renderProgress(); });
 function renderProgress() {
-  const st = Game.streak(logs, G, Date.now(), nights), lv = Game.level(logs), now = Date.now(), today = dayStart(now);
-  $('#pHello').textContent = Game.greeting(window.__USER || new URLSearchParams(location.search).get('name') || '', now, Game.isBedtime(G, now));
+  const st = Game.streak(logs, G), lv = Game.level(logs), now = Date.now(), today = dayStart(now);
+  $('#pHello').textContent = Game.greeting(window.__USER || new URLSearchParams(location.search).get('name') || '', now);
   const left = st.goal - st.today;
   $('#pSub').textContent = `${dur(st.today)} focused today. ${left > 0 ? dur(left) + ' to your goal.' : 'Goal reached.'}`;
   $('#pChip').textContent = st.current;
@@ -595,37 +552,15 @@ function renderProgress() {
   $('#sN').textContent = st.current; $('#sDays').textContent = st.current === 1 ? 'DAY' : 'DAYS'; $('#sBest').textContent = `Best ${st.best}`;
   $('#sWeek').innerHTML = st.week.map(d => `<div class="c${d.state === 'done' ? ' done' : d.state === 'now' ? ' now' : ''}"><i>${d.state === 'done' ? CHECK : ''}</i><small>${WD(d.day)}</small></div>`).join('');
   $('#sVac').textContent = Game.onVacation(G, Game.dayKey(now)) ? 'Vacation mode is on, so your streak is paused' : 'Vacation mode is off';
-  // The week shown in This week, Lights out and the goal rings: this week, or one stepped back to with ‹ ›.
+  // The week shown in Focus and the goal rings: this week, or one stepped back to with ‹ ›.
   const wk = weekOf(weekBack), name = weekBack === 0 ? 'This week' : weekBack === 1 ? 'Last week' : `${fmtShort(wk[0].day)} – ${fmtShort(wk[6].day)}`;
   $$('.wName').forEach(e => e.textContent = name); $$('.wNext').forEach(e => e.disabled = weekBack === 0);
-  $('#lWeek').textContent = name;
   $('#gWeek').innerHTML = wk.map(d => `<div>${ring(d.p, d.p >= 1 ? ' full' : '')}<small>${WD(d.day)[0]}</small></div>`).join('');
   const max = Math.max(st.goal, ...wk.map(d => d.ms));
   $('#wTotal').textContent = `${dur(wk.reduce((n, d) => n + d.ms, 0))} focused`;
   $('#wBars').innerHTML = wk.map(d => `<div class="b${d.day === today ? ' now' : ''}${d.day > today ? ' fut' : ''}"><i style="height:${Math.max(4, d.ms / max * 100).toFixed(0)}%">${d.day === today ? `<span>${dur(d.ms)}</span>` : ''}</i><small>${WD(d.day)[0]}</small></div>`).join('');
-  // Lights out: when the Mac was last used each night this week, and whether that was on time.
-  // Nights taken off, or with Tide quit, don't count; they show as a dashed bar.
-  const by = Game.lightsOutBy(G), week = wk.map(d => ({d, ...Game.nightStatus(G, nights, Game.dayKey(d.day))}));
-  const used = week.filter(n => n.state === 'ok' || n.state === 'late'), ok = used.filter(n => n.state === 'ok').length;
-  $('#lBy').textContent = `laptop closed by ${clockOf(by)}`;
-  $('#lN').innerHTML = `${ok} <span>of ${plural(used.length, 'night')}</span>`;
-  const offs = week.filter(n => n.state === 'off').length;
-  $('#lAvg').textContent = (used.length ? `Average laptop close ${clockOf(Math.round(used.reduce((n, x) => n + x.v, 0) / used.length))}` : 'No nights yet') + (offs ? ` · ${plural(offs, 'night')} off` : '');
-  const tip = n => ({ok: `Closed at ${clockOf(n.v)}`, late: `Closed at ${clockOf(n.v)}`, off: 'Night off', quit: 'Tide was quit, not tracked', none: ''})[n.state];
-  $('#lBars').innerHTML = week.map(n => `<div class="n ${n.state === 'ok' ? 'ok' : n.state === 'late' ? 'late' : n.state === 'off' || n.state === 'quit' ? 'skip' : 'fut'}" title="${tip(n)}"><i style="height:${n.state === 'ok' || n.state === 'late' ? Math.min(100, Math.max(18, (n.v - 1080) / 480 * 100)).toFixed(0) : 30}%"></i><small>${WD(n.d.day)[0]}</small></div>`).join('');
-  // Nights: the nights of the week shown (newest first), with what happened and whether it broke the streak.
-  const LABEL = {ok: 'On time', late: 'Late', off: 'Night off', quit: 'Not tracked', none: 'No use'};
-  const past = wk.filter(d => d.day < today).reverse();
-  const counts = past.map(d => Game.nightStatus(G, nights, Game.dayKey(d.day)).state);
-  const tally = [['ok', 'on time'], ['late', 'late'], ['off', 'off'], ['quit', 'not tracked']].map(([k, w]) => [counts.filter(x => x === k).length, w]).filter(([n]) => n).map(([n, w]) => `${n} ${w}`);
-  $('#nSum').textContent = past.length ? tally.join(' · ') || 'No evening use' : 'No nights yet this week';
-  $('#nLog').innerHTML = past.map(d => {
-    const key = Game.dayKey(d.day), n = Game.nightStatus(G, nights, key), br = Game.nightBreaks(G, nights, d.day);
-    const detail = n.state === 'ok' || n.state === 'late' ? `Laptop closed at ${clockOf(n.v)}` : n.state === 'quit' ? `Tide was quit at ${clockOf(n.quit)}` : n.state === 'off' ? 'Reminders off for the night' : 'The Mac wasn’t used in the evening';
-    return `<div class="nrow"><b>${fmtDate(d.day)}</b><span class="chip ${n.state}">${LABEL[n.state]}</span><span class="nd">${detail}</span><span class="br">${br === 'quit' ? 'Streak reset: Tide was off at bedtime' : br === 'off3' ? 'Streak reset: 3rd night off in a row' : ''}</span></div>`;
-  }).join('');
   // Badges: just the coin; hovering says what it's for, or "Locked".
-  const b = Game.badges(logs, nights, G);
+  const b = Game.badges(logs, G);
   $('#bCount').textContent = `${b.filter(x => x.got).length} of ${b.length}`;
   $('#bGrid').innerHTML = b.map(x => `<div class="bd${x.got ? '' : ' locked'}" style="--c:${x.color}" data-tip="${esc(x.got ? x.tip : 'Locked')}">${x.art}</div>`).join('');
 }
@@ -647,10 +582,6 @@ if (new URLSearchParams(location.search).has('demo')) {
     }
   }
   settings.version = '3.0';
-  nights = {};
-  for (let d = 1; d <= 13; d++) nights[isoDay(Date.now() - d * DAY)] = [1335, 1352, 1361, 1418, 1340, 1395, 1320, 1338, 1405, 1347, 1329, 1356, 1371][d - 1];
-  G = Game.settings({nightsOff: [isoDay(Date.now() - 4 * DAY)]});   // one night off and one with Tide quit
-  nights.quit = {[isoDay(Date.now() - 9 * DAY)]: 1270};
   if (new Date().getDay() === 1) { weekBack = 1; range = '30'; }   // on a Monday, show full weeks
 }
 setTab(new URLSearchParams(location.search).get('tab') || window.__TAB || 'stats');
