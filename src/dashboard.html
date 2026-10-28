@@ -240,6 +240,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
 .switch:hover{filter:brightness(1.08)}
 .tabs button:not([aria-pressed="true"]):hover,.range button:not([aria-pressed="true"]):hover{color:var(--ink);background:var(--soft)}
 .btn:active,select:active,.round:active,.switch:active,.tabs button:active,.range button:active{transform:scale(.97);transition-duration:.08s}
+.btn.more{display:block;margin:14px auto 0}
 .nlog{display:grid;grid-template-columns:1fr 1fr;column-gap:28px}
 .nrow{display:grid;grid-template-columns:96px 92px 1fr;align-items:center;gap:8px;padding:9px 0;border-top:.5px solid var(--line)}
 .nrow:nth-child(-n+2){border-top:0}
@@ -301,7 +302,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
       <div class="panel bedc"><div class="ph"><h2><span class="moon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg></span>Lights out</h2><span id="lBy"></span></div><p class="lweek" id="lWeek"></p>
         <div class="bedrow"><div><b id="lN"></b><small id="lAvg"></small></div><div class="nbars" id="lBars"></div></div></div>
     </div>
-    <div class="panel"><div class="ph"><h2>Nights</h2><span>last 14 nights</span></div><div class="nlog" id="nLog"></div></div>
+    <div class="panel"><div class="ph"><h2>Nights</h2><span id="nCount">last 14 nights</span></div><div class="nlog" id="nLog"></div><button class="btn more" id="nMore" type="button">Show more</button></div>
     <div class="panel"><div class="ph"><h2>Badges</h2><span id="bCount"></span></div><div class="bgrid" id="bGrid"></div></div>
   </section>
   <section id="sessions" hidden>
@@ -569,6 +570,7 @@ const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 const ring = (p, cls) => `<svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on${cls || ''}" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="${(p * 100).toFixed(1)} 100"/></svg>`;
 const clockOf = m => new Date(dayStart(Date.now()) + (m % 1440) * 6e4).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'});
 const WD = d => new Date(d).toLocaleDateString(undefined, {weekday: 'short'});
+let nightsShown = 14;   // the Nights list grows by 14 with Show more
 let weekBack = 0;   // 0 is this week, 1 last week, and so on
 // Monday to Sunday of a week, with each day's focus and how much of the goal it reached.
 function weekOf(back) {
@@ -578,6 +580,7 @@ function weekOf(back) {
     return {day, ms, p: Math.min(1, ms / goal)};
   });
 }
+$('#nMore').onclick = () => { nightsShown += 14; renderProgress(); };
 $('#wPrev').onclick = () => { weekBack++; renderProgress(); };
 $('#wNext').onclick = () => { weekBack = Math.max(0, weekBack - 1); renderProgress(); };
 function renderProgress() {
@@ -613,9 +616,10 @@ function renderProgress() {
   $('#lAvg').textContent = (used.length ? `Average laptop close ${clockOf(Math.round(used.reduce((n, x) => n + x.v, 0) / used.length))}` : 'No nights yet') + (offs ? ` · ${plural(offs, 'night')} off` : '');
   const tip = n => ({ok: `Closed at ${clockOf(n.v)}`, late: `Closed at ${clockOf(n.v)}`, off: 'Night off', quit: 'Tide was quit, not tracked', none: ''})[n.state];
   $('#lBars').innerHTML = week.map(n => `<div class="n ${n.state === 'ok' ? 'ok' : n.state === 'late' ? 'late' : n.state === 'off' || n.state === 'quit' ? 'skip' : 'fut'}" title="${tip(n)}"><i style="height:${n.state === 'ok' || n.state === 'late' ? Math.min(100, Math.max(18, (n.v - 1080) / 480 * 100)).toFixed(0) : 30}%"></i><small>${WD(n.d.day)[0]}</small></div>`).join('');
-  // Nights: the last 14, with what happened and whether it broke the streak.
+  // Nights: the most recent ones, with what happened and whether it broke the streak.
   const LABEL = {ok: 'On time', late: 'Late', off: 'Night off', quit: 'Not tracked', none: 'No use'};
-  $('#nLog').innerHTML = [...Array(14)].map((_, i) => {
+  $('#nCount').textContent = `last ${nightsShown} nights`;
+  $('#nLog').innerHTML = [...Array(nightsShown)].map((_, i) => {
     const day = dayStart(now - (i + 1) * DAY), key = Game.dayKey(day), n = Game.nightStatus(G, nights, key), br = Game.nightBreaks(G, nights, day);
     const detail = n.state === 'ok' || n.state === 'late' ? `Laptop closed at ${clockOf(n.v)}` : n.state === 'quit' ? `Tide was quit at ${clockOf(n.quit)}` : n.state === 'off' ? 'Reminders off for the night' : 'The Mac wasn’t used in the evening';
     return `<div class="nrow"><b>${fmtDate(day)}</b><span class="chip ${n.state}">${LABEL[n.state]}</span><span class="nd">${detail}</span><span class="br">${br === 'quit' ? 'Streak reset: Tide was off at bedtime' : br === 'off3' ? 'Streak reset: 3rd night off in a row' : ''}</span></div>`;
