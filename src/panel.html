@@ -356,11 +356,11 @@ function renderMsg() { $('#note').textContent = note; $('#progmeta').classList.t
 /* ---------- focus and breaks ---------- */
 function beginFocus() {
   present(null);
-  Object.assign(S, {status: 'running', acc: 0, carry: 0, chained: false, blockMin: S.mode === 'pomo' ? S.pomoMin : 0, startedAt: Date.now(), segStart: Date.now(), stretchN: 0, resumeAt: 0});
+  Object.assign(S, {status: 'running', acc: 0, carry: 0, chained: false, blockMin: S.mode === 'pomo' ? S.pomoMin : 0, startedAt: Date.now(), segStart: Date.now()});
   saveState(); render();
 }
 function pauseFocus() { if (S.status !== 'running') return; S.acc += Date.now() - S.segStart; S.status = 'paused'; saveState(); render(); }
-function resumeFocus() { if (S.status !== 'paused') return; S.resumeAt = 0; S.status = 'running'; S.segStart = Date.now(); saveState(); render(); }
+function resumeFocus() { if (S.status !== 'paused') return; S.status = 'running'; S.segStart = Date.now(); saveState(); render(); }
 // Ending early: an unfinished Pomodoro isn't counted, and neither is under a minute of counting up.
 // Time spent "keeping going" after a full block is always offered for the log.
 function endFocus() {
@@ -427,7 +427,6 @@ function tick() {
   if (minute !== lastMinute) renderStats();
   lastMinute = minute;
   if (!notice && cheers.length && S.status !== 'running') present(cheers.shift());
-  nudges();
   if (S.status === 'running' && S.mode === 'pomo' && elapsed() >= S.blockMin * MIN) {
     const total = S.carry + S.blockMin * MIN, st = S.startedAt;
     Object.assign(S, {status: 'idle', acc: 0, carry: 0, chained: false, segStart: 0, startedAt: 0});
@@ -486,44 +485,10 @@ window.noticeAction = (id, topic) => {
     case 'break': present(null); startBreak(breakFor(S.pomoMin)); break;
     case 'focus': present(null); beginFocus(); break;
     case 'ok': present(null); break;
-    case 'block30': startBlock(30); break;
-    case 'take5': present(null); pauseFocus(); S.resumeAt = Date.now() + 5 * MIN; saveState(); say('Paused for 5 minutes. Stretch!', 4000); break;
-    case 'resume': present(null); resumeFocus(); break;
-    case 'endnow': present(null); endFocus(); break;
     case 'see': present(null); native({type: 'openDashboard', tab: 'progress'}); break;
     case 'plus5': present(null); Object.assign(S, {status: 'break', breakEnds: Date.now() + 5 * MIN, breakTotal: 5 * MIN}); saveState(); render(); break;
   }
 };
-/* ---------- gentle nudges: near the goal in the evening, and on long sessions ---------- */
-const minuteNow = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
-function startBlock(min) { present(null); S.mode = 'pomo'; S.pomoMin = min; beginFocus(); }
-const STRETCH = ['Stand up and stretch for a minute.', 'Drink some water.', 'Look at something 20 feet away for 20 seconds.', 'Roll your shoulders and relax your jaw.'];
-function nudges() {
-  if (notice) return;
-  const m = minuteNow(), day = Game.dayKey(Date.now());
-  // Close to the daily goal in the evening (8 to 10 PM), once a day.
-  const st = Game.streak(logs, G), left = st.goal - st.today;
-  if (S.status === 'idle' && m >= 20 * 60 && m < 22 * 60 && left > 0 && left <= 60 * MIN && S.goalNudge !== day) {
-    S.goalNudge = day; saveState();
-    present({kind: 'goal', title: `${dur(left)} to your daily goal`, text: st.current ? `One more block keeps your ${plural(st.current, 'day')} streak going.` : 'One more block and today counts towards a streak.',
-      buttons: [btn('ok', 'Not today'), btn('block30', 'Start 30 min', 'primary')]});
-    return;
-  }
-  // Long count-up sessions: a stretch every 90 minutes; "Take 5" pauses and asks to resume after 5 minutes.
-  if (S.status === 'running' && S.mode === 'free') {
-    const k = Math.floor(elapsed() / (90 * MIN));
-    if (k > (S.stretchN || 0)) {
-      S.stretchN = k; saveState();
-      present({kind: 'stretch', title: `${dur(elapsed())} of focus. Time for a breather`, text: STRETCH[(k - 1) % STRETCH.length], buttons: [btn('ok', 'Keep going'), btn('take5', 'Take 5', 'primary')]});
-      return;
-    }
-  }
-  if (S.status === 'paused' && S.resumeAt && Date.now() >= S.resumeAt) {
-    S.resumeAt = 0; saveState();
-    present({kind: 'stretch', title: 'Break’s over', text: 'Ready to pick it up again?', buttons: [btn('endnow', 'End focus'), btn('resume', 'Resume', 'primary')]});
-  }
-}
-
 // Celebrations (a new badge, a new level, the daily goal) wait in line and show when nothing else is asked.
 const cheers = [];
 function checkUnlocks(quiet) {
@@ -546,8 +511,6 @@ window.testIsland = kind => {
   pending = {start: Date.now() - ms, end: Date.now(), ms};
   const b = Game.badges(logs, G)[0];
   const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic()
-    : kind === 'goal' ? {kind: 'goal', title: '30m to your daily goal', text: 'One more block keeps your 6-day streak going.', buttons: [btn('ok', 'Not today'), btn('block30', 'Start 30 min', 'primary')]}
-    : kind === 'stretch' ? {kind: 'stretch', title: '1h 30m of focus. Time for a breather', text: STRETCH[0], buttons: [btn('ok', 'Keep going'), btn('take5', 'Take 5', 'primary')]}
     : kind === 'badge' ? {kind: 'badge', art: b.art, title: 'Badge unlocked', text: b.tip.replace(' · ', ': '), buttons: [btn('see', 'See badges'), btn('ok', 'Nice!', 'primary')]} : N.done(ms);
   pending = saved; testingIsland = true; present(n);
 };

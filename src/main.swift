@@ -562,8 +562,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
-    // No macOS notifications from 9 PM to 5 AM, unless you asked (Check for Updates).
-    var quietHours: Bool { let h = Calendar.current.component(.hour, from: Date()); return h >= 21 || h < 5 }
+    // No macOS notifications from 10 PM to 5 AM, unless you asked (Check for Updates).
+    var quietHours: Bool { let h = Calendar.current.component(.hour, from: Date()); return h >= 22 || h < 5 }
 
     func notify(title: String, body: String, url: URL? = nil, category: String? = nil, sound: Bool = false) {
         let content = UNMutableNotificationContent()

@@ -113,7 +113,6 @@ if (!window.__NATIVE) document.body.classList.add('preview');
 if (q.has('top')) setTopInset(+q.get('top'));
 if (q.has('demo')) {
   const demos = {
-    stretch: {title: '1h 30m of focus. Time for a breather', text: 'Stand up and stretch for a minute.', buttons: [{id: 'ok', label: 'Keep going'}, {id: 'take5', label: 'Take 5', style: 'primary'}]},
     break: {title: 'Break complete', text: 'Nice reset. Focus when you’re ready.', buttons: [{id: 'focus', label: 'Start Focus', style: 'primary'}, {id: 'plus5', label: '+5 min'}]},
     done: {title: 'Focus complete', text: '30 minutes of deep work. Well done.', buttons: [{id: 'log', label: 'Log it', style: 'primary'}, {id: 'keep', label: 'Keep going'}]},
     topic: {title: 'What did you work on?', text: '30m of focus, 9:10 to 9:40 AM', input: true, needsTopic: 'save', chips: ['Security+ notes', 'Linear algebra', 'AWS AI Practitioner'],
