@@ -29,13 +29,13 @@
     return isBedtime(g, ts) && (by >= 1440 ? m >= by - 1440 && m < MORNING : m >= by || m < MORNING);
   };
   // What we know about a night (its key is the evening's date):
-  //   off  – you took it off;  quit – Tide was quit and not used again that night, so it wasn't tracked;
+  //   off  – you took it off;  quit – Tide was quit and not back on before bedtime, so it wasn't tracked;
   //   ok / late – the last time the Mac was used, on time or not;  none – nothing recorded (the Mac wasn't used, or Tide wasn't running).
   function nightStatus(g, nights, key) {
     nights = nights || {};
     const v = typeof nights[key] === 'number' ? nights[key] : null, quit = nights.quit && nights.quit[key];
     if (g.nightOff === key || g.nightsOff.includes(key)) return {state: 'off', v, quit};
-    if (quit != null && (v == null || quit >= v)) return {state: 'quit', v, quit};
+    if (quit != null) return {state: 'quit', v, quit};
     if (v == null) return {state: 'none', v, quit};
     return {state: v <= lightsOutBy(g) ? 'ok' : 'late', v, quit};
   }
@@ -59,14 +59,25 @@
     return t;
   }
   const onVacation = (g, key) => g.vacation.some(([a, b]) => key >= a && (!b || key <= b));
+  // A night breaks the streak if Tide was quit (not tracking means stepping away from the goals),
+  // or if it's the third night off in a row.
+  function nightBreaks(g, nights, day) {
+    const st = k => nightStatus(g, nights, k).state;
+    if (st(dayKey(day)) === 'quit') return 'quit';
+    if ([0, 1, 2].every(i => st(dayKey(day - i * DAY + DAY / 2)) === 'off')) return 'off3';
+    return '';
+  }
   // Days that close the daily goal keep the streak; vacation days are skipped, today can still be closed.
-  function streak(logs, g, now = Date.now()) {
+  // A night that breaks the streak ends it, even after a goal day.
+  function streak(logs, g, now = Date.now(), nights = null) {
+    const broke = d => nights ? nightBreaks(g, nights, d) : '';
     const t = totals(logs), goal = g.goalMin * MIN, today = dayStart(now);
     const met = d => (t.get(d) || 0) >= goal;
     const prev = d => dayStart(d - DAY / 2);
     let current = 0, d = met(today) ? today : prev(today);
     const first = logs.length ? Math.min(...logs.map(l => dayStart(l.start))) : today;
     while (d >= first) {
+      if (d < today && broke(d)) break;
       if (met(d)) current++;
       else if (!onVacation(g, dayKey(d))) break;
       d = prev(d);
@@ -76,6 +87,7 @@
       if (met(x)) run++;
       else if (!onVacation(g, dayKey(x)) && x !== today) run = 0;
       best = Math.max(best, run);
+      if (x < today && broke(x)) run = 0;
     }
     const monday = today - ((new Date(now).getDay() + 6) % 7) * DAY;
     const week = [...Array(7)].map((_, i) => {
@@ -165,7 +177,7 @@
     const facts = {
       nights: trackedNights(g, nights).filter(n => n.state === 'ok').length,
       hours: logs.reduce((n, l) => n + l.ms, 0) / 36e5,
-      best: streak(logs, g).best,
+      best: streak(logs, g, Date.now(), nights).best,
       sessions: logs.length,
       early: logs.some(l => { const m = minutesOf(l.start); return m >= 4 * 60 && m < 7 * 60; }),
       longest: Math.max(0, ...logs.map(l => l.ms)),
@@ -182,5 +194,5 @@
     return name ? `${part}, ${name}` : part;
   };
 
-  window.Game = {MIN, DAY, dayStart, dayKey, nightKey, hhmm, settings, isBedtime, isLockTime, factsOn, lightsOutBy, nightStatus, trackedNights, FACTS, streak, level, badges, greeting, onVacation};
+  window.Game = {MIN, DAY, dayStart, dayKey, nightKey, hhmm, settings, isBedtime, isLockTime, factsOn, lightsOutBy, nightStatus, trackedNights, nightBreaks, FACTS, streak, level, badges, greeting, onVacation};
 })();

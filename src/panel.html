@@ -328,7 +328,7 @@ window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderStat
 // The game: daily goal, streak, level and badges (game.js). Settings and the nights the Mac was last used come from the app.
 let G = Game.settings(store.get('tide.game', {})), nights = store.get('tide.nights', {});
 window.__syncGame = data => { G = Game.settings(data); if (notice && notice.kind === 'bed' && !bedNow()) present(null); render(); };
-window.__syncNights = data => { nights = data || {}; };
+window.__syncNights = data => { nights = data || {}; renderStats(); };
 const saveGame = () => store.set('tide.game', G);
 const bedNow = () => Game.isBedtime(G);
 const NAME = window.__USER || new URLSearchParams(location.search).get('name') || '';   // ?name= is for previews
@@ -557,7 +557,7 @@ function nudges() {
     return;
   }
   // 3. Close to the daily goal in the evening, once a day.
-  const st = Game.streak(logs, G), left = st.goal - st.today;
+  const st = Game.streak(logs, G, Date.now(), nights), left = st.goal - st.today;
   if (S.status === 'idle' && !bedNow() && m >= bed - 120 && m < bed - 30 && left > 0 && left <= 60 * MIN && S.goalNudge !== day) {
     S.goalNudge = day; saveState();
     present({kind: 'goal', title: `${dur(left)} to your daily goal`, text: st.current ? `One more block keeps your ${plural(st.current, 'day')} streak going.` : 'One more block and today counts towards a streak.',
@@ -585,13 +585,16 @@ window.morningReport = () => {
   S.morningSeen = day; saveState();
   const key = Game.dayKey(Date.now() - 864e5), n = Game.nightStatus(G, nights, key), by = Game.lightsOutBy(G);
   if (n.state === 'none') return false;
-  let run = 0;
+  let run = 0, offRun = 0;
+  for (let d = 1; d < 4; d++) { if (Game.nightStatus(G, nights, Game.dayKey(Date.now() - d * 864e5)).state !== 'off') break; offRun++; }
   for (let d = 1; d < 400; d++) { const x = Game.nightStatus(G, nights, Game.dayKey(Date.now() - d * 864e5)); if (x.state === 'off') continue; if (x.state !== 'ok') break; run++; }
   const text = {
     ok: `Laptop closed at ${clockAt(n.v)}. ` + (run > 1 ? `Lights out ${run} nights in a row. 🌙` : 'Right on time. 🌙'),
     late: `Laptop closed at ${clockAt(n.v)}, past ${clockAt(by)}. Tonight’s a fresh start.`,
-    off: `You took last night off. Hope it was a good one! Back on track tonight: lights out by ${clockAt(by)}.`,
-    quit: `Tide was closed at ${clockAt(n.quit)}, so last night wasn’t tracked. Keep it running tonight to count your lights out.`,
+    off: Game.nightBreaks(G, nights, Game.dayStart(Date.now() - 864e5)) ? `That’s 3 nights off in a row, so your streak has reset. Lights out by ${clockAt(by)} tonight to start a new one.`
+      : offRun >= 2 ? `You’ve taken ${offRun} nights off in a row. One more resets your streak, so lights out by ${clockAt(by)} tonight.`
+      : `You took last night off. Hope it was a good one! Back on track tonight: lights out by ${clockAt(by)}.`,
+    quit: `Tide was closed at ${clockAt(n.quit)} and not back on by bedtime, so last night wasn’t tracked and your streak has reset. Keep it running tonight.`,
   }[n.state];
   present({kind: 'morning', title: `Good morning${NAME ? ', ' + NAME : ''}`, text, buttons: [btn('ok', 'Thanks'), btn('block', 'Start first block', 'primary')]});
   return true;
@@ -600,7 +603,7 @@ window.morningReport = () => {
 // Celebrations (a new badge, a new level, the daily goal) wait in line and show when nothing else is asked.
 const cheers = [];
 function checkUnlocks(quiet) {
-  const got = Game.badges(logs, nights, G).filter(b => b.got), lv = Game.level(logs), st = Game.streak(logs, G), day = Game.dayKey(Date.now());
+  const got = Game.badges(logs, nights, G).filter(b => b.got), lv = Game.level(logs), st = Game.streak(logs, G, Date.now(), nights), day = Game.dayKey(Date.now());
   const seen = S.badgesSeen || [];
   if (!quiet) {
     got.filter(b => !seen.includes(b.id)).forEach(b => cheers.push({kind: 'badge', art: b.art, title: 'Badge unlocked', text: b.tip.replace(' · ', ': '),
@@ -690,7 +693,8 @@ function render() {
   if (night) {
     $('#state').textContent = 'Bedtime'; $('#progA').textContent = 'Wind down. Close the laptop soon.'; $('#progB').textContent = '';
     $('#actions').innerHTML = `<div class="duo"><button type="button" class="primary off"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg><span class="a">Tide is off after ${new Date(Game.dayStart(Date.now()) + Game.hhmm(G.bedAt) * MIN).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'})}</span><span class="b">Take tonight off</span></button></div>`;
-    $('#actions').onclick = () => { const k = Game.nightKey(Date.now()); G.nightOff = k; G.nightsOff = [...new Set([...G.nightsOff, k])]; saveGame(); if (notice && notice.kind === 'bed') present(null); render(); say('Tonight is off. Enjoy!', 3500); };
+    $('#actions').onclick = () => { const k = Game.nightKey(Date.now()); G.nightOff = k; G.nightsOff = [...new Set([...G.nightsOff, k])]; saveGame();
+      const third = Game.nightBreaks(G, nights, Game.dayStart(Date.now() - (minuteNow() < 300 ? 864e5 : 0))); if (notice && notice.kind === 'bed') present(null); render(); say(third ? 'Third night off in a row: this resets your streak.' : 'Tonight is off. Enjoy!', 5000); };
   }
   native({type: 'status', status: st});
   renderMsg(); renderClock(); renderStats();
@@ -699,7 +703,7 @@ function render() {
 /* ---------- greeting, streak and goal ---------- */
 const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 function renderStats() {
-  const st = Game.streak(logs, G), lv = Game.level(logs);
+  const st = Game.streak(logs, G, Date.now(), nights), lv = Game.level(logs);
   $('#hello').textContent = Game.greeting(NAME, Date.now(), bedNow());
   $('#helloSub').textContent = `${dur(st.today)} focused today · Level ${lv.n}`;
   $('#chipN').textContent = st.current; $('#tStreak').textContent = st.current; $('#tDays').textContent = st.current === 1 ? 'day' : 'days';

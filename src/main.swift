@@ -105,6 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             self?.web.evaluateJavaScript("window.tick && tick()")
         }
+        clearQuitIfBackInTime()
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.willPowerOffNotification, object: nil, queue: .main) { [weak self] _ in self?.poweringOff = true }
         // Bedtime: every 30 seconds, note when the Mac is in use at night and remind after bedtime.
         Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in self?.bedtimeCheck() }
@@ -339,23 +340,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     }
     // A night runs until 5 AM. While the Mac is in use from 6 PM, the latest time is kept for that night
     // (the dashboard's Lights out card). After bedtime, the Island reminds every 5 minutes while you keep using it.
-    // Quitting Tide in the evening is remembered (tide.nights "quit"), so the morning report and Lights out know that night
-    // wasn't tracked. Shutting down or logging out counts as closing the laptop instead.
+    // Quitting Tide is remembered against that night (tide.nights "quit"): if it isn't back on before bedtime, the night
+    // isn't tracked and the streak resets. Reopening before bedtime, or within 10 minutes (a restart or an update), clears it.
+    // Shutting down or logging out isn't a quit: in the evening it counts as closing the laptop.
     var poweringOff = false
-    func applicationWillTerminate(_ notification: Notification) {
+    func nightNow() -> (key: String, value: Int) {
         let now = Date(), cal = Calendar.current, m = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
-        guard m >= 18 * 60 || m < 300 else { return }
         let night = m < 300 ? now.addingTimeInterval(-86400) : now
-        let key = String(format: "%04d-%02d-%02d", cal.component(.year, from: night), cal.component(.month, from: night), cal.component(.day, from: night))
-        let value = m < 300 ? m + 1440 : m
+        return (String(format: "%04d-%02d-%02d", cal.component(.year, from: night), cal.component(.month, from: night), cal.component(.day, from: night)), m < 300 ? m + 1440 : m)
+    }
+    func saveNights(_ nights: [String: Any]) {
+        let text = json(nights)
+        try? text.write(to: fileURL(for: "tide.nights"), atomically: true, encoding: .utf8)
+        for view in [web, dashWeb] { view?.evaluateJavaScript("window.__syncNights && __syncNights(\(text))") }
+    }
+    func applicationWillTerminate(_ notification: Notification) {
+        let (key, value) = nightNow()
         var nights = readJSON("tide.nights")
         if poweringOff {
-            if (nights[key] as? Int ?? -1) < value { nights[key] = value }
+            if value >= 18 * 60, (nights[key] as? Int ?? -1) < value { nights[key] = value }
         } else {
             var quit = nights["quit"] as? [String: Any] ?? [:]
             quit[key] = value; nights["quit"] = quit
         }
-        try? json(nights).write(to: fileURL(for: "tide.nights"), atomically: true, encoding: .utf8)
+        saveNights(nights)
+    }
+    func clearQuitIfBackInTime() {
+        let (key, value) = nightNow()
+        var nights = readJSON("tide.nights")
+        guard var quit = nights["quit"] as? [String: Any], let at = quit[key] as? Int else { return }
+        let bed = minutes(readJSON("tide.game")["bedAt"], 22 * 60)
+        if value < bed || value - at <= 10 { quit[key] = nil; nights["quit"] = quit; saveNights(nights) }
     }
 
     func bedtimeCheck() {
@@ -370,10 +385,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
             var nights = readJSON("tide.nights")
             if (nights[key] as? Int ?? -1) < value {
                 nights[key] = value
-                if var quit = nights["quit"] as? [String: Any], quit[key] != nil { quit[key] = nil; nights["quit"] = quit }
-                let text = json(nights)
-                try? text.write(to: fileURL(for: "tide.nights"), atomically: true, encoding: .utf8)
-                for view in [web, dashWeb] { view?.evaluateJavaScript("window.__syncNights && __syncNights(\(text))") }
+                saveNights(nights)
             }
         }
         // The first use of the Mac in the morning: the panel shows last night's report (once a day).
