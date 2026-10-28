@@ -15,29 +15,6 @@ final class PanelWindow: NSWindow {
     override var canBecomeMain: Bool { false }
 }
 
-// WebKit only follows the mouse in the active app's windows. The Island shows over other apps, so this view
-// watches the mouse itself and tells the page where it is; the page lights up the button under it.
-final class HoverForwardingView: NSView {
-    weak var target: WKWebView?
-    override func updateTrackingAreas() {
-        super.updateTrackingAreas()
-        trackingAreas.forEach(removeTrackingArea)
-        addTrackingArea(NSTrackingArea(rect: .zero, options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .inVisibleRect], owner: self))
-    }
-    private func send(_ event: NSEvent?) {
-        guard let target else { return }
-        var x = -1.0, y = -1.0
-        if let event {
-            let p = convert(event.locationInWindow, from: nil)
-            x = p.x; y = bounds.height - p.y
-        }
-        target.evaluateJavaScript("window.hoverAt && hoverAt(\(x), \(y))")
-    }
-    override func mouseMoved(with event: NSEvent) { send(event) }
-    override func mouseEntered(with event: NSEvent) { send(event) }
-    override func mouseExited(with event: NSEvent) { send(nil) }
-}
-
 // A web view that acts on the first click even while another app is active, so the Island's buttons need one click.
 final class FirstClickWebView: WKWebView {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
@@ -246,7 +223,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
 
     func showPanel() {
         if !panel.isVisible { placePanel() }
-        island.orderOut(nil)
+        trackIslandHover(false); island.orderOut(nil)
         web.evaluateJavaScript("panelVisible(true)")
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
@@ -275,14 +252,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         island.level = .popUpMenu
         island.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         island.isReleasedWhenClosed = false
-        island.acceptsMouseMovedEvents = true
-        let hover = HoverForwardingView(frame: island.contentView!.bounds)
-        island.contentView = hover
-        islandWeb = FirstClickWebView(frame: hover.bounds, configuration: pageConfig())
+        islandWeb = FirstClickWebView(frame: island.contentView!.bounds, configuration: pageConfig())
         islandWeb.autoresizingMask = [.width, .height]
         islandWeb.setValue(false, forKey: "drawsBackground")
-        hover.addSubview(islandWeb)
-        hover.target = islandWeb
+        island.contentView!.addSubview(islandWeb)
         loadPage("island", into: islandWeb)
     }
 
@@ -292,9 +265,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         island.setFrame(NSRect(x: f.midX - islandWidth / 2, y: f.maxY - islandHeight, width: islandWidth, height: islandHeight), display: true)
     }
 
+    // WebKit only follows the mouse in the active app's windows, and the Island shows over other apps. So while it's up,
+    // the app checks the mouse ~30 times a second and tells the page which point is under it; the page lights that button.
+    var hoverTimer: Timer?
+    var lastHover = CGPoint(x: -2, y: -2)
+    func trackIslandHover(_ on: Bool) {
+        hoverTimer?.invalidate(); hoverTimer = nil
+        lastHover = CGPoint(x: -2, y: -2)
+        guard on else { islandWeb.evaluateJavaScript("window.hoverAt && hoverAt(-1, -1)"); return }
+        hoverTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
+            guard let self, self.island.isVisible else { return }
+            let p = self.island.convertPoint(fromScreen: NSEvent.mouseLocation), h = self.islandWeb.bounds.height
+            let inside = self.islandWeb.frame.contains(p)
+            let point = inside ? CGPoint(x: p.x.rounded(), y: (h - p.y).rounded()) : CGPoint(x: -1, y: -1)
+            guard point != self.lastHover else { return }
+            self.lastHover = point
+            self.islandWeb.evaluateJavaScript("window.hoverAt && hoverAt(\(point.x), \(point.y))")
+        }
+    }
+
     func showNotice(_ notice: [String: Any]?) {
         currentNotice = notice
-        guard let notice else { island.orderOut(nil); return }
+        guard let notice else { trackIslandHover(false); island.orderOut(nil); return }
         if panel.isVisible { return }   // the panel shows it itself
         // Start the Island's text below the menu bar (and the notch, where there is one).
         if let screen = NSScreen.main {
@@ -312,6 +304,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         } else {
             island.orderFrontRegardless()
         }
+        trackIslandHover(true)
     }
 
     // Clicking anywhere else closes the panel, like a menu.

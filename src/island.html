@@ -31,14 +31,14 @@ input.shake{animation:shake .3s}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips:empty{display:none}
 .chips button{transition:background .15s,transform .15s;background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:99px;padding:5px 11px;font:580 12px var(--font);cursor:pointer;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
-.chips button:hover,.chips button.hover{background:rgba(255,255,255,.26)}
+.chips button.hover{background:rgba(255,255,255,.26)}
 /* Two buttons: the main action a white pill, the other an outlined pill. */
 .btns{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px;margin-top:2px}
 .btns button{border:0;border-radius:99px;height:42px;font:700 15px var(--font);cursor:pointer;background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5)}
 .btns .primary{background:linear-gradient(#fff,#eef3ff);color:#1f5cf2;box-shadow:inset 0 -1px 0 rgba(0,0,40,.1),0 6px 14px -6px rgba(0,0,40,.45)}
 .btns button{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,background-color .18s,filter .18s}
-.btns button:hover,.btns button.hover{transform:translateY(-1px);background-color:rgba(255,255,255,.12)}
-.btns .primary:hover,.btns .primary.hover{filter:brightness(1.05);box-shadow:inset 0 -1px 0 rgba(0,0,40,.1),0 10px 20px -6px rgba(0,0,40,.5)}
+.btns button.hover{transform:translateY(-1px);background-color:rgba(255,255,255,.12)}
+.btns .primary.hover{filter:brightness(1.05);box-shadow:inset 0 -1px 0 rgba(0,0,40,.1),0 10px 20px -6px rgba(0,0,40,.5)}
 .btns button:active{transform:scale(.97);transition-duration:.08s}
 .chips button:active{transform:scale(.96)}
 /* dark mode last, so it wins over the light rules above */
@@ -51,10 +51,10 @@ input.shake{animation:shake .3s}
   p{color:rgba(255,255,255,.65)}
   input{background:rgba(255,255,255,.07);box-shadow:inset 0 1px 2px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1)}
   .chips button{background:rgba(255,255,255,.08)}
-  .chips button:hover,.chips button.hover{background:rgba(255,255,255,.15)}
+  .chips button.hover{background:rgba(255,255,255,.15)}
   .btns button{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.22)}
   .btns .primary{background:linear-gradient(#3a72ff,#1f5cf2);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 18px -8px rgba(31,92,242,.8)}
-  .btns .primary:hover,.btns .primary.hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 22px -8px rgba(31,92,242,.9)}
+  .btns .primary.hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 22px -8px rgba(31,92,242,.9)}
 }
 .logo.art{background:none;box-shadow:none;width:52px;height:52px}
 .logo.art svg{width:52px;height:52px;filter:drop-shadow(0 4px 8px rgba(0,0,40,.35))}
@@ -143,7 +143,8 @@ if (q.has('demo')) {
   };
   setNotice(demos[q.get('demo')] || demos.break);
 }
-// While another app is active WebKit doesn't track the mouse, so the app sends its position here and the button under it gets .hover.
+// Hover comes only from the app: while the Island is up it sends the mouse position here (or -1, -1 when it's outside),
+// and the button under it gets .hover. The page's own :hover isn't used, since it sticks when another app is active.
 window.hoverAt = (x, y) => {
   const el = x < 0 ? null : document.elementFromPoint(x, y), b = el && el.closest('button');
   document.querySelectorAll('button.hover').forEach(e => { if (e !== b) e.classList.remove('hover'); });
