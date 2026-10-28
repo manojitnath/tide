@@ -583,13 +583,17 @@ window.morningReport = () => {
   const day = Game.dayKey(Date.now()), m = minuteNow();
   if (notice || S.morningSeen === day || m < 5 * 60 || m >= 12 * 60) return false;
   S.morningSeen = day; saveState();
-  const v = nights[Game.dayKey(Date.now() - 864e5)];
-  if (v == null) return false;
-  const by = Game.lightsOutBy(G), ok = v <= by;
-  let run = 0; for (let d = 1; d < 400; d++) { const x = nights[Game.dayKey(Date.now() - d * 864e5)]; if (x == null || x > by) break; run++; }
-  present({kind: 'morning', title: `Good morning${NAME ? ', ' + NAME : ''}`,
-    text: `Laptop closed at ${clockAt(v)}. ` + (ok ? (run > 1 ? `Lights out ${run} nights in a row. 🌙` : 'Right on time. 🌙') : `That’s past ${clockAt(by)}. Tonight’s a fresh start.`),
-    buttons: [btn('ok', 'Thanks'), btn('block', 'Start first block', 'primary')]});
+  const key = Game.dayKey(Date.now() - 864e5), n = Game.nightStatus(G, nights, key), by = Game.lightsOutBy(G);
+  if (n.state === 'none') return false;
+  let run = 0;
+  for (let d = 1; d < 400; d++) { const x = Game.nightStatus(G, nights, Game.dayKey(Date.now() - d * 864e5)); if (x.state === 'off') continue; if (x.state !== 'ok') break; run++; }
+  const text = {
+    ok: `Laptop closed at ${clockAt(n.v)}. ` + (run > 1 ? `Lights out ${run} nights in a row. 🌙` : 'Right on time. 🌙'),
+    late: `Laptop closed at ${clockAt(n.v)}, past ${clockAt(by)}. Tonight’s a fresh start.`,
+    off: `You took last night off. Hope it was a good one! Back on track tonight: lights out by ${clockAt(by)}.`,
+    quit: `Tide was closed at ${clockAt(n.quit)}, so last night wasn’t tracked. Keep it running tonight to count your lights out.`,
+  }[n.state];
+  present({kind: 'morning', title: `Good morning${NAME ? ', ' + NAME : ''}`, text, buttons: [btn('ok', 'Thanks'), btn('block', 'Start first block', 'primary')]});
   return true;
 };
 
@@ -616,7 +620,7 @@ window.testIsland = kind => {
   const b = Game.badges(logs, nights, G)[0];
   const n = kind === 'break' ? N.breakDone() : kind === 'topic' ? N.topic() : kind === 'bed' ? bedNotice() : kind === 'lock' ? lockNotice() : kind === 'wind' ? windNotice()
     : kind === 'heads' ? {kind: 'bed', title: 'Bedtime in 30 minutes', text: 'Start your last block now, or start winding down. Tide turns off at 10:00 PM.', buttons: [btn('ok', 'Wind down'), btn('last', 'Start last block', 'primary')]}
-    : kind === 'morning' ? {kind: 'morning', title: `Good morning${NAME ? ', ' + NAME : ''}`, text: 'Laptop closed at 10:24 PM. Lights out 5 nights in a row. 🌙', buttons: [btn('ok', 'Thanks'), btn('block', 'Start first block', 'primary')]}
+    : kind === 'morning' ? {kind: 'morning', title: `Good morning${NAME ? ', ' + NAME : ''}`, text: 'You took last night off. Hope it was a good one! Back on track tonight: lights out by 10:30 PM.', buttons: [btn('ok', 'Thanks'), btn('block', 'Start first block', 'primary')]}
     : kind === 'goal' ? {kind: 'goal', title: '30m to your daily goal', text: 'One more block keeps your 6-day streak going.', buttons: [btn('ok', 'Not today'), btn('block30', 'Start 30 min', 'primary')]}
     : kind === 'stretch' ? {kind: 'stretch', title: '1h 30m of focus. Time for a breather', text: STRETCH[0], buttons: [btn('ok', 'Keep going'), btn('take5', 'Take 5', 'primary')]}
     : kind === 'badge' ? {kind: 'badge', art: b.art, title: 'Badge unlocked', text: b.tip.replace(' · ', ': '), buttons: [btn('see', 'See badges'), btn('ok', 'Nice!', 'primary')]} : N.done(ms);
@@ -686,7 +690,7 @@ function render() {
   if (night) {
     $('#state').textContent = 'Bedtime'; $('#progA').textContent = 'Wind down. Close the laptop soon.'; $('#progB').textContent = '';
     $('#actions').innerHTML = `<div class="duo"><button type="button" class="primary off"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg><span class="a">Tide is off after ${new Date(Game.dayStart(Date.now()) + Game.hhmm(G.bedAt) * MIN).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'})}</span><span class="b">Take tonight off</span></button></div>`;
-    $('#actions').onclick = () => { G.nightOff = Game.nightKey(Date.now()); saveGame(); if (notice && notice.kind === 'bed') present(null); render(); say('Tonight is off. Enjoy!', 3500); };
+    $('#actions').onclick = () => { const k = Game.nightKey(Date.now()); G.nightOff = k; G.nightsOff = [...new Set([...G.nightsOff, k])]; saveGame(); if (notice && notice.kind === 'bed') present(null); render(); say('Tonight is off. Enjoy!', 3500); };
   }
   native({type: 'status', status: st});
   renderMsg(); renderClock(); renderStats();

@@ -12,8 +12,8 @@
   // The night a moment belongs to: before 5 AM it's still the evening before.
   const nightKey = ts => dayKey(minutesOf(ts) < MORNING ? ts - DAY : ts);
 
-  const DEFAULTS = {goalMin: 120, bedOn: true, bedAt: '22:00', factsAt: '22:01', nightOff: '', vacation: []};
-  const settings = g => Object.assign({}, DEFAULTS, g || {}, {vacation: Array.isArray(g && g.vacation) ? g.vacation : []});
+  const DEFAULTS = {goalMin: 120, bedOn: true, bedAt: '22:00', factsAt: '22:01', nightOff: '', nightsOff: [], vacation: []};
+  const settings = g => Object.assign({}, DEFAULTS, g || {}, {vacation: Array.isArray(g && g.vacation) ? g.vacation : [], nightsOff: [...new Set([...(Array.isArray(g && g.nightsOff) ? g.nightsOff : []), ...(g && g.nightOff ? [g.nightOff] : [])])]});
 
   /* ---------- bedtime ---------- */
   const isBedtime = (g, ts = Date.now()) => {
@@ -28,6 +28,19 @@
     const m = minutesOf(ts), by = lightsOutBy(g);
     return isBedtime(g, ts) && (by >= 1440 ? m >= by - 1440 && m < MORNING : m >= by || m < MORNING);
   };
+  // What we know about a night (its key is the evening's date):
+  //   off  – you took it off;  quit – Tide was quit and not used again that night, so it wasn't tracked;
+  //   ok / late – the last time the Mac was used, on time or not;  none – nothing recorded (the Mac wasn't used, or Tide wasn't running).
+  function nightStatus(g, nights, key) {
+    nights = nights || {};
+    const v = typeof nights[key] === 'number' ? nights[key] : null, quit = nights.quit && nights.quit[key];
+    if (g.nightOff === key || g.nightsOff.includes(key)) return {state: 'off', v, quit};
+    if (quit != null && (v == null || quit >= v)) return {state: 'quit', v, quit};
+    if (v == null) return {state: 'none', v, quit};
+    return {state: v <= lightsOutBy(g) ? 'ok' : 'late', v, quit};
+  }
+  // Nights that count towards lights out: tracked, not taken off.
+  const trackedNights = (g, nights) => Object.keys(nights || {}).filter(k => /^\d{4}-/.test(k)).map(k => ({key: k, ...nightStatus(g, nights, k)})).filter(n => n.state === 'ok' || n.state === 'late');
   const FACTS = [
     'Adults need at least 7 hours of sleep a night to stay healthy.',
     'People who sleep under 6 hours are about 4 times more likely to catch a cold.',
@@ -148,9 +161,9 @@
     ['hightide', '#1f5cf2', 'wave', 'High tide · reach level 10', f => f.level >= 10],
   ];
   function badges(logs, nights, g) {
-    const t = totals(logs), by = lightsOutBy(g);
+    const t = totals(logs);
     const facts = {
-      nights: Object.values(nights || {}).filter(v => v <= by).length,
+      nights: trackedNights(g, nights).filter(n => n.state === 'ok').length,
       hours: logs.reduce((n, l) => n + l.ms, 0) / 36e5,
       best: streak(logs, g).best,
       sessions: logs.length,
@@ -169,5 +182,5 @@
     return name ? `${part}, ${name}` : part;
   };
 
-  window.Game = {MIN, DAY, dayStart, dayKey, nightKey, hhmm, settings, isBedtime, isLockTime, factsOn, lightsOutBy, FACTS, streak, level, badges, greeting, onVacation};
+  window.Game = {MIN, DAY, dayStart, dayKey, nightKey, hhmm, settings, isBedtime, isLockTime, factsOn, lightsOutBy, nightStatus, trackedNights, FACTS, streak, level, badges, greeting, onVacation};
 })();

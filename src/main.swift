@@ -105,6 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             self?.web.evaluateJavaScript("window.tick && tick()")
         }
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.willPowerOffNotification, object: nil, queue: .main) { [weak self] _ in self?.poweringOff = true }
         // Bedtime: every 30 seconds, note when the Mac is in use at night and remind after bedtime.
         Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in self?.bedtimeCheck() }
         // Unlocking the Mac after bedtime brings the reminder straight back.
@@ -338,6 +339,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     }
     // A night runs until 5 AM. While the Mac is in use from 6 PM, the latest time is kept for that night
     // (the dashboard's Lights out card). After bedtime, the Island reminds every 5 minutes while you keep using it.
+    // Quitting Tide in the evening is remembered (tide.nights "quit"), so the morning report and Lights out know that night
+    // wasn't tracked. Shutting down or logging out counts as closing the laptop instead.
+    var poweringOff = false
+    func applicationWillTerminate(_ notification: Notification) {
+        let now = Date(), cal = Calendar.current, m = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
+        guard m >= 18 * 60 || m < 300 else { return }
+        let night = m < 300 ? now.addingTimeInterval(-86400) : now
+        let key = String(format: "%04d-%02d-%02d", cal.component(.year, from: night), cal.component(.month, from: night), cal.component(.day, from: night))
+        let value = m < 300 ? m + 1440 : m
+        var nights = readJSON("tide.nights")
+        if poweringOff {
+            if (nights[key] as? Int ?? -1) < value { nights[key] = value }
+        } else {
+            var quit = nights["quit"] as? [String: Any] ?? [:]
+            quit[key] = value; nights["quit"] = quit
+        }
+        try? json(nights).write(to: fileURL(for: "tide.nights"), atomically: true, encoding: .utf8)
+    }
+
     func bedtimeCheck() {
         let game = readJSON("tide.game"), now = Date(), cal = Calendar.current
         let m = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
@@ -350,6 +370,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
             var nights = readJSON("tide.nights")
             if (nights[key] as? Int ?? -1) < value {
                 nights[key] = value
+                if var quit = nights["quit"] as? [String: Any], quit[key] != nil { quit[key] = nil; nights["quit"] = quit }
                 let text = json(nights)
                 try? text.write(to: fileURL(for: "tide.nights"), atomically: true, encoding: .utf8)
                 for view in [web, dashWeb] { view?.evaluateJavaScript("window.__syncNights && __syncNights(\(text))") }

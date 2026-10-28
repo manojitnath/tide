@@ -200,6 +200,7 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
 .nbars{flex:1;height:90px;gap:6px}
 .nbars .ok i{background:linear-gradient(#a99bff,#7a66f0)}
 .nbars .late i{background:linear-gradient(#ffb36b,#ff7a3d)}
+.nbars .skip i{background:none;box-shadow:inset 0 0 0 1.5px var(--line);border:1.5px dashed color-mix(in srgb,var(--muted) 50%,transparent)}
 .nbars .fut i{background:var(--soft);opacity:.6}
 
 .streakchip{display:flex;align-items:center;gap:6px;padding:8px 16px 8px 12px;border-radius:99px;background:var(--cardFill);box-shadow:var(--shadow)}
@@ -535,7 +536,10 @@ $('#bedSw').onclick = () => { G.bedOn = !G.bedOn; saveGame(); };
 $('#bedAt').onchange = e => { if (e.target.value) { G.bedAt = e.target.value; saveGame(); } };
 $('#factsAt').onchange = e => { if (e.target.value) { G.factsAt = e.target.value; saveGame(); } };
 $('#goalSel').onchange = e => { G.goalMin = +e.target.value; saveGame(); };
-$('#offBtn').onclick = () => { const k = Game.nightKey(Date.now()); G.nightOff = G.nightOff === k ? '' : k; saveGame(); };
+$('#offBtn').onclick = () => {
+  const k = Game.nightKey(Date.now()), on = G.nightOff === k;
+  G.nightOff = on ? '' : k; G.nightsOff = on ? G.nightsOff.filter(x => x !== k) : [...new Set([...G.nightsOff, k])]; saveGame();
+};
 // Vacation mode keeps a list of date ranges, so past vacations still don't count against the streak.
 $('#vacSw').onclick = () => {
   const k = Game.dayKey(Date.now()), open = G.vacation.find(v => !v[1]);
@@ -588,12 +592,15 @@ function renderProgress() {
   $('#wTotal').textContent = `${dur(wk.reduce((n, d) => n + d.ms, 0))} focused`;
   $('#wBars').innerHTML = wk.map(d => `<div class="b${d.day === today ? ' now' : ''}${d.day > today ? ' fut' : ''}"><i style="height:${Math.max(4, d.ms / max * 100).toFixed(0)}%">${d.day === today ? `<span>${dur(d.ms)}</span>` : ''}</i><small>${WD(d.day)[0]}</small></div>`).join('');
   // Lights out: when the Mac was last used each night this week, and whether that was on time.
-  const by = Game.lightsOutBy(G), week = wk.map(d => ({d, v: nights[Game.dayKey(d.day)]}));
-  const used = week.filter(n => n.v != null), ok = used.filter(n => n.v <= by).length;
+  // Nights taken off, or with Tide quit, don't count; they show as a dashed bar.
+  const by = Game.lightsOutBy(G), week = wk.map(d => ({d, ...Game.nightStatus(G, nights, Game.dayKey(d.day))}));
+  const used = week.filter(n => n.state === 'ok' || n.state === 'late'), ok = used.filter(n => n.state === 'ok').length;
   $('#lBy').textContent = `laptop closed by ${clockOf(by)}`;
   $('#lN').innerHTML = `${ok} <span>of ${plural(used.length, 'night')}</span>`;
-  $('#lAvg').textContent = used.length ? `Average laptop close ${clockOf(Math.round(used.reduce((n, x) => n + x.v, 0) / used.length))}` : 'No nights yet';
-  $('#lBars').innerHTML = week.map(({d, v}) => `<div class="n${v == null ? ' fut' : v <= by ? ' ok' : ' late'}" title="${v == null ? '' : clockOf(v)}"><i style="height:${v == null ? 30 : Math.min(100, Math.max(18, (v - 1080) / 480 * 100)).toFixed(0)}%"></i><small>${WD(d.day)[0]}</small></div>`).join('');
+  const offs = week.filter(n => n.state === 'off').length;
+  $('#lAvg').textContent = (used.length ? `Average laptop close ${clockOf(Math.round(used.reduce((n, x) => n + x.v, 0) / used.length))}` : 'No nights yet') + (offs ? ` · ${plural(offs, 'night')} off` : '');
+  const tip = n => ({ok: `Closed at ${clockOf(n.v)}`, late: `Closed at ${clockOf(n.v)}`, off: 'Night off', quit: 'Tide was quit, not tracked', none: ''})[n.state];
+  $('#lBars').innerHTML = week.map(n => `<div class="n ${n.state === 'ok' ? 'ok' : n.state === 'late' ? 'late' : n.state === 'off' || n.state === 'quit' ? 'skip' : 'fut'}" title="${tip(n)}"><i style="height:${n.state === 'ok' || n.state === 'late' ? Math.min(100, Math.max(18, (n.v - 1080) / 480 * 100)).toFixed(0) : 30}%"></i><small>${WD(n.d.day)[0]}</small></div>`).join('');
   // Badges: just the coin; hovering says what it's for, or "Locked".
   const b = Game.badges(logs, nights, G);
   $('#bCount').textContent = `${b.filter(x => x.got).length} of ${b.length}`;
@@ -619,6 +626,7 @@ if (new URLSearchParams(location.search).has('demo')) {
   settings.version = '3.0';
   nights = {};
   for (let d = 1; d <= 13; d++) nights[isoDay(Date.now() - d * DAY)] = [1335, 1352, 1361, 1418, 1340, 1395, 1320, 1338, 1405, 1347, 1329, 1356, 1371][d - 1];
+  G = Game.settings({nightsOff: [isoDay(Date.now() - 4 * DAY)]});   // one night off, shown dashed
   if (new Date().getDay() === 1) { weekBack = 1; range = '30'; }   // on a Monday, show full weeks
 }
 setTab(new URLSearchParams(location.search).get('tab') || window.__TAB || 'stats');
