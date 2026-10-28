@@ -354,6 +354,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         try? text.write(to: fileURL(for: "tide.nights"), atomically: true, encoding: .utf8)
         for view in [web, dashWeb] { view?.evaluateJavaScript("window.__syncNights && __syncNights(\(text))") }
     }
+    // Before a quit you chose (the menu or ⌘Q), say what it costs: if Tide isn't back on by bedtime, the night isn't
+    // tracked and the streak resets. Quits sent by scripts, updates, logout or shutdown go straight through.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        let game = readJSON("tide.game")
+        guard !poweringOff, NSAppleEventManager.shared().currentAppleEvent == nil, game["bedOn"] as? Bool ?? true else { return .terminateNow }
+        let (key, value) = nightNow()
+        guard (game["nightOff"] as? String) != key else { return .terminateNow }
+        let bed = minutes(game["bedAt"], 22 * 60)
+        let bedText = DateFormatter.localizedString(from: Calendar.current.startOfDay(for: Date()).addingTimeInterval(Double(bed) * 60), dateStyle: .none, timeStyle: .short)
+        let alert = NSAlert()
+        alert.messageText = "Quit Tide?"
+        alert.informativeText = value >= bed
+            ? "It’s after bedtime, so quitting now means tonight isn’t tracked and your streak resets."
+            : "If Tide isn’t running again by \(bedText), tonight won’t be tracked and your streak resets."
+        alert.addButton(withTitle: "Keep Tide Running")
+        alert.addButton(withTitle: "Quit Anyway")
+        NSApp.activate(ignoringOtherApps: true)
+        return alert.runModal() == .alertSecondButtonReturn ? .terminateNow : .terminateCancel
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         let (key, value) = nightNow()
         var nights = readJSON("tide.nights")

@@ -325,7 +325,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
       <div class="set"><div><b>Bedtime reminders</b><span>While you're using the Mac after bedtime, the Island reminds you every 5 minutes to close the laptop.</span></div><button class="switch" id="bedSw" role="switch"></button></div>
       <div class="set"><div><b>Bedtime</b><span>Reminders start, and the timer turns off until 5 AM.</span></div><input type="time" id="bedAt"></div>
       <div class="set"><div><b>Sleep facts from</b><span>Each reminder adds a short fact about why sleep matters.</span></div><input type="time" id="factsAt"></div>
-      <div class="set"><div><b>Night off</b><span id="offText">For movie nights and parties: no reminders tonight, back tomorrow.</span></div><button class="btn" id="offBtn">Take tonight off</button></div>
+      <div class="set"><div><b>Night off</b><span id="offText">For movie nights and parties: no reminders tonight. A third night off in a row resets your streak.</span></div><button class="btn" id="offBtn">Take tonight off</button></div>
     </div>
     <div class="group"><h3>Streaks and goals</h3>
       <div class="set"><div><b>Daily focus goal</b><span>Reach it to keep your streak going.</span></div><select id="goalSel"><option value="30">30 minutes</option><option value="60">1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option></select></div>
@@ -540,7 +540,9 @@ function renderSettings() {
   $('#vacSw').setAttribute('aria-checked', Game.onVacation(G, Game.dayKey(Date.now())));
   const off = G.nightOff === Game.nightKey(Date.now());
   $('#offBtn').textContent = off ? 'Turn reminders back on' : 'Take tonight off';
-  $('#offText').textContent = off ? 'Tonight is off: no reminders, and the timer works as usual.' : 'For movie nights and parties: no reminders tonight, back tomorrow.';
+  let offRun = 0; for (let d = 1; d < 4; d++) { if (Game.nightStatus(G, nights, Game.dayKey(Date.now() - d * DAY)).state !== 'off') break; offRun++; }
+  $('#offText').textContent = off ? 'Tonight is off: no reminders, and the timer works as usual.' : offRun >= 2 ? 'You’ve had 2 nights off in a row: a third resets your streak.' : 'For movie nights and parties: no reminders tonight. A third night off in a row resets your streak.';
+  if (!off && offRun >= 2) $('#offBtn').textContent = 'Take it off anyway';
 }
 $('#bedSw').onclick = () => { G.bedOn = !G.bedOn; saveGame(); };
 $('#bedAt').onchange = e => { if (e.target.value) { G.bedAt = e.target.value; saveGame(); } };

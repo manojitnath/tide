@@ -503,6 +503,12 @@ window.noticeAction = (id, topic) => {
     case 'ok': case 'bedmore': case 'bedok': present(null); break;
     case 'lock': present(null); native({type: 'lockScreen'}); break;
     case 'bedlog': present(null); stopForBed(); break;
+    case 'nightoff': {
+      const k = Game.nightKey(Date.now()), third = offInARow() >= 2;
+      G.nightOff = k; G.nightsOff = [...new Set([...G.nightsOff, k])]; saveGame(); present(null); render();
+      say(third ? 'Third night off in a row: your streak resets.' : 'Tonight is off. Enjoy!', 5000);
+      break;
+    }
     case 'last': case 'block30': startBlock(30); break;
     case 'block': present(null); beginFocus(); break;
     case 'take5': present(null); pauseFocus(); S.resumeAt = Date.now() + 5 * MIN; saveState(); say('Paused for 5 minutes. Stretch!', 4000); break;
@@ -540,6 +546,12 @@ window.bedtimeNudge = () => {
   if (S.status === 'running' || S.status === 'paused') { present(windNotice()); return true; }
   present(bedNotice()); return true;
 };
+// Nights off in a row just before tonight.
+function offInARow() {
+  const night = Game.dayStart(Date.now() - (minuteNow() < 300 ? 864e5 : 0));
+  let n = 0; for (let d = 1; d < 4; d++) { if (Game.nightStatus(G, nights, Game.dayKey(night - d * 864e5 + 432e5)).state !== 'off') break; n++; }
+  return n;
+}
 /* ---------- gentle nudges: before bedtime, in the morning, near the goal, on long sessions ---------- */
 const minuteNow = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
 const clockAt = m => new Date(Game.dayStart(Date.now()) + m * MIN).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'});
@@ -693,8 +705,12 @@ function render() {
   if (night) {
     $('#state').textContent = 'Bedtime'; $('#progA').textContent = 'Wind down. Close the laptop soon.'; $('#progB').textContent = '';
     $('#actions').innerHTML = `<div class="duo"><button type="button" class="primary off"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg><span class="a">Tide is off after ${new Date(Game.dayStart(Date.now()) + Game.hhmm(G.bedAt) * MIN).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'})}</span><span class="b">Take tonight off</span></button></div>`;
-    $('#actions').onclick = () => { const k = Game.nightKey(Date.now()); G.nightOff = k; G.nightsOff = [...new Set([...G.nightsOff, k])]; saveGame();
-      const third = Game.nightBreaks(G, nights, Game.dayStart(Date.now() - (minuteNow() < 300 ? 864e5 : 0))); if (notice && notice.kind === 'bed') present(null); render(); say(third ? 'Third night off in a row: this resets your streak.' : 'Tonight is off. Enjoy!', 5000); };
+    // Taking the night off asks first, saying what it costs.
+    $('#actions').onclick = () => {
+      const third = offInARow() >= 2;
+      present({kind: 'bed', title: 'Take tonight off?', text: third ? 'You’ve had 2 nights off in a row. A third resets your streak.' : 'No reminders tonight. One or two nights off are fine; a third in a row resets your streak.',
+        buttons: [btn('ok', 'Cancel'), btn('nightoff', third ? 'Take it off anyway' : 'Take tonight off', 'primary')]});
+    };
   }
   native({type: 'status', status: st});
   renderMsg(); renderClock(); renderStats();
