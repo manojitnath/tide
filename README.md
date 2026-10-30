@@ -37,7 +37,7 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 - **Study log:** every counted session is saved with its topic. Recent topics are one click away.
 - **Daily goal, streak and level:** the panel greets you and shows your streak (days you reach your daily goal, 2 hours by default) and today's progress. Every focused minute is 1 XP; levels go from Drop to King tide. Vacation mode pauses the streak.
 - **Badges:** 16 to unlock for focus hours, streaks and a few specials, in the **Progress** tab of the dashboard. Hover over one to see what it's for.
-- **Dashboard:** focus time, sessions, streak and top topic for today, 7 days, 30 to 360 days or a custom date range; a focused-time chart; time by topic; the hours you focus best; and a full session list you can tidy up: edit a session's topic, times or focus time (for when you forgot to stop the timer), or delete it. Export to CSV, or copy today's hours.
+- **Dashboard:** focus time, sessions, streak and top topic for today, 7 days, 30 to 360 days or a custom date range; a focused-time chart; time by topic; the hours you focus best; and a full session list you can tidy up: edit a session's topic, times or focus time (for when you forgot to stop the timer), delete it, or **add** one you did without the timer. Export to CSV, or copy today's hours.
 - **Shortcut:** ⌃⌥Space (Control-Option-Space) starts or pauses the timer from any app.
 - **Open at login**, light and dark mode, and an update notice when a new version is out.
 
