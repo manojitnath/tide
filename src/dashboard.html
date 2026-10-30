@@ -91,7 +91,7 @@ table{width:100%;border-collapse:collapse}
 th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 8px 8px}
 td{padding:9px 8px;border-top:.5px solid var(--line);font-variant-numeric:tabular-nums}
 td.t{font-weight:600;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-td.x{width:28px;text-align:right}
+td.x{width:60px;text-align:right;white-space:nowrap}
 .del{width:22px;height:22px;border-radius:6px;color:var(--muted);font-size:16px;line-height:1}.del:hover{background:var(--soft);color:#ff3b30}
 .filters{display:flex;gap:10px;align-items:center}
 select{background:var(--card);border:0;border-radius:99px;padding:7px 12px;box-shadow:var(--shadow)}
@@ -231,6 +231,17 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
 .switch:hover{filter:brightness(1.08)}
 .tabs button:not([aria-pressed="true"]):hover,.range button:not([aria-pressed="true"]):hover{color:var(--ink);background:var(--soft)}
 .btn:active,select:active,.round:active,.switch:active,.tabs button:active,.range button:active{transform:scale(.97);transition-duration:.08s}
+.del.edit svg{width:13px;height:13px;vertical-align:-1px}.del.edit:hover{color:var(--accent)}
+.sheet{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(10,15,30,.28);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.sheetcard{width:360px;display:grid;gap:12px;padding:22px;border-radius:20px;background:var(--cardFill);box-shadow:var(--shadow),0 30px 60px -20px rgba(0,0,0,.4)}
+.sheetcard h2{margin:0;font:700 19px var(--font)}.sheetcard>p{margin:-8px 0 2px;color:var(--muted);font-size:12.5px}
+.sheetcard label{display:grid;gap:5px;font-size:12px;font-weight:700;color:var(--muted)}
+.sheetcard input{font:600 14px var(--font);color:var(--ink);background:var(--soft);border:0;border-radius:10px;padding:9px 11px;box-shadow:var(--track);outline:none}
+.sheetcard input:focus{box-shadow:var(--track),0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+.sheetcard .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheetcard .mins{display:flex;align-items:center;gap:8px}.sheetcard .mins input{width:100px}.sheetcard .mins span{color:var(--muted);font-size:13px}
+.sheetcard .hint{margin:-4px 0 0;font-size:12px;color:var(--muted)}.sheetcard .hint.bad{color:#e5484d;font-weight:700}
+.sheetbtns{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
 @media (max-width:760px){.cards{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}}
 </style>
 <script>if (!window.Game) document.write('<script src="game.js"><\/script>');</script>
@@ -314,6 +325,15 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
   </section>
 </div>
 <div class="toast" id="toast" hidden></div>
+<!-- Editing a session: fix its topic, its times, or how much of it was focus. -->
+<div class="sheet" id="edit" hidden><form class="sheetcard" id="editForm">
+  <h2>Edit session</h2><p id="editDay"></p>
+  <label>Topic<input type="text" id="eTopic" maxlength="80" list="eTopics" required></label><datalist id="eTopics"></datalist>
+  <div class="two"><label>Start<input type="time" id="eStart" required></label><label>End<input type="time" id="eEnd" required></label></div>
+  <label>Focus time<div class="mins"><input type="number" id="eMin" min="1" step="1" required><span>min</span></div></label>
+  <p class="hint" id="eHint"></p>
+  <div class="sheetbtns"><button type="button" class="btn" id="eCancel">Cancel</button><button type="submit" class="btn dark">Save</button></div>
+</form></div>
 
 <script>
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -471,15 +491,60 @@ function renderSessions() {
   const all = [...new Set(logs.map(l => l.topic))].sort((x, y) => x.localeCompare(y));
   sel.innerHTML = '<option value="">All topics</option>' + all.map(t => `<option${t === cur ? ' selected' : ''}>${esc(t)}</option>`).join('');
   const list = inRange().filter(l => !sel.value || l.topic === sel.value).sort((x, y) => y.start - x.start).slice(0, 500);
-  $('#rows').innerHTML = list.map(l => `<tr><td>${fmtDate(l.start)}</td><td>${fmtTime(l.start)} – ${fmtTime(l.end)}</td><td class="t" title="${esc(l.topic)}">${esc(l.topic)}</td><td>${dur(l.ms)}</td><td class="x"><button class="del" data-id="${l.id}" title="Delete" type="button">×</button></td></tr>`).join('')
+  $('#rows').innerHTML = list.map(l => `<tr><td>${fmtDate(l.start)}</td><td>${fmtTime(l.start)} – ${fmtTime(l.end)}</td><td class="t" title="${esc(l.topic)}">${esc(l.topic)}</td><td>${dur(l.ms)}</td><td class="x"><button class="del edit" data-edit="${l.id}" title="Edit" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" data-id="${l.id}" title="Delete" type="button">×</button></td></tr>`).join('')
     || '<tr><td colspan="5" class="empty">Nothing logged in this range.</td></tr>';
 }
 $('#topicSel').onchange = renderSessions;
 $('#rows').onclick = e => {
+  const ed = e.target.closest('[data-edit]'); if (ed) { openEdit(ed.dataset.edit); return; }
   const b = e.target.closest('.del'); if (!b) return;
   const i = logs.findIndex(l => l.id === b.dataset.id); if (i < 0) return;
   const [gone] = logs.splice(i, 1); store.set('studyradio.logs', logs); renderAll();
   toast(`Deleted ${gone.topic} (${dur(gone.ms)})`, () => { logs.splice(i, 0, gone); store.set('studyradio.logs', logs); renderAll(); });
+};
+// Edit a session. End before start means it ran past midnight. Changing the times keeps the paused part the same;
+// the focus time can also be set directly, up to the length of the session.
+let editing = null;
+const hm = ts => { const d = new Date(ts); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const at = (day, v) => { const [h, m] = v.split(':').map(Number); return dayStart(day) + (h * 60 + m) * 6e4; };
+function editTimes() {
+  const s = at(editing.start, $('#eStart').value); let e = at(editing.start, $('#eEnd').value);
+  if (e <= s) e += DAY;
+  return [s, e];
+}
+function openEdit(id) {
+  editing = logs.find(l => l.id === id); if (!editing) return;
+  $('#editDay').textContent = fmtDate(editing.start);
+  $('#eTopic').value = editing.topic;
+  $('#eTopics').innerHTML = [...new Set(logs.map(l => l.topic))].map(t => `<option value="${esc(t)}">`).join('');
+  $('#eStart').value = hm(editing.start); $('#eEnd').value = hm(editing.end);
+  $('#eMin').value = Math.round(editing.ms / 6e4);
+  editHint(); $('#edit').hidden = false; setTimeout(() => $('#eEnd').focus(), 50);
+}
+function editHint() {
+  const [s, e] = editTimes(), span = Math.round((e - s) / 6e4), m = +$('#eMin').value || 0;
+  $('#eMin').max = span;
+  $('#eHint').textContent = m > span ? `Focus can’t be longer than the session (${dur(span * 6e4)}).` : `Session ${dur((e - s))}${span - m > 0 ? `, ${dur((span - m) * 6e4)} paused` : ''}.`;
+  $('#eHint').classList.toggle('bad', m > span);
+}
+['#eStart', '#eEnd'].forEach(q => $(q).addEventListener('input', () => {
+  // keep the paused minutes the same when the times move
+  const paused = Math.round((editing.end - editing.start - editing.ms) / 6e4), [s, e] = editTimes();
+  $('#eMin').value = Math.max(1, Math.round((e - s) / 6e4) - paused); editHint();
+}));
+$('#eMin').addEventListener('input', editHint);
+const closeEdit = () => { $('#edit').hidden = true; editing = null; };
+$('#eCancel').onclick = closeEdit;
+$('#edit').onclick = e => { if (e.target.id === 'edit') closeEdit(); };
+addEventListener('keydown', e => { if (e.key === 'Escape' && editing) closeEdit(); });
+$('#editForm').onsubmit = e => {
+  e.preventDefault();
+  const [s, en] = editTimes(), ms = (+$('#eMin').value || 0) * 6e4, topic = $('#eTopic').value.trim();
+  if (!topic || ms <= 0 || ms > en - s) { editHint(); return; }
+  const i = logs.findIndex(l => l.id === editing.id), before = {...logs[i]};
+  logs[i] = {...logs[i], topic, start: s, end: en, ms};
+  store.set('studyradio.logs', logs); closeEdit(); renderAll();
+  toast(`Updated ${topic} (${dur(ms)})`, () => { const j = logs.findIndex(l => l.id === before.id); if (j >= 0) logs[j] = before; store.set('studyradio.logs', logs); renderAll(); });
 };
 let toastT;
 function toast(text, undo) {
