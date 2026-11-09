@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tide · Chart mockup</title>
+<style>
+@font-face{font-family:"Manrope Preview";src:url("../../../src/fonts/Manrope.ttf") format("truetype");font-weight:200 800}
+:root{--font:Manrope,"Manrope Preview",ui-rounded,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --bg:#eaeef6;--card:#fff;--cardFill:linear-gradient(#fff,#f6f7fb);--ink:#16181d;--muted:#6b7183;--line:rgba(20,40,90,.08);--soft:#eef2fb;
+  --accent:#1f5cf2;--accentFill:linear-gradient(#3a72ff,#1f5cf2);--purpleFill:linear-gradient(#a07dff,#8a5cf6);--pill:#1f5cf2;--pillInk:#fff;
+  --pBlue:#d6e6fd;--pGreen:#e5f5cd;--pCream:#fbf0d9;--tBlue:#0f2b4f;--tGreen:#21400f;--tCream:#4c3b19;--tagInk:#fff;
+  --sheen:linear-gradient(rgba(255,255,255,.5),rgba(255,255,255,0) 55%);--blue:#1f5cf2;
+  --shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(20,40,90,.05),0 0 0 .5px rgba(20,40,90,.08),0 1px 2px rgba(20,40,90,.05),0 12px 28px -10px rgba(20,40,90,.16);
+  --blueShadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 .5px rgba(20,40,90,.12),0 14px 28px -10px rgba(31,92,242,.55);--track:inset 0 1px 2px rgba(20,40,90,.1)}
+.dark{--bg:#121212;--card:#1c1c1c;--cardFill:linear-gradient(#202020,#1a1a1a);--ink:#f2f2f2;--muted:#8a8a8a;--line:rgba(255,255,255,.07);--soft:#262626;
+  --accent:#3a73ff;--accentFill:linear-gradient(#4a7fff,#2f66f0);--purpleFill:linear-gradient(#a888ff,#8f68f5);--pill:#3a73ff;--pillInk:#fff;
+  --pBlue:#1c1c1c;--pGreen:#1c1c1c;--pCream:#1c1c1c;--tBlue:#9ec2ff;--tGreen:#b4e38a;--tCream:#f4d38f;--tagInk:#121212;
+  --sheen:linear-gradient(rgba(255,255,255,.03),rgba(255,255,255,0) 55%);--blue:#2f66f0;
+  --shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.4),0 0 0 .5px rgba(255,255,255,.08),0 1px 2px rgba(0,0,0,.4),0 12px 28px -10px rgba(0,0,0,.6);
+  --blueShadow:inset 0 1px 0 rgba(255,255,255,.25),0 0 0 .5px rgba(255,255,255,.08),0 14px 28px -10px rgba(0,0,0,.7);--track:inset 0 1px 2px rgba(0,0,0,.5)}
+*{box-sizing:border-box}
+html{overflow-y:scroll}
+::-webkit-scrollbar{width:12px;background:transparent}
+::-webkit-scrollbar-thumb{background:transparent;border-radius:9px;border:3px solid transparent;background-clip:padding-box}
+:hover::-webkit-scrollbar-thumb{background-color:rgba(128,128,128,.35)}
+body{margin:0;background:#dfe4ec;color:#16181d;font:580 13px/1.4 var(--font);-webkit-font-smoothing:antialiased}
+.doc{max-width:980px;margin:0 auto;padding:36px 32px 0}
+.doc h1{margin:0;font:600 24px/1.2 var(--font);letter-spacing:-.01em}
+.doc p{margin:5px 0 0;color:#5d6577;font-size:13px}
+.mode{max-width:980px;margin:0 auto;padding:22px 32px 8px}
+.mode h2{margin:0 0 10px;padding-left:4px;font:700 11px var(--font);letter-spacing:.13em;text-transform:uppercase;color:#5d6577}
+.screen{background:var(--bg);color:var(--ink);border-radius:22px;padding:22px 32px 34px;box-shadow:0 22px 44px -30px rgba(20,40,90,.4),0 0 0 1px rgba(20,40,90,.04);margin-bottom:18px}
+.dark .screen{box-shadow:0 22px 44px -30px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.05)}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+.tabs{display:flex;justify-content:center;margin-bottom:26px}
+.tabs div{display:flex;gap:2px;background:var(--cardFill);border-radius:99px;padding:4px;box-shadow:var(--shadow)}
+.tabs button{display:flex;align-items:center;gap:7px;padding:7px 16px;border-radius:99px;font-weight:600;color:var(--muted)}
+.tabs button svg{width:15px;height:15px}
+.tabs button[aria-pressed="true"]{background:var(--accentFill);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 8px -2px rgba(31,92,242,.5)}
+.title{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px}
+h1.t{margin:0;font:600 30px/1.1 var(--font);letter-spacing:-.01em}
+.title p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.tools{display:flex;gap:10px;align-items:center}
+.range{display:flex;gap:2px;background:var(--cardFill);border-radius:99px;padding:4px;box-shadow:var(--shadow)}
+.range button{padding:6px 13px;border-radius:99px;font-weight:600}
+.range button[aria-pressed="true"]{background:var(--accentFill);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 8px -2px rgba(31,92,242,.5)}
+.range .more svg{width:11px;height:11px;margin-left:4px;vertical-align:-1px}
+.round{width:40px;height:40px;border-radius:50%;background:var(--cardFill);box-shadow:var(--shadow);display:grid;place-items:center}
+.round svg{width:16px;height:16px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.card{background-color:var(--card);border-radius:14px;padding:16px 18px 14px;--tag:var(--tBlue);--glow:58,115,255;box-shadow:var(--shadow);background-image:var(--sheen),radial-gradient(120% 90% at 50% 125%,rgba(var(--glow),.22),transparent 70%)}
+.card small{display:block;font-size:13.5px;font-weight:580;color:var(--tag);opacity:.85}
+.card b{display:block;font:600 34px/1.1 var(--font);margin:10px 0;color:var(--tag);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card span{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top;background:var(--tag);color:var(--tagInk);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:600}
+.card span:empty{display:none}
+.card:nth-child(1){background-color:var(--blue);--tag:#fff;box-shadow:var(--blueShadow);
+  background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,0) 50%),radial-gradient(circle at 100% 0,transparent 0 44px,rgba(255,255,255,.16) 44px 45px,transparent 45px 78px,rgba(255,255,255,.12) 78px 79px,transparent 79px),radial-gradient(circle at 100% 0,rgba(255,255,255,.07) 0 78px,transparent 78px)}
+.card:nth-child(1) small,.card:nth-child(1) b{color:#fff}
+.card:nth-child(1) span{background:rgba(255,255,255,.2);color:#fff}
+.card:nth-child(2){background-color:var(--pBlue);--tag:var(--tBlue);--glow:58,115,255}
+.card:nth-child(3){background-color:var(--pGreen);--tag:var(--tGreen);--glow:120,200,80}
+.card:nth-child(4){background-color:var(--pCream);--tag:var(--tCream);--glow:244,211,143}
+.dark .card b{color:var(--ink)}
+.dark .card:nth-child(1) b{color:#fff}
+.panel{background:var(--cardFill);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);margin-bottom:14px}
+.ph{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.ph h2{margin:0;font:600 18px var(--font)}
+.ph span{color:var(--muted);font-size:12.5px}
+.chart{display:grid;grid-template-columns:52px 1fr;height:230px}
+.yax{position:relative}.yax span{position:absolute;right:10px;transform:translateY(-50%);font-size:11.5px;color:var(--muted);white-space:nowrap}
+.plot{position:relative;border-bottom:1px solid var(--line)}
+.plot .grid{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
+.bars{position:absolute;inset:0;display:flex;align-items:flex-end;gap:6px;padding:0 4px}
+.bcol{flex:1;height:100%;display:flex;align-items:flex-end;position:relative}
+.bstk{width:100%;max-width:46px;margin:0 auto;height:100%;display:flex;flex-direction:column-reverse;justify-content:flex-start}
+.seg{display:block;width:100%;min-height:0}
+.seg:last-child{border-radius:9px 9px 0 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+.seg:only-child{border-radius:9px 9px 3px 3px}
+.bcol:hover .bstk{filter:brightness(1.05)}
+.bcol:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--pill);color:var(--pillInk);font-size:11px;padding:3px 7px;border-radius:6px;white-space:nowrap;z-index:2}
+.avg{position:absolute;left:0;right:0;border-top:1.5px dashed var(--muted);pointer-events:none;z-index:1}
+.avg span{position:absolute;right:0;top:-17px;background:var(--card);padding-left:7px;font-size:11px;color:var(--muted);line-height:1.2}
+.xax{display:flex;gap:6px;padding:8px 4px 0 56px}.xax span{flex:1;text-align:center;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.legend{display:flex;flex-wrap:nowrap;gap:14px;margin:11px 0 0 56px;font-size:11.5px;color:var(--muted);overflow:hidden}
+.legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.legend i{width:7px;height:7px;border-radius:50%;flex:none}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.twrap{display:grid;grid-template-columns:140px minmax(0,1fr);gap:16px;align-items:center}
+.dwrap{position:relative;width:140px;height:140px;justify-self:center}
+.donut{display:block;width:100%;height:100%}
+.dcenter{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1.15}
+.dcenter b{font:700 17px var(--font);letter-spacing:-.01em}
+.dcenter span{font-size:10.5px;color:var(--muted);margin-top:2px}
+.tlist{list-style:none;margin:0;padding:0;min-width:0}
+.tlist li{display:flex;align-items:center;gap:7px;padding:6px 0;border-top:.5px solid var(--line);min-width:0}
+.tlist li:first-child{border-top:0}
+.tlist .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.tlist .tn{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tlist .dots{flex:1;min-width:8px;border-bottom:1px dotted var(--line);margin:0 1px 4px}
+.tlist .tv{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
+.hours{display:flex;align-items:flex-end;gap:3px;height:110px;padding-top:6px}
+.hours div{flex:1;height:100%;display:flex;align-items:flex-end}.hours i{display:block;width:100%;border-radius:5px 5px 2px 2px;background:var(--purpleFill)}
+.hlab{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:6px}
+.tlhead{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}
+.tlstep{display:flex;align-items:center;gap:6px}
+.tlstep button{width:26px;height:26px;border-radius:50%;font-size:17px;line-height:1;color:var(--muted);background:var(--soft);transition:background-color .15s,color .15s}
+.tlstep button:hover:not(:disabled){color:var(--ink);background:var(--line)}
+.tlstep button:disabled{opacity:.3;cursor:default}
+.tlstep b{font:600 14px var(--font);margin:0 4px}
+.tlhead .sum{color:var(--muted);font-size:12.5px}
+.tlaxis{position:relative;padding-top:20px}
+.tlgrid{position:absolute;left:0;right:0;top:20px;bottom:0;background:repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px 11.1111%)}
+.tlhour{position:absolute;top:0;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+.tlhour.first{transform:none}
+.tlhour.last{transform:translateX(-100%)}
+.tlrow{position:relative;height:28px}
+.tlb{position:absolute;top:0;height:28px;border-radius:8px;overflow:hidden;background:color-mix(in srgb,var(--c) 30%,var(--card));color:#fff;cursor:pointer;transition:filter .15s}
+.tlb:hover{filter:brightness(1.07)}
+.tlfill{position:absolute;left:0;top:0;bottom:0;background:var(--c)}
+.tltxt{position:relative;z-index:1;display:block;padding:0 6px;line-height:28px;font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.22)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 8px 8px}
+td{padding:9px 8px;border-top:.5px solid var(--line);font-variant-numeric:tabular-nums}
+td.t{font-weight:600;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td.x{width:60px;text-align:right;white-space:nowrap}
+.del{width:22px;height:22px;border-radius:6px;color:var(--muted);font-size:16px;line-height:1}.del:hover{background:var(--soft);color:#ff3b30}
+.del.edit svg{width:13px;height:13px;vertical-align:-1px}.del.edit:hover{color:var(--accent)}
+.filters{display:flex;gap:10px;align-items:center}
+select{background:var(--cardFill);border:0;border-radius:99px;padding:7px 12px;box-shadow:var(--shadow);font:inherit;color:inherit}
+.btn{background:var(--cardFill);border-radius:99px;padding:8px 14px;font-weight:600;box-shadow:var(--shadow)}
+.btn.dark{background:var(--accentFill);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 8px -2px rgba(31,92,242,.5)}
+@media (max-width:760px){.cards{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}.twrap{grid-template-columns:140px minmax(0,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="doc">
+  <h1>Tide · Chart mockup</h1>
+  <p>Stats and Sessions with topic colours, a stacked focus chart, a topic donut and a day timeline. Static, light and dark.</p>
+</div>
+
+<section class="mode">
+  <h2>Light mode</h2>
+
+  <div class="screen">
+    <div class="tabs"><div>
+      <button type="button" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="11" width="3.5" height="9" rx="1"/><rect x="10.25" y="5" width="3.5" height="15" rx="1"/><rect x="16.5" y="8" width="3.5" height="12" rx="1"/></svg>Stats</button>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/></svg>Progress</button>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".6"/><circle cx="4" cy="12" r=".6"/><circle cx="4" cy="18" r=".6"/></svg>Sessions</button>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+    </div></div>
+
+    <div class="title">
+      <div><h1 class="t">Focus Analytics</h1><p>Your focus time, sessions and topics.</p></div>
+      <div class="tools"><div class="range">
+        <button type="button">Today</button><button type="button" aria-pressed="true">7D</button><button type="button" class="more">Range<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4.5l3 3 3-3"/></svg></button>
+      </div><button class="round" type="button" title="Export CSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button></div>
+    </div>
+
+    <div class="cards">
+      <div class="card"><small>Focus time</small><b>17h 45m</b><span>7 days · 2h 32m a day</span></div>
+      <div class="card"><small>Sessions</small><b>27</b><span>focus blocks</span></div>
+      <div class="card"><small>Streak</small><b>12</b><span>days</span></div>
+      <div class="card"><small>Top topic</small><b>AWS AI Practitioner</b><span>4h 45m</span></div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Focused Time</h2><span>17h 45m across 7 days · daily</span></div>
+      <div class="chart">
+        <div class="yax"><span style="top:100%">0</span><span style="top:75%">1h</span><span style="top:50%">2h</span><span style="top:25%">3h</span><span style="top:0">4h</span></div>
+        <div class="plot">
+          <div class="grid" style="top:0"></div><div class="grid" style="top:25%"></div><div class="grid" style="top:50%"></div><div class="grid" style="top:75%"></div>
+          <div class="bars">
+            <div class="bcol" data-tip="Mon 26 Oct · 3h 10m"><div class="bstk">
+              <div class="seg" style="height:37.5%;background:#1f5cf2" title="AWS AI Practitioner · 1h 30m"></div>
+              <div class="seg" style="height:25%;background:#8a5cf6" title="Linear algebra · 1h"></div>
+              <div class="seg" style="height:16.667%;background:#e8336b" title="Reading · 40m"></div>
+            </div></div>
+            <div class="bcol" data-tip="Tue 27 Oct · 2h 45m"><div class="bstk">
+              <div class="seg" style="height:18.75%;background:#1f5cf2" title="AWS AI Practitioner · 45m"></div>
+              <div class="seg" style="height:50%;background:#2fae5a" title="System design · 2h"></div>
+            </div></div>
+            <div class="bcol" data-tip="Wed 28 Oct · 2h 45m"><div class="bstk">
+              <div class="seg" style="height:31.25%;background:#8a5cf6" title="Linear algebra · 1h 15m"></div>
+              <div class="seg" style="height:12.5%;background:#e8336b" title="Reading · 30m"></div>
+              <div class="seg" style="height:25%;background:#e0a23a" title="Security+ notes · 1h"></div>
+            </div></div>
+            <div class="bcol" data-tip="Thu 29 Oct · 3h 35m"><div class="bstk">
+              <div class="seg" style="height:12.5%;background:#1f5cf2" title="AWS AI Practitioner · 30m"></div>
+              <div class="seg" style="height:37.5%;background:#2fae5a" title="System design · 1h 30m"></div>
+              <div class="seg" style="height:20.833%;background:#8a5cf6" title="Linear algebra · 50m"></div>
+              <div class="seg" style="height:18.75%;background:#e8336b" title="Reading · 45m"></div>
+            </div></div>
+            <div class="bcol" data-tip="Fri 30 Oct · 2h 45m"><div class="bstk">
+              <div class="seg" style="height:50%;background:#1f5cf2" title="AWS AI Practitioner · 2h"></div>
+              <div class="seg" style="height:18.75%;background:#e0a23a" title="Security+ notes · 45m"></div>
+            </div></div>
+            <div class="bcol" data-tip="Sat 31 Oct · 1h 45m"><div class="bstk">
+              <div class="seg" style="height:18.75%;background:#8a5cf6" title="Linear algebra · 45m"></div>
+              <div class="seg" style="height:25%;background:#e8336b" title="Reading · 1h"></div>
+            </div></div>
+            <div class="bcol" data-tip="Sun 1 Nov · 1h"><div class="bstk">
+              <div class="seg" style="height:25%;background:#2fae5a" title="System design · 1h"></div>
+            </div></div>
+          </div>
+          <div class="avg" style="bottom:63.4%"><span>avg 2h 32m</span></div>
+        </div>
+      </div>
+      <div class="xax"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+      <div class="legend">
+        <span><i style="background:#1f5cf2"></i>AWS AI Practitioner</span>
+        <span><i style="background:#2fae5a"></i>System design</span>
+        <span><i style="background:#8a5cf6"></i>Linear algebra</span>
+        <span><i style="background:#e8336b"></i>Reading</span>
+        <span><i style="background:#e0a23a"></i>Security+ notes</span>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel"><div class="ph"><h2>Topics</h2><span>5 topics</span></div>
+        <div class="twrap">
+          <div class="dwrap">
+            <svg class="donut" viewBox="0 0 140 140" aria-hidden="true">
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#1f5cf2" stroke-width="18" stroke-dasharray="96 268.42" stroke-dashoffset="0" transform="rotate(-90 70 70)"><title>AWS AI Practitioner · 27%</title></circle>
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#2fae5a" stroke-width="18" stroke-dasharray="90.89 273.53" stroke-dashoffset="-97.5" transform="rotate(-90 70 70)"><title>System design · 25%</title></circle>
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#8a5cf6" stroke-width="18" stroke-dasharray="77.2 287.22" stroke-dashoffset="-189.89" transform="rotate(-90 70 70)"><title>Linear algebra · 22%</title></circle>
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#e8336b" stroke-width="18" stroke-dasharray="58.38 306.04" stroke-dashoffset="-268.59" transform="rotate(-90 70 70)"><title>Reading · 16%</title></circle>
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#e0a23a" stroke-width="18" stroke-dasharray="34.43 329.99" stroke-dashoffset="-328.47" transform="rotate(-90 70 70)"><title>Security+ notes · 10%</title></circle>
+            </svg>
+            <div class="dcenter"><b>17h 45m</b><span>total</span></div>
+          </div>
+          <ul class="tlist">
+            <li><i class="dot" style="background:#1f5cf2"></i><span class="tn">AWS AI Practitioner</span><span class="dots"></span><span class="tv">4h 45m · 27%</span></li>
+            <li><i class="dot" style="background:#2fae5a"></i><span class="tn">System design</span><span class="dots"></span><span class="tv">4h 30m · 25%</span></li>
+            <li><i class="dot" style="background:#8a5cf6"></i><span class="tn">Linear algebra</span><span class="dots"></span><span class="tv">3h 50m · 22%</span></li>
+            <li><i class="dot" style="background:#e8336b"></i><span class="tn">Reading</span><span class="dots"></span><span class="tv">2h 55m · 16%</span></li>
+            <li><i class="dot" style="background:#e0a23a"></i><span class="tn">Security+ notes</span><span class="dots"></span><span class="tv">1h 45m · 10%</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel"><div class="ph"><h2>Best Hours</h2><span>when you focus</span></div>
+        <div class="hours">
+          <div title="12:00 · 0m"><i style="height:0"></i></div><div title="1:00 · 0m"><i style="height:0"></i></div><div title="2:00 · 0m"><i style="height:0"></i></div><div title="3:00 · 0m"><i style="height:0"></i></div><div title="4:00 · 0m"><i style="height:0"></i></div><div title="5:00 · 0m"><i style="height:0"></i></div><div title="6:00 · 0m"><i style="height:0"></i></div><div title="7:00 · 0m"><i style="height:0"></i></div>
+          <div title="8:00 · 20m"><i style="height:20%"></i></div><div title="9:00 · 1h 25m"><i style="height:85%"></i></div><div title="10:00 · 1h 10m"><i style="height:70%"></i></div><div title="11:00 · 55m"><i style="height:55%"></i></div><div title="12:00 · 25m"><i style="height:25%"></i></div><div title="13:00 · 1h 5m"><i style="height:65%"></i></div><div title="14:00 · 50m"><i style="height:50%"></i></div><div title="15:00 · 1h 20m"><i style="height:80%"></i></div><div title="16:00 · 45m"><i style="height:45%"></i></div><div title="17:00 · 30m"><i style="height:30%"></i></div><div title="18:00 · 18m"><i style="height:18%"></i></div><div title="19:00 · 10m"><i style="height:10%"></i></div><div title="20:00 · 0m"><i style="height:0"></i></div><div title="21:00 · 0m"><i style="height:0"></i></div><div title="22:00 · 0m"><i style="height:0"></i></div><div title="23:00 · 0m"><i style="height:0"></i></div>
+        </div>
+        <div class="hlab"><span>12 am</span><span>6 am</span><span>12 pm</span><span>6 pm</span><span>11 pm</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="tabs"><div>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="11" width="3.5" height="9" rx="1"/><rect x="10.25" y="5" width="3.5" height="15" rx="1"/><rect x="16.5" y="8" width="3.5" height="12" rx="1"/></svg>Stats</button>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/></svg>Progress</button>
+      <button type="button" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".6"/><circle cx="4" cy="12" r=".6"/><circle cx="4" cy="18" r=".6"/></svg>Sessions</button>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+    </div></div>
+
+    <div class="title">
+      <div><h1 class="t">Sessions</h1><p>Every logged focus session.</p></div>
+      <div class="tools"><select><option>All topics</option></select><div class="range">
+        <button type="button">Today</button><button type="button" aria-pressed="true">7D</button><button type="button" class="more">Range<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4.5l3 3 3-3"/></svg></button>
+      </div></div>
+    </div>
+
+    <div class="panel">
+      <div class="tlhead">
+        <div class="tlstep"><button type="button" title="Previous day">‹</button><b>Thursday 29 Oct</b><button type="button" title="Next day" disabled>›</button></div>
+        <span class="sum">4h 30m focused</span>
+      </div>
+      <div class="tlaxis">
+        <div class="tlgrid"></div>
+        <span class="tlhour first" style="left:0">9 am</span>
+        <span class="tlhour" style="left:33.333%">12 pm</span>
+        <span class="tlhour" style="left:66.667%">3 pm</span>
+        <span class="tlhour last" style="left:100%">6 pm</span>
+        <div class="tlrow">
+          <div class="tlb" style="left:1.85%;width:16.67%;--c:#2fae5a" title="System design · 9:10 – 10:40 · 1h 30m focus"><i class="tlfill" style="width:100%"></i><span class="tltxt">System design</span></div>
+          <div class="tlb" style="left:23.15%;width:10.19%;--c:#8a5cf6" title="Linear algebra · 11:05 – 12:00 · 55m focus"><i class="tlfill" style="width:100%"></i><span class="tltxt">Linear algebra</span></div>
+          <div class="tlb" style="left:47.22%;width:16.67%;--c:#1f5cf2" title="AWS AI Practitioner · 13:15 – 14:45 · 1h 15m focus"><i class="tlfill" style="width:83.33%"></i><span class="tltxt">AWS AI Practitioner</span></div>
+          <div class="tlb" style="left:72.22%;width:9.26%;--c:#e8336b" title="Reading · 15:30 – 16:20 · 50m focus"><i class="tlfill" style="width:100%"></i><span class="tltxt">Reading</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <table><thead><tr><th>Date</th><th>Time</th><th>Topic</th><th>Focus</th><th></th></tr></thead><tbody>
+        <tr><td>Thu 29 Oct</td><td>09:10 – 10:40</td><td class="t">System design</td><td>1h 30m</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+        <tr><td>Thu 29 Oct</td><td>11:05 – 12:00</td><td class="t">Linear algebra</td><td>55m</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+        <tr><td>Thu 29 Oct</td><td>13:15 – 14:45</td><td class="t">AWS AI Practitioner</td><td>1h 15m</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+        <tr><td>Thu 29 Oct</td><td>15:30 – 16:20</td><td class="t">Reading</td><td>50m</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+        <tr><td>Wed 28 Oct</td><td>10:00 – 11:15</td><td class="t">Linear algebra</td><td>1h 15m</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+        <tr><td>Wed 28 Oct</td><td>16:10 – 17:10</td><td class="t">Security+ notes</td><td>1h</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="filters"><button class="btn dark" type="button">+ Add session</button><button class="btn" type="button">Copy today's hours</button><button class="btn" type="button">Export CSV</button></div>
+  </div>
+</section>
+
+<section class="mode dark">
+  <h2>Dark mode</h2>
+
+  <div class="screen">
+    <div class="tabs"><div>
+      <button type="button" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="11" width="3.5" height="9" rx="1"/><rect x="10.25" y="5" width="3.5" height="15" rx="1"/><rect x="16.5" y="8" width="3.5" height="12" rx="1"/></svg>Stats</button>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/></svg>Progress</button>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".6"/><circle cx="4" cy="12" r=".6"/><circle cx="4" cy="18" r=".6"/></svg>Sessions</button>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+    </div></div>
+
+    <div class="title">
+      <div><h1 class="t">Focus Analytics</h1><p>Your focus time, sessions and topics.</p></div>
+      <div class="tools"><div class="range">
+        <button type="button">Today</button><button type="button" aria-pressed="true">7D</button><button type="button" class="more">Range<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4.5l3 3 3-3"/></svg></button>
+      </div><button class="round" type="button" title="Export CSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button></div>
+    </div>
+
+    <div class="cards">
+      <div class="card"><small>Focus time</small><b>17h 45m</b><span>7 days · 2h 32m a day</span></div>
+      <div class="card"><small>Sessions</small><b>27</b><span>focus blocks</span></div>
+      <div class="card"><small>Streak</small><b>12</b><span>days</span></div>
+      <div class="card"><small>Top topic</small><b>AWS AI Practitioner</b><span>4h 45m</span></div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Focused Time</h2><span>17h 45m across 7 days · daily</span></div>
+      <div class="chart">
+        <div class="yax"><span style="top:100%">0</span><span style="top:75%">1h</span><span style="top:50%">2h</span><span style="top:25%">3h</span><span style="top:0">4h</span></div>
+        <div class="plot">
+          <div class="grid" style="top:0"></div><div class="grid" style="top:25%"></div><div class="grid" style="top:50%"></div><div class="grid" style="top:75%"></div>
+          <div class="bars">
+            <div class="bcol" data-tip="Mon 26 Oct · 3h 10m"><div class="bstk">
+              <div class="seg" style="height:37.5%;background:#1f5cf2" title="AWS AI Practitioner · 1h 30m"></div>
+              <div class="seg" style="height:25%;background:#8a5cf6" title="Linear algebra · 1h"></div>
+              <div class="seg" style="height:16.667%;background:#e8336b" title="Reading · 40m"></div>
+            </div></div>
+            <div class="bcol" data-tip="Tue 27 Oct · 2h 45m"><div class="bstk">
+              <div class="seg" style="height:18.75%;background:#1f5cf2" title="AWS AI Practitioner · 45m"></div>
+              <div class="seg" style="height:50%;background:#2fae5a" title="System design · 2h"></div>
+            </div></div>
+            <div class="bcol" data-tip="Wed 28 Oct · 2h 45m"><div class="bstk">
+              <div class="seg" style="height:31.25%;background:#8a5cf6" title="Linear algebra · 1h 15m"></div>
+              <div class="seg" style="height:12.5%;background:#e8336b" title="Reading · 30m"></div>
+              <div class="seg" style="height:25%;background:#e0a23a" title="Security+ notes · 1h"></div>
+            </div></div>
+            <div class="bcol" data-tip="Thu 29 Oct · 3h 35m"><div class="bstk">
+              <div class="seg" style="height:12.5%;background:#1f5cf2" title="AWS AI Practitioner · 30m"></div>
+              <div class="seg" style="height:37.5%;background:#2fae5a" title="System design · 1h 30m"></div>
+              <div class="seg" style="height:20.833%;background:#8a5cf6" title="Linear algebra · 50m"></div>
+              <div class="seg" style="height:18.75%;background:#e8336b" title="Reading · 45m"></div>
+            </div></div>
+            <div class="bcol" data-tip="Fri 30 Oct · 2h 45m"><div class="bstk">
+              <div class="seg" style="height:50%;background:#1f5cf2" title="AWS AI Practitioner · 2h"></div>
+              <div class="seg" style="height:18.75%;background:#e0a23a" title="Security+ notes · 45m"></div>
+            </div></div>
+            <div class="bcol" data-tip="Sat 31 Oct · 1h 45m"><div class="bstk">
+              <div class="seg" style="height:18.75%;background:#8a5cf6" title="Linear algebra · 45m"></div>
+              <div class="seg" style="height:25%;background:#e8336b" title="Reading · 1h"></div>
+            </div></div>
+            <div class="bcol" data-tip="Sun 1 Nov · 1h"><div class="bstk">
+              <div class="seg" style="height:25%;background:#2fae5a" title="System design · 1h"></div>
+            </div></div>
+          </div>
+          <div class="avg" style="bottom:63.4%"><span>avg 2h 32m</span></div>
+        </div>
+      </div>
+      <div class="xax"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+      <div class="legend">
+        <span><i style="background:#1f5cf2"></i>AWS AI Practitioner</span>
+        <span><i style="background:#2fae5a"></i>System design</span>
+        <span><i style="background:#8a5cf6"></i>Linear algebra</span>
+        <span><i style="background:#e8336b"></i>Reading</span>
+        <span><i style="background:#e0a23a"></i>Security+ notes</span>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel"><div class="ph"><h2>Topics</h2><span>5 topics</span></div>
+        <div class="twrap">
+          <div class="dwrap">
+            <svg class="donut" viewBox="0 0 140 140" aria-hidden="true">
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#1f5cf2" stroke-width="18" stroke-dasharray="96 268.42" stroke-dashoffset="0" transform="rotate(-90 70 70)"><title>AWS AI Practitioner · 27%</title></circle>
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#2fae5a" stroke-width="18" stroke-dasharray="90.89 273.53" stroke-dashoffset="-97.5" transform="rotate(-90 70 70)"><title>System design · 25%</title></circle>
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#8a5cf6" stroke-width="18" stroke-dasharray="77.2 287.22" stroke-dashoffset="-189.89" transform="rotate(-90 70 70)"><title>Linear algebra · 22%</title></circle>
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#e8336b" stroke-width="18" stroke-dasharray="58.38 306.04" stroke-dashoffset="-268.59" transform="rotate(-90 70 70)"><title>Reading · 16%</title></circle>
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#e0a23a" stroke-width="18" stroke-dasharray="34.43 329.99" stroke-dashoffset="-328.47" transform="rotate(-90 70 70)"><title>Security+ notes · 10%</title></circle>
+            </svg>
+            <div class="dcenter"><b>17h 45m</b><span>total</span></div>
+          </div>
+          <ul class="tlist">
+            <li><i class="dot" style="background:#1f5cf2"></i><span class="tn">AWS AI Practitioner</span><span class="dots"></span><span class="tv">4h 45m · 27%</span></li>
+            <li><i class="dot" style="background:#2fae5a"></i><span class="tn">System design</span><span class="dots"></span><span class="tv">4h 30m · 25%</span></li>
+            <li><i class="dot" style="background:#8a5cf6"></i><span class="tn">Linear algebra</span><span class="dots"></span><span class="tv">3h 50m · 22%</span></li>
+            <li><i class="dot" style="background:#e8336b"></i><span class="tn">Reading</span><span class="dots"></span><span class="tv">2h 55m · 16%</span></li>
+            <li><i class="dot" style="background:#e0a23a"></i><span class="tn">Security+ notes</span><span class="dots"></span><span class="tv">1h 45m · 10%</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel"><div class="ph"><h2>Best Hours</h2><span>when you focus</span></div>
+        <div class="hours">
+          <div title="12:00 · 0m"><i style="height:0"></i></div><div title="1:00 · 0m"><i style="height:0"></i></div><div title="2:00 · 0m"><i style="height:0"></i></div><div title="3:00 · 0m"><i style="height:0"></i></div><div title="4:00 · 0m"><i style="height:0"></i></div><div title="5:00 · 0m"><i style="height:0"></i></div><div title="6:00 · 0m"><i style="height:0"></i></div><div title="7:00 · 0m"><i style="height:0"></i></div>
+          <div title="8:00 · 20m"><i style="height:20%"></i></div><div title="9:00 · 1h 25m"><i style="height:85%"></i></div><div title="10:00 · 1h 10m"><i style="height:70%"></i></div><div title="11:00 · 55m"><i style="height:55%"></i></div><div title="12:00 · 25m"><i style="height:25%"></i></div><div title="13:00 · 1h 5m"><i style="height:65%"></i></div><div title="14:00 · 50m"><i style="height:50%"></i></div><div title="15:00 · 1h 20m"><i style="height:80%"></i></div><div title="16:00 · 45m"><i style="height:45%"></i></div><div title="17:00 · 30m"><i style="height:30%"></i></div><div title="18:00 · 18m"><i style="height:18%"></i></div><div title="19:00 · 10m"><i style="height:10%"></i></div><div title="20:00 · 0m"><i style="height:0"></i></div><div title="21:00 · 0m"><i style="height:0"></i></div><div title="22:00 · 0m"><i style="height:0"></i></div><div title="23:00 · 0m"><i style="height:0"></i></div>
+        </div>
+        <div class="hlab"><span>12 am</span><span>6 am</span><span>12 pm</span><span>6 pm</span><span>11 pm</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="tabs"><div>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="11" width="3.5" height="9" rx="1"/><rect x="10.25" y="5" width="3.5" height="15" rx="1"/><rect x="16.5" y="8" width="3.5" height="12" rx="1"/></svg>Stats</button>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/></svg>Progress</button>
+      <button type="button" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".6"/><circle cx="4" cy="12" r=".6"/><circle cx="4" cy="18" r=".6"/></svg>Sessions</button>
+      <button type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+    </div></div>
+
+    <div class="title">
+      <div><h1 class="t">Sessions</h1><p>Every logged focus session.</p></div>
+      <div class="tools"><select><option>All topics</option></select><div class="range">
+        <button type="button">Today</button><button type="button" aria-pressed="true">7D</button><button type="button" class="more">Range<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4.5l3 3 3-3"/></svg></button>
+      </div></div>
+    </div>
+
+    <div class="panel">
+      <div class="tlhead">
+        <div class="tlstep"><button type="button" title="Previous day">‹</button><b>Thursday 29 Oct</b><button type="button" title="Next day" disabled>›</button></div>
+        <span class="sum">4h 30m focused</span>
+      </div>
+      <div class="tlaxis">
+        <div class="tlgrid"></div>
+        <span class="tlhour first" style="left:0">9 am</span>
+        <span class="tlhour" style="left:33.333%">12 pm</span>
+        <span class="tlhour" style="left:66.667%">3 pm</span>
+        <span class="tlhour last" style="left:100%">6 pm</span>
+        <div class="tlrow">
+          <div class="tlb" style="left:1.85%;width:16.67%;--c:#2fae5a" title="System design · 9:10 – 10:40 · 1h 30m focus"><i class="tlfill" style="width:100%"></i><span class="tltxt">System design</span></div>
+          <div class="tlb" style="left:23.15%;width:10.19%;--c:#8a5cf6" title="Linear algebra · 11:05 – 12:00 · 55m focus"><i class="tlfill" style="width:100%"></i><span class="tltxt">Linear algebra</span></div>
+          <div class="tlb" style="left:47.22%;width:16.67%;--c:#1f5cf2" title="AWS AI Practitioner · 13:15 – 14:45 · 1h 15m focus"><i class="tlfill" style="width:83.33%"></i><span class="tltxt">AWS AI Practitioner</span></div>
+          <div class="tlb" style="left:72.22%;width:9.26%;--c:#e8336b" title="Reading · 15:30 – 16:20 · 50m focus"><i class="tlfill" style="width:100%"></i><span class="tltxt">Reading</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <table><thead><tr><th>Date</th><th>Time</th><th>Topic</th><th>Focus</th><th></th></tr></thead><tbody>
+        <tr><td>Thu 29 Oct</td><td>09:10 – 10:40</td><td class="t">System design</td><td>1h 30m</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+        <tr><td>Thu 29 Oct</td><td>11:05 – 12:00</td><td class="t">Linear algebra</td><td>55m</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+        <tr><td>Thu 29 Oct</td><td>13:15 – 14:45</td><td class="t">AWS AI Practitioner</td><td>1h 15m</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+        <tr><td>Thu 29 Oct</td><td>15:30 – 16:20</td><td class="t">Reading</td><td>50m</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+        <tr><td>Wed 28 Oct</td><td>10:00 – 11:15</td><td class="t">Linear algebra</td><td>1h 15m</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+        <tr><td>Wed 28 Oct</td><td>16:10 – 17:10</td><td class="t">Security+ notes</td><td>1h</td><td class="x"><button class="del edit" type="button" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" type="button" title="Delete">×</button></td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="filters"><button class="btn dark" type="button">+ Add session</button><button class="btn" type="button">Copy today's hours</button><button class="btn" type="button">Export CSV</button></div>
+  </div>
+</section>
+
+</body>
+</html>
