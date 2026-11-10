@@ -72,10 +72,17 @@ h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em}
 .plot{position:relative;border-bottom:1px solid var(--line)}
 .plot .grid{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
 .bars{position:absolute;inset:0;display:flex;align-items:flex-end;gap:6px;padding:0 4px}
-.bars div{flex:1;height:100%;display:flex;align-items:flex-end;position:relative}
-.bars i{display:block;width:100%;max-width:46px;margin:0 auto;border-radius:6px 6px 2px 2px;background:var(--accent);min-height:0}
+.bars div{flex:1;height:100%;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;position:relative}
+.bars i{display:block;width:100%;max-width:46px;min-height:0}
 .bars div:hover i{filter:brightness(1.08)}
 .bars div:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--pill);color:var(--pillInk);font-size:11px;padding:3px 7px;border-radius:6px;white-space:nowrap;z-index:2}
+.avg{position:absolute;left:0;right:0;border-top:1.5px dashed var(--muted);pointer-events:none;z-index:2}
+.avg span{position:absolute;right:0;top:-17px;background:var(--card);padding-left:7px;font-size:11px;line-height:1.2;color:var(--muted);white-space:nowrap}
+.avg.low span{top:3px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 0 0 56px;font-size:11.5px;color:var(--muted)}
+.legend .lg{display:inline-flex;align-items:center;gap:6px;max-width:100%;min-width:0}
+.legend .lg span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.legend i{width:8px;height:8px;border-radius:50%;flex:none}
 .xax{display:flex;gap:6px;padding:8px 4px 0 56px}.xax span{flex:1;text-align:center;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden}
 .empty{color:var(--muted);padding:10px 0 2px}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -131,8 +138,7 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
 .card:nth-child(3){background-color:var(--pGreen);--tag:var(--tGreen);--glow:120,200,80}
 .card:nth-child(4){background-color:var(--pCream);--tag:var(--tCream);--glow:244,211,143}
 .panel,.group{border-radius:14px}
-.bars i{border-radius:9px 9px 3px 3px;background:var(--accentFill);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
-.bars div:last-child i{background:var(--purpleFill)}
+.bars i:last-child{box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
 .track{height:9px;background:var(--soft);box-shadow:var(--track)}
 .hours i{background:var(--purpleFill);border-radius:5px 5px 2px 2px;opacity:1}
 .switch[aria-checked="true"]{background:var(--accent)}
@@ -267,6 +273,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
       <div class="ph"><h2>Focused Time</h2><span id="chartSub"></span></div>
       <div class="chart"><div class="yax" id="yax"></div><div class="plot" id="plot"><div class="bars" id="bars"></div></div></div>
       <div class="xax" id="xax"></div>
+      <div class="legend" id="legend" hidden></div>
       <div class="empty" id="chartEmpty" hidden>Start a focus session to build your analytics.</div>
     </div>
     <div class="split">
@@ -473,7 +480,12 @@ function renderStats() {
   $('#cTopSub').textContent = topics[0] ? dur(topics[0][1]) : '';
 
   const {unit, out} = buckets(a, b);
-  out.forEach(k => k.ms = list.filter(l => l.start >= k.s && l.start < k.e).reduce((n, l) => n + l.ms, 0));
+  out.forEach(k => {
+    k.by = {}; k.ms = 0;
+    list.forEach(l => {
+      if (l.start >= k.s && l.start < k.e) { k.by[l.topic] = (k.by[l.topic] || 0) + l.ms; k.ms += l.ms; }
+    });
+  });
   const top = niceMax(Math.max(...out.map(k => k.ms), 0) || 1);
   const ticks = [0, .25, .5, .75, 1];
   // Short axis labels: 45m, 2h, 1.5h.
@@ -481,8 +493,27 @@ function renderStats() {
   $('#yax').innerHTML = ticks.map(t => `<span style="top:${(1 - t) * 100}%">${axis(top * t)}</span>`).join('');
   $('#plot').querySelectorAll('.grid').forEach(g => g.remove());
   ticks.slice(1).forEach(t => $('#plot').insertAdjacentHTML('afterbegin', `<div class="grid" style="top:${(1 - t) * 100}%"></div>`));
-  $('#bars').innerHTML = out.map(k => `<div data-tip="${esc(k.tip)} · ${dur(k.ms)}"><i style="height:${k.ms / top * 100}%"></i></div>`).join('');
-  $('#xax').innerHTML = out.map(k => `<span>${esc(k.label)}</span>`).join('');
+  // Biggest topic at the bottom, the same order in every bar.
+  $('#bars').innerHTML = out.map(k => {
+    const segs = topics.map(([t]) => [t, k.by[t] || 0]).filter(([, ms]) => ms > 0);
+    const stack = segs.map(([t, ms], i) => {
+      const radius = i === segs.length - 1 ? (segs.length === 1 ? '9px 9px 3px 3px' : '9px 9px 0 0') : i === 0 ? '0 0 3px 3px' : '0';
+      return `<i title="${esc(t)} · ${dur(ms)}" style="height:${ms / top * 100}%;background:${topicColor(t)};border-radius:${radius}"></i>`;
+    }).join('');
+    return `<div data-tip="${esc(k.tip)} · ${dur(k.ms)}">${stack}</div>`;
+  }).join('');
+  const oldAvg = $('#plot .avg'); if (oldAvg) oldAvg.remove();
+  const filled = out.filter(k => k.ms > 0);
+  if (filled.length > 1) {
+    const avg = filled.reduce((n, k) => n + k.ms, 0) / filled.length;
+    // Keep the label inside the plot when the line is near the top.
+    $('#plot').insertAdjacentHTML('beforeend', `<div class="avg${avg / top > .85 ? ' low' : ''}" style="bottom:${avg / top * 100}%"><span>avg ${dur(avg)}</span></div>`);
+  }
+  $('#xax').innerHTML = out.map(k => `<span title="${esc(k.tip)} · ${dur(k.ms)}">${esc(k.label)}</span>`).join('');
+  $('#legend').hidden = !topics.length;
+  $('#legend').innerHTML = topics.length ? topics.slice(0, 5).map(([t]) =>
+    `<span class="lg"><i style="background:${topicColor(t)}"></i><span>${esc(t)}</span></span>`).join('') +
+    (topics.length > 5 ? `<span class="lg"><span>+${topics.length - 5} more</span></span>` : '') : '';
   $('#chartSub').textContent = `${dur(total)} across ${plural(days, 'day')} · ${unit}`;
   $('#chartEmpty').hidden = list.length > 0;
 
