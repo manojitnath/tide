@@ -42,7 +42,7 @@ Anything else is refused with: "That isn't a YouTube video or playlist link."
 ## Step 0 · Mockup (no app code)
 
 Create `docs/mockups/radio/index.html`, a static picture of:
-1. **Settings → Radio** group (light and dark): a list of custom stations (name, a small grey badge `Video` / `Live` / `Playlist`, ↑ ↓ to reorder, × to delete), an **Add station** row (URL field, optional Name field, **Add** button), and a switch **Include built-in stations** ("10 lofi live streams").
+1. **Settings → Radio** group (light and dark): a list of custom stations (name, a small grey badge `Video` or `Playlist` (live streams count as `Video`; owner dropped a separate Live badge), ↑ ↓ to reorder, × to delete), an **Add station** row (URL field, optional Name field, **Add** button), and a switch **Include built-in stations** ("10 lofi live streams").
 2. **The panel's station list** open, showing built-in stations with their FM numbers and custom ones with their badge instead.
 3. **The player with a playlist playing:** sub line `Playlist · Playing`, and the back / forward buttons labelled (in a note beside it) "previous / next song".
 
