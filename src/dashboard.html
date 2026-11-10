@@ -443,13 +443,22 @@ function niceMax(ms) {
   const steps = [15, 30, 45, 60, 90, 120, 180, 240, 360, 480, 600, 900, 1200, 1800, 2400, 3600, 6000, 9000, 12000].map(m => m * 60e3);
   return steps.find(s => s >= ms) || Math.ceil(ms / 36e6) * 36e6;
 }
-// The same topic keeps its colour between reloads and everywhere it appears.
+const TOPIC_PALETTE = ['#1f5cf2', '#8a5cf6', '#2fae5a', '#e0a23a', '#e8336b', '#1fa9d6', '#ff7a3d', '#5a6a86', '#16a3a3', '#c2410c'];
+const topicColors = new Map();
+// Topics get colours in the order they were first used, so the first 10 never share one.
+function colorTopics() {
+  topicColors.clear();
+  [...logs].sort((x, y) => x.start - y.start).forEach(l => {
+    const key = String(l.topic).trim().toLowerCase();
+    if (!topicColors.has(key)) topicColors.set(key, TOPIC_PALETTE[topicColors.size % TOPIC_PALETTE.length]);
+  });
+}
 function topicColor(topic) {
-  const palette = ['#1f5cf2', '#8a5cf6', '#2fae5a', '#e0a23a', '#e8336b', '#1fa9d6', '#ff7a3d', '#5a6a86', '#16a3a3', '#c2410c'];
-  const s = String(topic).trim().toLowerCase();
+  const key = String(topic).trim().toLowerCase();
+  if (topicColors.has(key)) return topicColors.get(key);
   let h = 5381;
-  for (let i = 0; i < s.length; i++) h = (h * 33 + s.charCodeAt(i)) >>> 0;
-  return palette[h % palette.length];
+  for (let i = 0; i < key.length; i++) h = (h * 33 + key.charCodeAt(i)) >>> 0;
+  return TOPIC_PALETTE[h % TOPIC_PALETTE.length];
 }
 function renderStats() {
   const list = inRange(), [a, b] = bounds(), total = list.reduce((n, l) => n + l.ms, 0);
@@ -655,6 +664,7 @@ function renderProgress() {
 }
 
 function renderAll() {
+  colorTopics();
   drawRanges();
   renderStats(); renderProgress(); renderSessions(); renderSettings();
 }
