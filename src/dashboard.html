@@ -73,12 +73,13 @@ h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em}
 .plot .grid{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
 .bars{position:absolute;inset:0;display:flex;align-items:flex-end;gap:6px;padding:0 4px}
 .bars div{flex:1;height:100%;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;position:relative}
-.bars i{display:block;width:100%;max-width:46px;min-height:0}
+.bars i{display:block;width:100%;max-width:46px;min-height:0;position:relative}
 .bars div:hover i{filter:brightness(1.08)}
-.bars div:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--pill);color:var(--pillInk);font-size:11px;padding:3px 7px;border-radius:6px;white-space:nowrap;z-index:2}
+.bars i:hover{z-index:3}
+.bars div:hover::after,.bars i:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--pill);color:var(--pillInk);font-size:11px;padding:3px 7px;border-radius:6px;white-space:nowrap;z-index:2}
+.bars div:has(i:hover)::after{display:none}
 .avg{position:absolute;left:0;right:0;border-top:1.5px dashed var(--muted);pointer-events:none;z-index:2}
-.avg span{position:absolute;right:0;top:-17px;background:var(--card);padding-left:7px;font-size:11px;line-height:1.2;color:var(--muted);white-space:nowrap}
-.avg.low span{top:3px}
+.yax .avgLabel{font-size:11px;line-height:1.15;text-align:right}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 0 0 56px;font-size:11.5px;color:var(--muted)}
 .legend .lg{display:inline-flex;align-items:center;gap:6px;max-width:100%;min-width:0}
 .legend .lg span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -487,10 +488,15 @@ function renderStats() {
     });
   });
   const top = niceMax(Math.max(...out.map(k => k.ms), 0) || 1);
+  const filled = out.filter(k => k.ms > 0);
+  const avg = filled.length > 1 ? filled.reduce((n, k) => n + k.ms, 0) / filled.length : null;
+  const avgY = avg === null ? null : (1 - avg / top) * 230;
   const ticks = [0, .25, .5, .75, 1];
   // Short axis labels: 45m, 2h, 1.5h.
   const axis = ms => { const m = Math.round(ms / 60e3); return m < 60 ? `${m}m` : m % 60 ? `${(m / 60).toFixed(1)}h` : `${m / 60}h`; };
-  $('#yax').innerHTML = ticks.map(t => `<span style="top:${(1 - t) * 100}%">${axis(top * t)}</span>`).join('');
+  // Drop a tick that would sit under the average label.
+  $('#yax').innerHTML = ticks.filter(t => avgY === null || Math.abs((1 - t) * 230 - avgY) >= 10).map(t => `<span style="top:${(1 - t) * 100}%">${axis(top * t)}</span>`).join('') +
+    (avg === null ? '' : `<span class="avgLabel" style="top:${(1 - avg / top) * 100}%">avg<br>${dur(avg)}</span>`);
   $('#plot').querySelectorAll('.grid').forEach(g => g.remove());
   ticks.slice(1).forEach(t => $('#plot').insertAdjacentHTML('afterbegin', `<div class="grid" style="top:${(1 - t) * 100}%"></div>`));
   // Biggest topic at the bottom, the same order in every bar.
@@ -498,17 +504,12 @@ function renderStats() {
     const segs = topics.map(([t]) => [t, k.by[t] || 0]).filter(([, ms]) => ms > 0);
     const stack = segs.map(([t, ms], i) => {
       const radius = i === segs.length - 1 ? (segs.length === 1 ? '9px 9px 3px 3px' : '9px 9px 0 0') : i === 0 ? '0 0 3px 3px' : '0';
-      return `<i title="${esc(t)} · ${dur(ms)}" style="height:${ms / top * 100}%;background:${topicColor(t)};border-radius:${radius}"></i>`;
+      return `<i data-tip="${esc(t)} · ${dur(ms)}" style="height:${ms / top * 100}%;background:${topicColor(t)};border-radius:${radius}"></i>`;
     }).join('');
     return `<div data-tip="${esc(k.tip)} · ${dur(k.ms)}">${stack}</div>`;
   }).join('');
   const oldAvg = $('#plot .avg'); if (oldAvg) oldAvg.remove();
-  const filled = out.filter(k => k.ms > 0);
-  if (filled.length > 1) {
-    const avg = filled.reduce((n, k) => n + k.ms, 0) / filled.length;
-    // Keep the label inside the plot when the line is near the top.
-    $('#plot').insertAdjacentHTML('beforeend', `<div class="avg${avg / top > .85 ? ' low' : ''}" style="bottom:${avg / top * 100}%"><span>avg ${dur(avg)}</span></div>`);
-  }
+  if (avg !== null) $('#plot').insertAdjacentHTML('beforeend', `<div class="avg" style="bottom:${avg / top * 100}%"></div>`);
   $('#xax').innerHTML = out.map(k => `<span title="${esc(k.tip)} · ${dur(k.ms)}">${esc(k.label)}</span>`).join('');
   $('#legend').hidden = !topics.length;
   $('#legend').innerHTML = topics.length ? topics.slice(0, 5).map(([t]) =>
