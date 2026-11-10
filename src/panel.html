@@ -345,6 +345,7 @@ function saveState() { S.lastSeen = Date.now(); store.set('studyradio.state', S)
 function saveLogs() { store.set('studyradio.logs', logs); }
 function stationIndex(key) { const i = STATIONS.findIndex(s => s.key === key); return i < 0 ? 0 : i; }
 if (!STATIONS.length) { stations.builtIn = true; STATIONS = stationList(); }
+if (!S.stationKey && BUILT_IN[S.station]) S.stationKey = 'b:' + BUILT_IN[S.station].name;
 S.station = stationIndex(S.stationKey);
 S.stationKey = STATIONS[S.station]?.key || '';
 saveState();
@@ -757,6 +758,8 @@ function skipStation(dir) {
   if (radioOn && st && st.custom && st.kind === 'playlist') {
     const fn = dir < 0 ? 'previousVideo' : 'nextVideo';
     if (yt && typeof yt[fn] === 'function') yt[fn]();
+    radioPaused = false;
+    showStation();
     return;
   }
   playStation(S.station + dir);
