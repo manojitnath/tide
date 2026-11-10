@@ -4,7 +4,11 @@ Brief for the coding model. Claude reviews the result. Do the steps **in order**
 
 ## What we're building
 
-Today the radio plays a fixed list of 10 lofi live streams (`STATIONS` in `src/panel.html`). The owner wants to add their own: paste a YouTube link in **Settings → Radio**, give it a name, and it joins the station list. ‹ › in the panel's player cycles through all stations, built-in and custom. The built-in ones can be hidden.
+Today the radio plays a fixed list of 10 lofi live streams (`STATIONS` in `src/panel.html`). The owner wants to add their own: paste a YouTube link in **Settings → Radio**, give it a name, and it joins the station list. The built-in ones can be hidden.
+
+Controls in the panel's player:
+- **Pick a station:** click the station name (`#stationBtn`) to open the list, then click one. This is how you jump between stations.
+- **Back / forward** (`#prevSt` / `#nextSt`): if the current station is a **playlist**, they skip to the previous / next song in it. Otherwise (built-in or custom video) they go to the previous / next station, as today.
 
 Supported links (YouTube only; that's what the player embeds):
 
@@ -40,6 +44,7 @@ Anything else is refused with: "That isn't a YouTube video or playlist link."
 Create `docs/mockups/radio/index.html`, a static picture of:
 1. **Settings → Radio** group (light and dark): a list of custom stations (name, a small grey badge `Video` / `Live` / `Playlist`, ↑ ↓ to reorder, × to delete), an **Add station** row (URL field, optional Name field, **Add** button), and a switch **Include built-in stations** ("10 lofi live streams").
 2. **The panel's station list** open, showing built-in stations with their FM numbers and custom ones with their badge instead.
+3. **The player with a playlist playing:** sub line `Playlist · Playing`, and the back / forward buttons labelled (in a note beside it) "previous / next song".
 
 **STOP.** Report the path; Claude renders it for the owner.
 
@@ -78,9 +83,12 @@ In `src/panel.html`:
   - Built-ins: unchanged (including `resolveStation` / `ytIds`; never call it for custom stations).
 - **Showing**: the sub line under the name is `FM 88.6 · LIVE` for built-ins as today, and for custom stations `Video`, `Playlist` (plus ` · Playing` while it plays). The station list shows the badge where built-ins show their FM number.
 - **Cover art**: video → `https://i.ytimg.com/vi/<video>/hqdefault.jpg`. Playlist → after it starts, use the current video's id (`player.getVideoData().video_id`); before that, the plain card background.
-- ‹ › and the list cycle through the whole combined list. If a custom video fails (`onError`), show "Can't play this video. Try another station." (no live-stream lookup).
+- **Back / forward buttons:**
+  - Playlist playing → `player.previousVideo()` / `player.nextVideo()`; with `setLoop(true)`, next on the last song wraps to the first. Titles become "Previous song" / "Next song".
+  - Anything else → previous / next station through the whole combined list, as today. Titles "Previous station" / "Next station".
+- The station list (click the name) lists the whole combined list and is the only way to leave a playlist for another station. If a custom video fails (`onError`), show "Can't play this video. Try another station." (no live-stream lookup).
 
-**Done when:** in the app (Claude will build and test it), each kind plays, a short video loops, a playlist moves on to the next video, ‹ › goes through built-in and custom stations, hiding built-ins works, and editing the list in Settings updates the panel without restarting.
+**Done when:** in the app (Claude will build and test it), each kind plays, a short video loops, a playlist moves on to the next video by itself, back / forward skip songs in a playlist and change station otherwise, the station list switches between built-in and custom stations, hiding built-ins works, and editing the list in Settings updates the panel without restarting.
 
 **STOP** (commit).
 
