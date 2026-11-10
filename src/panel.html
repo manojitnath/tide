@@ -162,6 +162,7 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .stations button{display:flex;justify-content:space-between;width:100%;padding:7px 10px;border-radius:9px;text-align:left}
 .stations button:hover{background:var(--field)}
 .stations button span{color:var(--muted);font-variant-numeric:tabular-nums}
+.stations button .badge{background:var(--field);color:var(--muted);font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:99px;line-height:1.4;font-variant-numeric:normal}
 .stations button[aria-current="true"]{font-weight:700;color:var(--accent)}
 
 /* buttons: the main action solid blue, a second action a raised card-coloured pill beside it */
@@ -289,7 +290,7 @@ const $ = s => document.querySelector(s);
 // YouTube stations play a channel's live stream. A stream's ID changes when the channel restarts it, so each station
 // also names its channel and words from the stream's title; the app looks up the current ID on launch and whenever
 // a stream fails. yt is the last known ID.
-const STATIONS = [
+const BUILT_IN = [
   {name:'Lofi Girl: Study',     f:88.6,  ch:'LofiGirl',      match:['lofi hip hop radio', 'study'], yt:'rFZHOHl-L8A'},
   {name:'Lofi Girl: Jazz',      f:90.4,  ch:'LofiGirl',      match:['jazz lofi radio'],           yt:'E2vONfzoyRI'},
   {name:'Lofi Girl: Piano',     f:92.2,  ch:'LofiGirl',      match:['piano radio'],               yt:'N0snMcR6aaA'},
@@ -314,6 +315,16 @@ const store = {
   get(k, d) { try { const v = NATIVE ? (window.__STORE || {})[k] : localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { const s = JSON.stringify(v); if (NATIVE) { native({type: 'store', key: k, value: s}); return; } try { localStorage.setItem(k, s); } catch (e) {} },
 };
+let stations = Object.assign({custom: [], builtIn: true}, store.get('tide.stations', {}));
+if (!Array.isArray(stations.custom)) stations.custom = [];
+if (typeof stations.builtIn !== 'boolean') stations.builtIn = true;
+function stationList() {
+  return [
+    ...(stations.builtIn ? BUILT_IN.map(st => ({...st, key: 'b:' + st.name})) : []),
+    ...stations.custom.map(st => ({key: 'c:' + st.id, name: st.name, kind: st.kind === 'playlist' ? 'playlist' : 'video', video: st.video || '', list: st.list || '', custom: true})),
+  ];
+}
+let STATIONS = stationList();
 let logs = store.get('studyradio.logs', []);
 // The dashboard window sends the log back when it deletes or restores a session.
 window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderStats(); };
@@ -323,7 +334,7 @@ window.__syncGame = data => { G = Game.settings(data); render(); };
 const saveGame = () => store.set('tide.game', G);
 const NAME = window.__USER || new URLSearchParams(location.search).get('name') || '';   // ?name= is for previews
 const S = Object.assign({status: 'idle', mode: 'pomo', pomoMin: 30, startedAt: 0, segStart: 0, acc: 0, carry: 0, chained: false, blockMin: 30,
-  breakEnds: 0, breakLeft: 0, breakTotal: 0, station: 0, vol: .6, lastSeen: 0}, store.get('studyradio.state', {}));
+  breakEnds: 0, breakLeft: 0, breakTotal: 0, station: 0, stationKey: '', vol: .6, lastSeen: 0}, store.get('studyradio.state', {}));
 if (!BLOCKS.includes(S.pomoMin)) S.pomoMin = 30;
 if (!S.blockMin) S.blockMin = S.pomoMin;
 let restored = false;
@@ -332,6 +343,11 @@ if (S.status === 'running') { S.acc += Math.max(0, (S.lastSeen || S.segStart) - 
 if (S.status === 'break' && Date.now() >= S.breakEnds) S.status = 'idle';
 function saveState() { S.lastSeen = Date.now(); store.set('studyradio.state', S); }
 function saveLogs() { store.set('studyradio.logs', logs); }
+function stationIndex(key) { const i = STATIONS.findIndex(s => s.key === key); return i < 0 ? 0 : i; }
+if (!STATIONS.length) { stations.builtIn = true; STATIONS = stationList(); }
+S.station = stationIndex(S.stationKey);
+S.stationKey = STATIONS[S.station]?.key || '';
+saveState();
 const elapsed = () => S.acc + (S.status === 'running' ? Date.now() - S.segStart : 0);
 
 /* ---------- formatting ---------- */
@@ -607,6 +623,7 @@ function chime() {
 const playSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 const pauseSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
 let radioOn = false, radioPaused = false, yt = null, ytReady = null, ytPlayerReady = null;
+let playlistLoop = false, artKey = '', artId = '';
 const retried = {};
 const ytId = st => (S.ytIds && S.ytIds[st.name]) || st.yt;
 function loadYT() {
@@ -629,8 +646,20 @@ function makePlayer() {
         onReady: () => resolve(yt),
         onStateChange: e => {
           if (!radioOn) return;
-          if (e.data === YT.PlayerState.PLAYING) { unmuteYT(); setTimeout(unmuteYT, 600); retried[STATIONS[S.station].name] = false; document.body.classList.add('playing'); }
-          else if (e.data === YT.PlayerState.BUFFERING || e.data === YT.PlayerState.PAUSED) document.body.classList.remove('playing');
+          const st = STATIONS[S.station];
+          if (e.data === YT.PlayerState.PLAYING) {
+            unmuteYT(); setTimeout(unmuteYT, 600);
+            if (st) retried[st.key] = false;
+            document.body.classList.add('playing');
+            if (st && st.custom && st.kind === 'playlist') {
+              if (!playlistLoop && yt.setLoop) { yt.setLoop(true); playlistLoop = true; }
+              if (yt.getVideoData) { const id = yt.getVideoData().video_id; if (id) setCover(st.key, id, true); }
+            }
+          } else if (e.data === YT.PlayerState.BUFFERING || e.data === YT.PlayerState.PAUSED) {
+            document.body.classList.remove('playing');
+          } else if (e.data === YT.PlayerState.ENDED) {
+            if (st && st.custom && st.kind === 'video') { try { yt.seekTo(0); yt.playVideo(); } catch (err) {} }
+          }
         },
         onError: () => { if (radioOn) ytFailed(); },
       },
@@ -643,32 +672,75 @@ async function playYT(id) {
   const player = await makePlayer();
   if (!radioOn) return;
   if (!player) { say('Radio didn’t load. Check your connection.'); return; }
-  player.unMute(); player.setVolume(Math.round(S.vol * 100)); player.loadVideoById(id);
+  player.unMute(); player.setVolume(Math.round(S.vol * 100));
+  if (player.setLoop) player.setLoop(false);
+  playlistLoop = false;
+  player.loadVideoById(id);
 }
-function resolveStation(i) { const st = STATIONS[i]; if (st.ch) native({type: 'resolve', i, ch: st.ch, match: st.match}); }
+function setCover(key, id, hqOnly) {
+  artKey = key; artId = id || '';
+  const img = id ? (hqOnly ? `url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)` : `url(https://i.ytimg.com/vi/${id}/maxresdefault.jpg), url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`) : '';
+  document.querySelectorAll('.cover, .bgart').forEach(e => e.style.backgroundImage = img);
+}
+function playCurrent() {
+  const st = STATIONS[S.station]; if (!st) return;
+  if (!st.custom) { playYT(ytId(st)); return; }
+  if (st.kind === 'video') { playYT(st.video); return; }
+  setCover(st.key, '', true);
+  makePlayer().then(player => {
+    if (!radioOn || !player || STATIONS[S.station]?.key !== st.key) {
+      if (!player && radioOn) say('Radio didn’t load. Check your connection.');
+      return;
+    }
+    player.unMute(); player.setVolume(Math.round(S.vol * 100));
+    playlistLoop = false;
+    player.loadPlaylist({list: st.list, listType: 'playlist', index: 0});
+  });
+}
+function resolveStation(i) { const st = BUILT_IN[i]; if (st && st.ch) native({type: 'resolve', i, ch: st.ch, match: st.match}); }
 function ytResolved(i, id) {
-  const st = STATIONS[i]; if (!st || !id) return;
+  const st = BUILT_IN[i]; if (!st || !id) return;
+  const key = 'b:' + st.name;
   const changed = id !== ytId(st);
   S.ytIds = Object.assign({}, S.ytIds, {[st.name]: id}); saveState();
-  if (changed && i === S.station && radioOn && retried[st.name]) playYT(id);
+  if (changed && STATIONS[S.station]?.key === key && radioOn && retried[key]) playYT(id);
 }
 function ytFailed() {
-  const st = STATIONS[S.station];
-  if (NATIVE && st.ch && !retried[st.name]) { retried[st.name] = true; say('Finding the live stream…'); resolveStation(S.station); }
-  else say('Station offline. Try another.');
+  const st = STATIONS[S.station]; if (!st) return;
+  if (st.custom) { say("Can't play this video. Try another station."); return; }
+  if (NATIVE && st.ch && !retried[st.key]) {
+    retried[st.key] = true;
+    say('Finding the live stream…');
+    const i = BUILT_IN.findIndex(b => 'b:' + b.name === st.key);
+    if (i >= 0) resolveStation(i);
+  } else say('Station offline. Try another.');
 }
 function showStation() {
-  const st = STATIONS[S.station];
+  const st = STATIONS[S.station]; if (!st) return;
   $('#stName').textContent = st.name;
-  $('#stSub').textContent = `FM ${st.f.toFixed(1)}${radioOn ? ' · LIVE' : ''}`;
+  if (st.custom) {
+    $('#stSub').textContent = `${st.kind === 'playlist' ? 'Playlist' : 'Video'}${radioOn ? ' · Playing' : ''}`;
+  } else {
+    $('#stSub').textContent = `FM ${st.f.toFixed(1)}${radioOn ? ' · LIVE' : ''}`;
+  }
+  const songs = st.custom && st.kind === 'playlist' && radioOn;
+  $('#prevSt').title = songs ? 'Previous song' : 'Previous station';
+  $('#nextSt').title = songs ? 'Next song' : 'Next station';
   requestAnimationFrame(() => $('#marq').classList.toggle('scroll', $('#stName').offsetWidth > $('#marq').clientWidth));
   $('#radioBtn').innerHTML = radioOn && !radioPaused ? pauseSvg : playSvg;
-  const id = ytId(st);
-  document.querySelectorAll('.cover, .bgart').forEach(e => e.style.backgroundImage = `url(https://i.ytimg.com/vi/${id}/maxresdefault.jpg), url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`);
+  if (st.custom) {
+    if (st.kind === 'playlist') {
+      if (artKey === st.key && artId) setCover(st.key, artId, true);
+      else setCover(st.key, '', true);
+    } else setCover(st.key, st.video, true);
+  } else setCover(st.key, ytId(st), false);
 }
 function tuneTo(i) {
-  S.station = (i + STATIONS.length) % STATIONS.length; saveState();
-  if (radioOn) { radioPaused = false; document.body.classList.remove('playing'); playYT(ytId(STATIONS[S.station])); }
+  if (!STATIONS.length) return;
+  S.station = (i + STATIONS.length) % STATIONS.length;
+  S.stationKey = STATIONS[S.station].key;
+  saveState();
+  if (radioOn) { radioPaused = false; document.body.classList.remove('playing'); playCurrent(); }
   showStation();
 }
 // Play/pause keeps the stream loaded; stop unloads it.
@@ -680,14 +752,43 @@ function playPause() {
 }
 function stopRadio() { radioOn = false; radioPaused = false; if (yt && yt.stopVideo) { try { yt.stopVideo(); } catch (e) {} } document.body.classList.remove('playing'); showStation(); }
 function playStation(i) { radioOn = true; tuneTo(i); }
+function skipStation(dir) {
+  const st = STATIONS[S.station];
+  if (radioOn && st && st.custom && st.kind === 'playlist') {
+    const fn = dir < 0 ? 'previousVideo' : 'nextVideo';
+    if (yt && typeof yt[fn] === 'function') yt[fn]();
+    return;
+  }
+  playStation(S.station + dir);
+}
+window.__syncStations = data => {
+  stations = Object.assign({custom: [], builtIn: true}, data || {});
+  if (!Array.isArray(stations.custom)) stations.custom = [];
+  if (typeof stations.builtIn !== 'boolean') stations.builtIn = true;
+  const wasOn = radioOn;
+  const oldKey = STATIONS[S.station]?.key || S.stationKey;
+  STATIONS = stationList();
+  if (!STATIONS.length) { stations.builtIn = true; STATIONS = stationList(); }
+  const gone = !STATIONS.some(s => s.key === oldKey);
+  S.station = stationIndex(oldKey);
+  S.stationKey = STATIONS[S.station]?.key || '';
+  saveState();
+  $('#stations').hidden = true;
+  if (wasOn && gone) {
+    radioPaused = false;
+    document.body.classList.remove('playing');
+    playCurrent();
+  }
+  showStation();
+};
 $('#radioBtn').onclick = playPause;
 $('#stopRadio').onclick = stopRadio;
-$('#prevSt').onclick = () => playStation(S.station - 1);
-$('#nextSt').onclick = () => playStation(S.station + 1);
+$('#prevSt').onclick = () => skipStation(-1);
+$('#nextSt').onclick = () => skipStation(1);
 $('#stationBtn').onclick = e => {
   e.stopPropagation();
   const list = $('#stations');
-  list.innerHTML = STATIONS.map((s, i) => `<button type="button" data-i="${i}" aria-current="${i === S.station}">${esc(s.name)}<span>${s.f.toFixed(1)}</span></button>`).join('');
+  list.innerHTML = STATIONS.map((s, i) => `<button type="button" data-i="${i}" aria-current="${i === S.station}">${esc(s.name)}<span${s.custom ? ' class="badge"' : ''}>${s.custom ? (s.kind === 'playlist' ? 'Playlist' : 'Video') : s.f.toFixed(1)}</span></button>`).join('');
   list.style.top = ($('#disc').offsetTop + 58) + 'px';
   list.hidden = !list.hidden;
 };
@@ -742,7 +843,7 @@ new ResizeObserver(() => native({type: 'resize', h: Math.ceil($('#panel').getBou
 /* ---------- boot ---------- */
 showStation(); drawVol(); render(); checkUnlocks(true);
 if (restored) say('Paused while the app was closed.', 10000);
-if (NATIVE) { STATIONS.forEach((st, i) => { if (st.ch) setTimeout(() => resolveStation(i), 400 * i); }); makePlayer(); }
+if (NATIVE) { BUILT_IN.forEach((st, i) => { if (st.ch) setTimeout(() => resolveStation(i), 400 * i); }); makePlayer(); }
 setInterval(tick, 250);
 setInterval(() => { if (S.status === 'running') saveState(); }, 5000);
 addEventListener('pagehide', saveState);
