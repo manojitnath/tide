@@ -112,6 +112,26 @@ h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em}
 .hours{display:flex;align-items:flex-end;gap:3px;height:110px;padding-top:6px}
 .hours div{flex:1;height:100%;display:flex;align-items:flex-end}.hours i{display:block;width:100%;border-radius:3px 3px 1px 1px;background:var(--accent);opacity:.85}
 .hlab{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:6px}
+.timelineCard{container-type:inline-size;container-name:timeline}
+.tlhead{flex-wrap:wrap;gap:8px 14px}
+.tlright{display:flex;align-items:center;justify-content:flex-end;gap:14px;flex-wrap:wrap;margin-left:auto}
+.tlhours{position:relative;height:18px;margin-bottom:6px}
+.tlhour{position:absolute;top:0;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+.tlhour.first{transform:none}
+.tlhour.last{transform:translateX(-100%)}
+.tlplot{position:relative}
+.tllines{position:absolute;inset:0;pointer-events:none}
+.tltick{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
+.tlrow{position:relative;height:28px}
+.tlrow + .tlrow{margin-top:4px}
+.tlblock{position:absolute;top:0;height:28px;min-width:3px;z-index:1;cursor:pointer;container-type:inline-size;container-name:tlblock}
+.tlblock:hover{z-index:4}
+.tlbody{position:absolute;inset:0;border-radius:7px;overflow:hidden;background:color-mix(in srgb,var(--c) 35%,var(--card))}
+.tlfocus{position:absolute;left:0;top:0;bottom:0;background:var(--c)}
+.tllabel{position:relative;z-index:1;display:block;padding:0 7px;line-height:28px;font-size:11.5px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.tlblock:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:var(--pill);color:var(--pillInk);font-size:11px;padding:3px 7px;border-radius:6px;white-space:nowrap;z-index:3;pointer-events:none}
+@container tlblock (max-width:55.9px){.tllabel{display:none}}
+@container timeline (max-width:559.9px){.tlhour:not(.major){display:none}}
 table{width:100%;border-collapse:collapse}
 th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 8px 8px}
 td{padding:9px 8px;border-top:.5px solid var(--line);font-variant-numeric:tabular-nums}
@@ -318,6 +338,16 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
     <div class="title">
       <div><h1>Sessions</h1><p>Every logged focus session.</p></div>
       <div class="tools"><select id="topicSel"></select><div class="range" data-range></div></div>
+    </div>
+    <div class="panel timelineCard">
+      <div class="ph tlhead">
+        <h2>Timeline</h2>
+        <span class="tlright">
+          <span class="wstep"><button type="button" class="tPrev" title="Previous day">‹</button><span class="tName">Today</span><button type="button" class="tNext" title="Next day">›</button></span>
+          <span class="tlsum"></span>
+        </span>
+      </div>
+      <div id="timeline"></div>
     </div>
     <div class="panel">
       <table><thead><tr><th>Date</th><th>Time</th><th>Topic</th><th>Focus</th><th></th></tr></thead><tbody id="rows"></tbody></table>
@@ -588,6 +618,62 @@ $('#topics').addEventListener('pointerleave', () => {
 });
 
 /* ---------- sessions ---------- */
+let dayBack = 0;   // 0 is today, 1 yesterday, and so on
+function renderTimeline() {
+  const now = new Date();
+  const day = +new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayBack);
+  const dayLogs = logs.filter(l => dayStart(l.start) === day);
+  const ms = dayLogs.reduce((n, l) => n + l.ms, 0);
+  const d = new Date(day);
+  $('.tName').textContent = dayBack === 0 ? 'Today' : dayBack === 1 ? 'Yesterday' :
+    `${d.toLocaleDateString(undefined, {weekday: 'long'})} ${d.getDate()} ${d.toLocaleDateString(undefined, {month: 'short'})}`;
+  $('.tlsum').textContent = `${dur(ms)} focused`;
+  $('.tNext').disabled = dayBack === 0;
+
+  const hourStart = ts => { const h = new Date(ts); h.setMinutes(0, 0, 0); return +h; };
+  const hourEnd = ts => { const h = new Date(ts); h.setMinutes(0, 0, 0); if (+h < ts) h.setHours(h.getHours() + 1); return +h; };
+  let from, to;
+  if (dayLogs.length) {
+    from = hourStart(Math.min(...dayLogs.map(l => l.start)));
+    to = hourEnd(Math.max(...dayLogs.map(l => l.end)));
+    if (to - from < 8 * 36e5) {
+      const end = new Date(from); end.setHours(end.getHours() + 8); to = +end;
+    }
+  } else {
+    const start = new Date(day); start.setHours(8, 0, 0, 0); from = +start;
+    const end = new Date(day); end.setHours(20, 0, 0, 0); to = +end;
+  }
+  const span = to - from;
+  const ticks = [];
+  for (const t = new Date(from); +t <= to; t.setHours(t.getHours() + 1)) ticks.push(+t);
+  const hour = t => { const h = new Date(t).getHours(); return `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}`; };
+  const labels = ticks.map((t, i) => `<span class="tlhour${i % 3 === 0 ? ' major' : ''}${i === 0 ? ' first' : ''}${i === ticks.length - 1 ? ' last' : ''}" style="left:${(t - from) / span * 100}%">${hour(t)}</span>`).join('');
+  const lines = ticks.map(t => `<div class="tltick" style="left:${(t - from) / span * 100}%"></div>`).join('');
+  const host = $('#timeline');
+
+  if (!dayLogs.length) {
+    host.innerHTML = `<div class="empty">Nothing logged on this day.</div><div class="tlhours">${labels}</div><div class="tlplot" style="height:28px"><div class="tllines">${lines}</div></div>`;
+    return;
+  }
+
+  const rows = [];
+  const placed = [...dayLogs].sort((a, b) => a.start - b.start || a.end - b.end).map(l => {
+    let r = rows.findIndex(end => l.start >= end);
+    if (r < 0) { r = rows.length; rows.push(0); }
+    rows[r] = l.end;
+    return {l, r};
+  });
+  const block = ({l}) => {
+    const width = (l.end - l.start) / span * 100;
+    const focus = Math.max(0, Math.min(1, l.ms / Math.max(1, l.end - l.start))) * 100;
+    return `<div class="tlblock" data-id="${esc(l.id)}" data-tip="${esc(l.topic)} · ${fmtTime(l.start)} – ${fmtTime(l.end)} · ${dur(l.ms)} focus" style="left:${(l.start - from) / span * 100}%;width:${width}%;--c:${topicColor(l.topic)}"><div class="tlbody"><i class="tlfocus" style="width:${focus}%"></i><span class="tllabel">${esc(l.topic)}</span></div></div>`;
+  };
+  const rowsHtml = [...Array(rows.length)].map((_, r) => `<div class="tlrow">${placed.filter(p => p.r === r).map(block).join('')}</div>`).join('');
+  host.innerHTML = `<div class="tlhours">${labels}</div><div class="tlplot" style="height:${rows.length * 28 + (rows.length - 1) * 4}px"><div class="tllines">${lines}</div>${rowsHtml}</div>`;
+}
+$$('.tPrev').forEach(b => b.onclick = () => { dayBack++; renderTimeline(); });
+$$('.tNext').forEach(b => b.onclick = () => { dayBack = Math.max(0, dayBack - 1); renderTimeline(); });
+$('#timeline').onclick = e => { const b = e.target.closest('[data-id]'); if (b) openEdit(b.dataset.id); };
 function renderSessions() {
   const sel = $('#topicSel'), cur = sel.value;
   const all = [...new Set(logs.map(l => l.topic))].sort((x, y) => x.localeCompare(y));
@@ -595,6 +681,7 @@ function renderSessions() {
   const list = inRange().filter(l => !sel.value || l.topic === sel.value).sort((x, y) => y.start - x.start).slice(0, 500);
   $('#rows').innerHTML = list.map(l => `<tr><td>${fmtDate(l.start)}</td><td>${fmtTime(l.start)} – ${fmtTime(l.end)}</td><td class="t" title="${esc(l.topic)}">${esc(l.topic)}</td><td>${dur(l.ms)}</td><td class="x"><button class="del edit" data-edit="${l.id}" title="Edit" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="del" data-id="${l.id}" title="Delete" type="button">×</button></td></tr>`).join('')
     || '<tr><td colspan="5" class="empty">Nothing logged in this range.</td></tr>';
+  renderTimeline();
 }
 $('#topicSel').onchange = renderSessions;
 $('#rows').onclick = e => {
