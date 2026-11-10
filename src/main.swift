@@ -100,7 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     // Both pages get the saved data before their script runs; the dashboard also gets its settings and first tab.
     func pageConfig(extra: String = "") -> WKWebViewConfiguration {
         var saved: [String: String] = [:]
-        for key in ["studyradio.logs", "studyradio.state", "tide.game"] {
+        for key in ["studyradio.logs", "studyradio.state", "tide.game", "tide.stations"] {
             if let text = try? String(contentsOf: fileURL(for: key), encoding: .utf8) { saved[key] = text }
         }
         let json = String(data: try! JSONSerialization.data(withJSONObject: saved), encoding: .utf8)!
@@ -327,13 +327,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         switch type {
         case "store":
             if let key = body["key"] as? String, let value = body["value"] as? String {
-                if fromDash && key != "studyradio.logs" && key != "tide.game" { return }
+                if fromDash && key != "studyradio.logs" && key != "tide.game" && key != "tide.stations" { return }
                 try? value.write(to: fileURL(for: key), atomically: true, encoding: .utf8)
-                // Keep the other page's copy of the log and the game settings in step.
+                // Keep the other page's copy of the log, the game settings and the stations in step.
                 if key == "studyradio.logs" {
                     (fromDash ? web : dashWeb)?.evaluateJavaScript("window.__syncLogs && __syncLogs(\(value))")
                 } else if key == "tide.game" {
                     (fromDash ? web : dashWeb)?.evaluateJavaScript("window.__syncGame && __syncGame(\(value))")
+                } else if key == "tide.stations" {
+                    web.evaluateJavaScript("window.__syncStations && __syncStations(\(value))")
                 }
             }
         case "resize":
