@@ -87,11 +87,28 @@ h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em}
 .xax{display:flex;gap:6px;padding:8px 4px 0 56px}.xax span{flex:1;text-align:center;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden}
 .empty{color:var(--muted);padding:10px 0 2px}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.trow{display:grid;grid-template-columns:minmax(0,1fr) 120px 62px;gap:12px;align-items:center;padding:7px 0;border-top:.5px solid var(--line)}
-.trow:first-child{border-top:0}
-.trow .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
-.track{height:7px;border-radius:9px;background:var(--soft);overflow:hidden}.track i{display:block;height:100%;border-radius:9px;background:var(--accent)}
-.trow .h{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.topicsCard{container-type:inline-size;container-name:topics}
+.twrap{display:grid;grid-template-columns:140px minmax(0,1fr);gap:18px;align-items:center}
+.dwrap{position:relative;width:140px;height:140px;justify-self:center}
+.donut{display:block;width:100%;height:100%}
+.dcenter{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1.15;pointer-events:none}
+.dcenter b{font:700 17px var(--font);letter-spacing:-.01em}
+.dcenter span{font-size:10.5px;color:var(--muted);margin-top:2px}
+.tlist{list-style:none;margin:0;padding:0;min-width:0}
+.tlist li{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:.5px solid var(--line);min-width:0;transition:opacity .15s}
+.tlist li:first-child{border-top:0}
+.tlist .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.tlist .dot.other{background:var(--muted);opacity:.5}
+.tlist .tn{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tlist li.other .tn{color:var(--muted)}
+.tlist .dots{flex:1;min-width:8px;border-bottom:1px dotted var(--line);margin:0 1px 4px}
+.tlist .tv{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
+.darc{transition:opacity .15s}
+.darc.other{stroke:var(--muted);stroke-opacity:.5}
+.topicsCard.live .darc,.topicsCard.live .tlist li{opacity:.35}
+.topicsCard.live .darc.on,.topicsCard.live .tlist li.on{opacity:1}
+/* 420px card minus the panel's 44px side padding. */
+@container topics (max-width:376px){.twrap{grid-template-columns:1fr;justify-items:center;gap:14px}.tlist{width:100%}}
 .hours{display:flex;align-items:flex-end;gap:3px;height:110px;padding-top:6px}
 .hours div{flex:1;height:100%;display:flex;align-items:flex-end}.hours i{display:block;width:100%;border-radius:3px 3px 1px 1px;background:var(--accent);opacity:.85}
 .hlab{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:6px}
@@ -140,7 +157,6 @@ h1{font:600 30px/1.1 var(--font);letter-spacing:-.01em}
 .card:nth-child(4){background-color:var(--pCream);--tag:var(--tCream);--glow:244,211,143}
 .panel,.group{border-radius:14px}
 .bars i:last-child{box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
-.track{height:9px;background:var(--soft);box-shadow:var(--track)}
 .hours i{background:var(--purpleFill);border-radius:5px 5px 2px 2px;opacity:1}
 .switch[aria-checked="true"]{background:var(--accent)}
 .group h3{text-transform:none;letter-spacing:0;font:600 14px var(--font);color:var(--ink)}
@@ -278,7 +294,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
       <div class="empty" id="chartEmpty" hidden>Start a focus session to build your analytics.</div>
     </div>
     <div class="split">
-      <div class="panel"><div class="ph"><h2>Topics</h2><span id="topicSub"></span></div><div id="topics"></div></div>
+      <div class="panel topicsCard"><div class="ph"><h2>Topics</h2><span id="topicSub"></span></div><div id="topics"></div></div>
       <div class="panel"><div class="ph"><h2>Best Hours</h2><span>when you focus</span></div>
         <div class="hours" id="hours"></div><div class="hlab"><span>12 am</span><span>6 am</span><span>12 pm</span><span>6 pm</span><span>11 pm</span></div></div>
     </div>
@@ -518,11 +534,31 @@ function renderStats() {
   $('#chartSub').textContent = `${dur(total)} across ${plural(days, 'day')} · ${unit}`;
   $('#chartEmpty').hidden = list.length > 0;
 
-  const tmax = topics[0] ? topics[0][1] : 1;
   $('#topicSub').textContent = plural(topics.length, 'topic');
-  $('#topics').innerHTML = topics.length ? topics.slice(0, 8).map(([t, ms]) =>
-    `<div class="trow"><span class="n" title="${esc(t)}">${esc(t)}</span><span class="track"><i style="width:${ms / tmax * 100}%;background:${topicColor(t)}"></i></span><span class="h">${dur(ms)}</span></div>`).join('')
-    : '<div class="empty">Topics show up here once you log a session.</div>';
+  const topicsCard = $('#topics').closest('.topicsCard');
+  topicsCard.classList.remove('live');
+  if (topics.length && total) {
+    const shown = topics.length > 6 ? topics.slice(0, 5) : topics;
+    const rest = topics.slice(shown.length);
+    const rows = shown.map(([t, ms]) => ({t, ms, color: topicColor(t)}));
+    if (rest.length) rows.push({t: 'Other', ms: rest.reduce((n, [, ms]) => n + ms, 0), other: true});
+    const pcts = rows.map(r => Math.round(r.ms / total * 100));
+    const big = rows.reduce((m, r, i) => r.ms > rows[m].ms ? i : m, 0);
+    pcts[big] += 100 - pcts.reduce((n, p) => n + p, 0);
+    const circumference = 2 * Math.PI * 58;
+    let offset = 0;
+    const arcs = rows.map((r, i) => {
+      const len = r.ms / total * circumference;
+      const dash = Math.max(0, len - (rows.length > 1 ? 1.5 : 0));
+      const arc = `<circle class="darc${r.other ? ' other' : ''}" data-k="${i}" cx="70" cy="70" r="58" fill="none" stroke-width="18" stroke-dasharray="${dash} ${circumference - dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 70 70)"${r.other ? '' : ` stroke="${r.color}"`}/>`;
+      offset += len;
+      return arc;
+    }).join('');
+    $('#topics').innerHTML = `<div class="twrap"><div class="dwrap"><svg class="donut" viewBox="0 0 140 140" aria-hidden="true">${arcs}</svg><div class="dcenter"><b>${dur(total)}</b><span>total</span></div></div><ul class="tlist">${rows.map((r, i) =>
+      `<li data-k="${i}"${r.other ? ' class="other"' : ''}><i class="dot${r.other ? ' other' : ''}"${r.other ? '' : ` style="background:${r.color}"`}></i><span class="tn" title="${esc(r.t)}">${esc(r.t)}</span><span class="dots"></span><span class="tv">${dur(r.ms)} · ${pcts[i]}%</span></li>`).join('')}</ul></div>`;
+  } else {
+    $('#topics').innerHTML = '<div class="empty">Topics show up here once you log a session.</div>';
+  }
 
   // Focus minutes by hour of day: each session's time is spread across the hours it covered.
   const hrs = Array(24).fill(0);
@@ -530,6 +566,26 @@ function renderStats() {
   const hmax = Math.max(...hrs) || 1;
   $('#hours').innerHTML = hrs.map((ms, h) => `<div title="${pad(h)}:00 · ${dur(ms)}"><i style="height:${Math.max(ms ? 4 : 0, ms / hmax * 100)}%"></i></div>`).join('');
 }
+
+// Hovering a topic row or arc fades the rest of the card.
+$('#topics').addEventListener('pointerover', e => {
+  const hit = e.target.closest('[data-k]');
+  if (!hit) return;
+  hit.closest('.topicsCard').classList.add('live');
+  $$('#topics [data-k]').forEach(el => el.classList.toggle('on', el.dataset.k === hit.dataset.k));
+});
+$('#topics').addEventListener('pointerout', e => {
+  const hit = e.target.closest('[data-k]');
+  if (!hit) return;
+  const to = e.relatedTarget instanceof Element && e.relatedTarget.closest('[data-k]');
+  if (to && to.dataset.k === hit.dataset.k) return;
+  hit.closest('.topicsCard').classList.remove('live');
+  $$('#topics [data-k]').forEach(el => el.classList.remove('on'));
+});
+$('#topics').addEventListener('pointerleave', () => {
+  $('#topics').closest('.topicsCard').classList.remove('live');
+  $$('#topics [data-k]').forEach(el => el.classList.remove('on'));
+});
 
 /* ---------- sessions ---------- */
 function renderSessions() {
