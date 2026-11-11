@@ -69,7 +69,8 @@
   }
   // A session counts by its start time, in every category its topic is in.
   function categoryProgress(logs, g, now = Date.now()) {
-    const cfg = settings(g), today = dayStart(now), weekStart = today - ((new Date(now).getDay() + 6) % 7) * DAY;
+    const cfg = settings(g), today = dayStart(now), monday = today - ((new Date(now).getDay() + 6) % 7) * DAY;
+    const weekStart = dayStart(monday + DAY / 2);
     const topicsFor = new Map(cfg.categories.map(c => [c.id, new Set()]));
     for (const [topic, ids] of Object.entries(cfg.topicCats)) for (const id of ids) topicsFor.get(id)?.add(topic);
     const out = [];

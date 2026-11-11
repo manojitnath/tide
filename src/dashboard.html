@@ -176,6 +176,36 @@ select{background:var(--card);border:0;border-radius:99px;padding:7px 12px;box-s
 .radioRestore{display:block;margin:0 18px 10px;padding:0;color:var(--accent);font-size:12.5px;font-weight:600}
 .radioRestore:hover{text-decoration:underline}
 .radioEmpty{padding:10px 18px 2px}
+/* categories: one row per category, then one row per topic with its toggle chips */
+.catRow{padding:8px 18px;gap:10px}
+.catWho{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.catDot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.catName{font:600 13px var(--font);color:var(--ink);background:none;border:0;padding:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;cursor:pointer}
+.catName:hover{color:var(--accent)}
+.catNameInput{width:180px;max-width:100%;font:600 13px var(--font);color:var(--ink);background:var(--soft);border:0;border-radius:10px;padding:7px 10px;box-shadow:var(--track),0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent);outline:none}
+.catGoal{flex:none;padding:5px 9px;font-size:12px;font-weight:600}
+.catDel{flex:none}
+.catEmpty{padding:10px 18px 2px}
+.catAdd{padding:10px 18px;gap:10px}
+.catAdd input{flex:1;min-width:0;font:600 13px var(--font);color:var(--ink);background:var(--soft);border:0;border-radius:10px;padding:8px 11px;box-shadow:var(--track);outline:none}
+.catAdd input:focus{box-shadow:var(--track),0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+.catAdd .btn{margin:0}
+.catTopics{border-top:.5px solid var(--line)}
+.catTopicsHead{display:flex;justify-content:space-between;align-items:baseline;padding:12px 18px 4px}
+.catTopicsHead b{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.catTopicsHead span{font-size:11px;color:var(--muted)}
+.catTopicRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 18px;border-top:.5px solid var(--line)}
+.catTopicName{flex:1;min-width:0;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catTags{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end;max-width:70%}
+.catChip{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:2px 7px;font-size:10px;font-weight:700;line-height:1.5;white-space:nowrap;color:var(--muted);box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--c) 45%,var(--line))}
+.catChip i{width:6px;height:6px;border-radius:50%;background:var(--c);flex:none}
+.catChip[aria-checked="true"]{background:var(--c);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 5px -2px color-mix(in srgb,var(--c) 60%,transparent)}
+.catChip[aria-checked="true"] i{background:#fff}
+.catChip:hover{color:var(--ink)}
+.catChip[aria-checked="true"]:hover{color:#fff}
+.catTopicsEmpty{padding:2px 18px 10px}
+.catShowAll{display:block;margin:8px 18px 10px;padding:0;color:var(--accent);font-size:12.5px;font-weight:600}
+.catShowAll:hover{text-decoration:underline}
 .switch{width:38px;height:22px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .2s}
 .switch::after{content:"";position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .2s}
 .switch[aria-checked="true"]{background:#34c759}.switch[aria-checked="true"]::after{left:18px}
@@ -409,6 +439,18 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
       <div class="set"><div><b>Daily focus goal</b><span>Reach it to keep your streak going.</span></div><select id="goalSel"><option value="30">30 minutes</option><option value="60">1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option></select></div>
       <div class="set"><div><b>Vacation mode</b><span>Pauses your streak while you're away; missed days won't break it.</span></div><button class="switch" id="vacSw" role="switch"></button></div>
     </div>
+    <div class="group"><h3>Categories</h3>
+      <div id="catRows"></div>
+      <div class="set catAdd">
+        <input id="catNameInput" type="text" placeholder="Category name" maxlength="80" autocomplete="off" aria-label="Category name">
+        <button class="btn dark" id="addCategory" type="button">Add</button>
+      </div>
+      <div class="catTopics" id="catTopics" hidden>
+        <div class="catTopicsHead"><b>Topics</b><span>Most recent first</span></div>
+        <div id="catTopicRows"></div>
+        <button class="catShowAll" id="showAllTopics" type="button" hidden></button>
+      </div>
+    </div>
     <div class="group"><h3>Your log</h3>
       <div class="set"><div><b>Log folder</b><code id="folder"></code></div><div style="display:flex;gap:8px;flex:none"><button class="btn" id="reveal" type="button">Show in Finder</button><button class="btn" id="chooseFolder" type="button">Choose…</button></div></div>
       <div class="set"><div><b>Export</b><span>Save every session as a CSV file in the log folder.</span></div><button class="btn" type="button" data-export>Export CSV</button></div>
@@ -572,14 +614,13 @@ function niceMax(ms) {
   const steps = [15, 30, 45, 60, 90, 120, 180, 240, 360, 480, 600, 900, 1200, 1800, 2400, 3600, 6000, 9000, 12000].map(m => m * 60e3);
   return steps.find(s => s >= ms) || Math.ceil(ms / 36e6) * 36e6;
 }
-const TOPIC_PALETTE = ['#1f5cf2', '#8a5cf6', '#2fae5a', '#e0a23a', '#e8336b', '#1fa9d6', '#ff7a3d', '#5a6a86', '#16a3a3', '#c2410c'];
 const topicColors = new Map();
 // Topics get colours in the order they were first used, so the first 10 never share one.
 function colorTopics() {
   topicColors.clear();
   [...logs].sort((x, y) => x.start - y.start).forEach(l => {
     const key = String(l.topic).trim().toLowerCase();
-    if (!topicColors.has(key)) topicColors.set(key, TOPIC_PALETTE[topicColors.size % TOPIC_PALETTE.length]);
+    if (!topicColors.has(key)) topicColors.set(key, Game.PALETTE[topicColors.size % Game.PALETTE.length]);
   });
 }
 function topicColor(topic) {
@@ -587,7 +628,7 @@ function topicColor(topic) {
   if (topicColors.has(key)) return topicColors.get(key);
   let h = 5381;
   for (let i = 0; i < key.length; i++) h = (h * 33 + key.charCodeAt(i)) >>> 0;
-  return TOPIC_PALETTE[h % TOPIC_PALETTE.length];
+  return Game.PALETTE[h % Game.PALETTE.length];
 }
 function renderStats() {
   const list = inRange(), [a, b] = bounds(), total = list.reduce((n, l) => n + l.ms, 0);
@@ -1034,12 +1075,149 @@ $('#radioRows').onclick = e => {
 };
 function renderSettings() {
   renderRadio();
+  renderCategories();
+  renderTopicCats();
   $('#loginSw').setAttribute('aria-checked', !!settings.launchAtLogin);
   $('#folder').textContent = settings.logFolder;
   $('#ver').textContent = settings.version;
   $('#goalSel').value = String(G.goalMin);
   $('#vacSw').setAttribute('aria-checked', Game.onVacation(G, Game.dayKey(Date.now())));
 }
+const CAT_GOALS = [
+  ['0:day', 'No goal'],
+  ['30:day', '30m a day'], ['60:day', '1h a day'], ['90:day', '1.5h a day'], ['120:day', '2h a day'], ['180:day', '3h a day'], ['240:day', '4h a day'],
+  ['60:week', '1h a week'], ['120:week', '2h a week'], ['180:week', '3h a week'], ['300:week', '5h a week'], ['480:week', '8h a week'], ['600:week', '10h a week'], ['900:week', '15h a week'], ['1200:week', '20h a week']
+];
+let categoryEdit = null, topicsExpanded = false;
+function categoryGoalOptions(c) {
+  const mins = Number(c.goalMin) || 0;
+  const current = mins > 0 ? `${mins}:${c.per === 'week' ? 'week' : 'day'}` : '0:day';
+  return CAT_GOALS.map(([value, label]) => `<option value="${value}"${value === current ? ' selected' : ''}>${label}</option>`).join('');
+}
+function renderCategories() {
+  if (categoryEdit && !G.categories.some(c => c.id === categoryEdit)) categoryEdit = null;
+  const host = $('#catRows');
+  host.innerHTML = G.categories.length ? G.categories.map(c => {
+    const name = categoryEdit === c.id
+      ? `<input class="catNameInput" id="catNameEdit" value="${esc(c.name)}" maxlength="80" aria-label="Category name">`
+      : `<button class="catName" type="button" data-rename-cat="${esc(c.id)}" title="Click to rename">${esc(c.name)}</button>`;
+    return `<div class="set catRow">
+      <div class="catWho"><i class="catDot" style="--c:${esc(c.color)}"></i>${name}</div>
+      <select class="catGoal" data-goal-cat="${esc(c.id)}" aria-label="Goal for ${esc(c.name)}">${categoryGoalOptions(c)}</select>
+      <button class="catDel del" type="button" data-del-cat="${esc(c.id)}" title="Delete">×</button>
+    </div>`;
+  }).join('') : '<div class="empty catEmpty">Group your topics, like Learning or Content, and set a goal for each.</div>';
+  if (categoryEdit) {
+    const input = $('#catNameEdit');
+    if (input) { input.focus(); input.select(); attachCategoryName(input, G.categories.find(c => c.id === categoryEdit)); }
+  }
+}
+function renderTopicCats() {
+  $('#catTopics').hidden = !G.categories.length;
+  const host = $('#catTopicRows'), more = $('#showAllTopics');
+  if (!G.categories.length) { host.innerHTML = ''; more.hidden = true; return; }
+  const seen = new Set(), topics = [];
+  [...logs].sort((a, b) => b.start - a.start).forEach(l => {
+    const key = Game.topicKey(l.topic);
+    if (!key || seen.has(key)) return;
+    seen.add(key); topics.push({key, name: String(l.topic).trim()});
+  });
+  const shown = topicsExpanded ? topics : topics.slice(0, 12);
+  host.innerHTML = shown.length ? shown.map(t => {
+    const ids = G.topicCats[t.key] || [];
+    return `<div class="catTopicRow"><span class="catTopicName" title="${esc(t.name)}">${esc(t.name)}</span><div class="catTags">${G.categories.map(c => {
+      const on = ids.includes(c.id);
+      return `<button class="catChip" type="button" role="switch" aria-checked="${on}" data-topic="${esc(t.key)}" data-cat="${esc(c.id)}" style="--c:${esc(c.color)}"><i></i>${esc(c.name)}</button>`;
+    }).join('')}</div></div>`;
+  }).join('') : '<div class="empty catTopicsEmpty">No topics yet.</div>';
+  more.hidden = topics.length <= shown.length;
+  more.textContent = `Show all ${topics.length} topics`;
+}
+function attachCategoryName(input, cat) {
+  if (!cat) { renderCategories(); return; }
+  let done = false;
+  const finish = save => {
+    if (done) return;
+    done = true;
+    const name = input.value.trim();
+    categoryEdit = null;
+    if (!save || !name || name === cat.name) { renderCategories(); return; }
+    if (G.categories.some(c => c.id !== cat.id && c.name.trim().toLowerCase() === name.toLowerCase())) {
+      toast('You already have that category.'); renderCategories(); return;
+    }
+    cat.name = name;
+    G = Game.settings(G);
+    saveGame();
+  };
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+    else if (e.key === 'Escape') finish(false);
+  });
+  input.addEventListener('blur', () => finish(true));
+}
+$('#addCategory').onclick = () => {
+  const input = $('#catNameInput'), name = input.value.trim();
+  if (!name) { input.focus(); return; }
+  if (G.categories.some(c => c.name.trim().toLowerCase() === name.toLowerCase())) {
+    toast('You already have that category.'); input.select(); return;
+  }
+  const cat = {id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, color: Game.nextColor(G), goalMin: 0, per: 'day'};
+  G.categories.push(cat);
+  G = Game.settings(G);
+  saveGame();
+  input.value = '';
+  input.focus();
+  toast(`Added ${cat.name}`, () => {
+    G.categories = G.categories.filter(c => c.id !== cat.id);
+    G = Game.settings(G);
+    saveGame();
+  });
+};
+$('#catNameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); $('#addCategory').click(); }
+});
+$('#catRows').onclick = e => {
+  const rename = e.target.closest('[data-rename-cat]');
+  if (rename) { categoryEdit = rename.dataset.renameCat; renderCategories(); return; }
+  const del = e.target.closest('[data-del-cat]');
+  if (!del) return;
+  const id = del.dataset.delCat, i = G.categories.findIndex(c => c.id === id);
+  if (i < 0) return;
+  const gone = G.categories[i];
+  const links = Object.entries(G.topicCats).filter(([, ids]) => ids.includes(id)).map(([key, ids]) => [key, [...ids]]);   // keep the links for Undo
+  G.categories.splice(i, 1);
+  if (categoryEdit === id) categoryEdit = null;
+  G = Game.settings(G);
+  saveGame();
+  toast(`Deleted ${gone.name}`, () => {
+    G.categories.splice(Math.min(i, G.categories.length), 0, gone);
+    for (const [key, ids] of links) G.topicCats[key] = [...new Set([...(G.topicCats[key] || []), ...ids])];
+    G = Game.settings(G);
+    saveGame();
+  });
+};
+$('#catRows').onchange = e => {
+  const sel = e.target.closest('[data-goal-cat]');
+  if (!sel) return;
+  const c = G.categories.find(c => c.id === sel.dataset.goalCat);
+  if (!c) return;
+  const [mins, per] = sel.value.split(':');
+  c.goalMin = +mins;
+  c.per = mins === '0' ? 'day' : per;
+  G = Game.settings(G);
+  saveGame();
+};
+$('#catTopicRows').onclick = e => {
+  const chip = e.target.closest('.catChip');
+  if (!chip) return;
+  const key = chip.dataset.topic, id = chip.dataset.cat;
+  const ids = new Set(G.topicCats[key] || []);
+  ids.has(id) ? ids.delete(id) : ids.add(id);
+  if (ids.size) G.topicCats[key] = [...ids]; else delete G.topicCats[key];
+  G = Game.settings(G);
+  saveGame();
+};
+$('#showAllTopics').onclick = () => { topicsExpanded = true; renderTopicCats(); };
 $('#goalSel').onchange = e => { G.goalMin = +e.target.value; saveGame(); };
 // Vacation mode keeps a list of date ranges, so past vacations still don't count against the streak.
 $('#vacSw').onclick = () => {
