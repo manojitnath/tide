@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tide · Categories and goals mockup</title>
+<style>
+@font-face{font-family:"Manrope Preview";src:url("../../../src/fonts/Manrope.ttf") format("truetype");font-weight:200 800}
+:root{--font:Manrope,"Manrope Preview",ui-rounded,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#dfe4ec;color:#16181d;font:580 13px/1.4 var(--font);-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+button{border:0;background:none;padding:0;cursor:pointer}
+.doc{max-width:1240px;margin:0 auto;padding:36px 32px 0}
+.doc h1{margin:0;font:600 24px/1.2 var(--font);letter-spacing:-.01em}
+.doc p{margin:5px 0 0;color:#5d6577;font-size:13px}
+.mode{max-width:1240px;margin:0 auto;padding:22px 32px 10px}
+.mode > h2{margin:0 0 10px;padding-left:4px;font:700 11px var(--font);letter-spacing:.13em;text-transform:uppercase;color:#5d6577}
+.modeBody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;align-items:start}
+
+/* ---------- dashboard: Settings and Progress ---------- */
+.dash{border-radius:22px;padding:24px 26px 28px;background:var(--bg);color:var(--ink);font-family:var(--font);box-shadow:0 22px 44px -30px rgba(20,40,90,.4),0 0 0 1px rgba(20,40,90,.04)}
+.light .dash{--bg:#eaeef6;--card:#fff;--ink:#16181d;--muted:#6b7183;--line:rgba(20,40,90,.08);--soft:#eef2fb;--field:#eef2fb;--accent:#1f5cf2;--blue:#1f5cf2;--shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(20,40,90,.05),0 0 0 .5px rgba(20,40,90,.08),0 1px 2px rgba(20,40,90,.05),0 12px 28px -10px rgba(20,40,90,.16);--track:inset 0 1px 2px rgba(20,40,90,.1)}
+.dark .dash{--bg:#121212;--card:#1c1c1c;--ink:#f2f2f2;--muted:#8a8a8a;--line:rgba(255,255,255,.07);--soft:#262626;--field:#262626;--accent:#3a73ff;--blue:#2f66f0;--shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.4),0 0 0 .5px rgba(255,255,255,.08),0 1px 2px rgba(0,0,0,.4),0 12px 28px -10px rgba(0,0,0,.6);--track:inset 0 1px 2px rgba(0,0,0,.5)}
+.dash .title{margin-bottom:16px}
+.dash h1{margin:0;font:600 28px/1.15 var(--font);letter-spacing:-.01em}
+.dash .title p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.dash .group{background:var(--card);border-radius:14px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.dash .group h3{margin:0;padding:13px 18px 7px;font:600 14px var(--font);color:var(--ink)}
+.dash .set{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 18px;border-top:.5px solid var(--line)}
+.dash .set b{display:block;font-weight:600}
+.dash .set span{color:var(--muted);font-size:12.5px}
+.dash .set:first-of-type{border-top:0}
+.dash select{background:var(--card);border:0;border-radius:99px;padding:6px 10px;box-shadow:var(--shadow);font-size:12px;font-weight:600}
+.dash .btn{background:var(--card);border-radius:99px;padding:7px 14px;font-weight:600;box-shadow:var(--shadow);flex:none}
+.dash .btn.dark{background:linear-gradient(#3a72ff,#1f5cf2);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 8px -2px rgba(31,92,242,.5)}
+
+.catRow{display:grid;grid-template-columns:10px minmax(0,1fr) auto 24px;align-items:center;gap:10px;padding:7px 18px;border-top:.5px solid var(--line)}
+.catRow.first{border-top:0}
+.catDot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.catName{justify-self:start;max-width:100%;padding:2px 0;font-weight:600;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catRow select{padding:5px 9px}
+.rowBtn{width:24px;height:24px;border-radius:6px;color:var(--muted);font-size:16px;line-height:1;display:grid;place-items:center}
+.rowBtn:hover{background:var(--soft);color:#ff3b30}
+
+.addCat{display:flex;gap:8px;align-items:center;padding:10px 18px;border-top:.5px solid var(--line)}
+.field{flex:1;min-width:0;background:var(--field);border:0;border-radius:9px;padding:8px 11px;box-shadow:var(--track);outline:none;font-size:13px;font-weight:580}
+.field::placeholder{color:var(--muted)}
+.addCat .btn{margin:0}
+
+.topicsHead{display:flex;justify-content:space-between;align-items:baseline;padding:12px 18px 5px;border-top:.5px solid var(--line)}
+.topicsHead b{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.topicsHead span{font-size:11px;color:var(--muted)}
+.topicRow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:6px 18px;border-top:.5px solid var(--line)}
+.topicName{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tags{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
+.tag{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:2px 7px;font-size:10px;font-weight:700;line-height:1.5;white-space:nowrap;color:var(--muted);box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--c) 45%,var(--line))}
+.tag i{width:6px;height:6px;border-radius:50%;background:var(--c);flex:none}
+.tag[aria-checked="true"]{background:var(--c);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 5px -2px color-mix(in srgb,var(--c) 60%,transparent)}
+.tag[aria-checked="true"] i{background:#fff}
+
+.panel{background:var(--card);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:14px}
+.ph{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.ph h2{margin:0;font-size:16px;font-weight:700}
+.ph span{color:var(--muted);font-size:12px}
+.g3{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.g3 .panel{margin:0;padding:13px 14px}
+.g3 .ph{display:block;margin-bottom:8px}
+.g3 .ph h2{font-size:13px}
+.g3 .ph span{display:block;margin-top:1px;font-size:10.5px}
+.lvl{position:relative;overflow:hidden;border-radius:14px;padding:14px 16px;color:#fff;background-color:var(--blue);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 12px 24px -12px rgba(31,92,242,.7);background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,0) 55%)}
+.lvl small{font-size:12px;opacity:.85}
+.lvl b{display:block;font:700 26px/1.1 var(--font);margin:4px 0 10px}
+.lvl .xpbar{height:7px;border-radius:9px;background:rgba(255,255,255,.25);overflow:hidden}
+.lvl .xpbar i{display:block;height:100%;border-radius:9px;background:#fff}
+.lvl span{display:block;font-size:11px;margin-top:7px;opacity:.85}
+.ring{transform:rotate(-90deg);flex:none}
+.ring circle{fill:none;stroke:var(--soft);stroke-width:5}
+.ring .on{stroke:var(--accent);stroke-linecap:round}
+.big{display:flex;align-items:center;gap:11px;margin:2px 0 9px}
+.big .ring{width:48px;height:48px}
+.big b{display:block;font:700 20px var(--font)}
+.big span{color:var(--muted);font-size:11.5px}
+.week{display:flex;justify-content:space-between;gap:4px}
+.week .d{width:19px;height:19px;border-radius:50%;background:var(--soft);box-shadow:var(--track)}
+.week .d.done{background:linear-gradient(#6ad874,#2fae5a);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.week .d.now{background:none;box-shadow:inset 0 0 0 2.5px #2fae5a}
+.sk{display:flex;align-items:center;gap:9px}
+.sk svg{width:34px;height:34px;flex:none;filter:drop-shadow(0 0 8px rgba(255,90,40,.45))}
+.sk small{display:block;font-size:10px;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.sk b{font:700 20px/1.1 var(--font)}
+.sk b span{font-size:11px;letter-spacing:.06em;color:var(--muted)}
+.sk em{margin-left:auto;font-style:normal;font-size:10.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.skwk{display:flex;justify-content:space-between;gap:3px;margin-top:11px}
+.skwk .d{width:17px;height:17px;border-radius:50%;background:var(--soft);box-shadow:var(--track)}
+.skwk .d.done{background:linear-gradient(#6ad874,#2fae5a)}
+.skwk .d.now{background:none;box-shadow:inset 0 0 0 2.5px #2fae5a}
+
+.cgRow{display:grid;grid-template-columns:9px 96px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0}
+.cgRow + .cgRow{border-top:.5px solid var(--line)}
+.cgDot{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.cgName{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cgBar{height:6px;border-radius:99px;background:var(--field);overflow:hidden;box-shadow:var(--track)}
+.cgBar i{display:block;height:100%;border-radius:99px;background:var(--c)}
+.cgMeta{font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cgDone{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:var(--c)}
+.cgDone svg{width:12px;height:12px}
+.lweek{margin:-8px 0 10px;font-size:11.5px;color:var(--muted)}
+.fbars{display:flex;align-items:flex-end;gap:8px;height:96px}
+.fbars .b{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}
+.fbars i{display:block;width:100%;border-radius:7px;background:color-mix(in srgb,var(--accent) 22%,var(--soft))}
+.fbars .now i{background:linear-gradient(#5b8cff,#1f5cf2);box-shadow:0 8px 18px -6px rgba(31,92,242,.7)}
+.fbars .fut i{background:var(--soft);opacity:.6}
+.fbars small{font-size:10px;color:var(--muted)}
+
+/* ---------- panel question ---------- */
+.panelWrap{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0 4px}
+.panelCap{font:700 10.5px var(--font);letter-spacing:.12em;text-transform:uppercase;color:#5d6577}
+.panelMock{width:320px;padding:12px;display:flex;flex-direction:column;gap:12px;border-radius:20px;background:var(--bg);color:var(--ink);font-family:var(--font)}
+.light .panelMock{--bg:linear-gradient(#f7f8fc,#eceff6);--ink:#16181d;--muted:#6b7183;--card:linear-gradient(#fff,#f6f7fb);--line:rgba(20,40,90,.08);--field:#eef2fb;--accent:#1f5cf2;--bevel:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(20,40,90,.06),0 0 0 .5px rgba(20,40,90,.08),0 1px 2px rgba(20,40,90,.06),0 10px 24px -8px rgba(20,40,90,.16);--chip:linear-gradient(#fff,#f1f3f8);--chipShadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(20,40,90,.1),0 2px 6px rgba(20,40,90,.1);--track:inset 0 1px 2px rgba(20,40,90,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 0 0 .5px rgba(20,40,90,.12),0 22px 50px rgba(20,40,90,.25)}
+.dark .panelMock{--bg:#161616;--ink:#f2f2f2;--muted:#8a8a8a;--card:linear-gradient(#222,#1c1c1c);--line:rgba(255,255,255,.08);--field:#2a2a2a;--accent:#3a73ff;--bevel:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.4),0 0 0 .5px rgba(255,255,255,.09),0 1px 2px rgba(0,0,0,.4),0 10px 24px -8px rgba(0,0,0,.6);--chip:linear-gradient(#333,#272727);--chipShadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 0 .5px rgba(255,255,255,.08);--track:inset 0 1px 2px rgba(0,0,0,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 .5px rgba(255,255,255,.1),0 22px 50px rgba(0,0,0,.6)}
+.ask{display:flex;flex-direction:column;gap:9px;border-radius:20px;padding:13px;background:var(--card);box-shadow:var(--bevel)}
+.ask h2{margin:0;font:600 16px var(--font);text-align:center;letter-spacing:0;text-transform:none;color:var(--ink)}
+.ask p{margin:-4px 0 2px;color:var(--muted);text-align:center;font-size:13px}
+.ask input{width:100%;padding:9px 11px;border-radius:12px;border:0;background:var(--field);box-shadow:var(--track);outline:none;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chips button{background:var(--chip);box-shadow:var(--chipShadow);border-radius:99px;padding:4px 10px;font-size:12px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catAsk{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding-top:1px}
+.catAsk>span{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-right:1px}
+.pchip{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:2px 6px;font-size:10px;font-weight:700;line-height:1.5;white-space:nowrap;color:var(--muted);box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--c) 45%,var(--line))}
+.pchip i{width:6px;height:6px;border-radius:50%;background:var(--c);flex:none}
+.pchip[aria-checked="true"]{background:var(--c);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 5px -2px color-mix(in srgb,var(--c) 60%,transparent)}
+.pchip[aria-checked="true"] i{background:#fff}
+.duo{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:12px}
+.duo button{min-width:0;height:44px;border-radius:99px;font:600 15px var(--font);letter-spacing:-.01em}
+.duo .secondary{color:var(--ink);background:var(--card);box-shadow:var(--bevel)}
+.duo .primary{color:#fff;background:linear-gradient(#3a72ff,#1f5cf2);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,40,.15),0 8px 18px -8px rgba(31,92,242,.7)}
+
+@media (max-width:1050px){
+  .modeBody{grid-template-columns:1fr}
+  .panelWrap{grid-column:1}
+}
+</style>
+</head>
+<body>
+
+<div class="doc">
+  <h1>Tide · Categories and goals mockup</h1>
+  <p>Settings → Categories, the Progress tab's Category goals card and the end-of-session question. Static mockup, light and dark.</p>
+</div>
+
+<section class="mode">
+  <h2>Light mode</h2>
+  <div class="modeBody light">
+
+    <div class="dash">
+      <div class="title"><div><h1>Settings</h1><p>Tide lives in the menu bar. Click its time to open the timer.</p></div></div>
+
+      <div class="group"><h3>Streaks and goals</h3>
+        <div class="set"><div><b>Daily focus goal</b><span>Reach it to keep your streak going.</span></div><select><option>2 hours</option></select></div>
+        <div class="set"><div><b>Vacation mode</b><span>Pauses your streak while you're away; missed days won't break it.</span></div><button class="btn" type="button" style="width:38px;height:22px;padding:0;border-radius:99px;background:var(--line);position:relative"><span style="display:block;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);margin-left:2px"></span></button></div>
+      </div>
+
+      <div class="group"><h3>Categories</h3>
+        <div class="catRow first" style="--c:#2fae5a">
+          <i class="catDot"></i><button class="catName" type="button" title="Click to rename">Learning</button>
+          <select><option>2h a day</option></select><button class="rowBtn" type="button" title="Delete category">×</button>
+        </div>
+        <div class="catRow" style="--c:#e8336b">
+          <i class="catDot"></i><button class="catName" type="button" title="Click to rename">Content</button>
+          <select><option>5h a week</option></select><button class="rowBtn" type="button" title="Delete category">×</button>
+        </div>
+        <div class="catRow" style="--c:#5a6a86">
+          <i class="catDot"></i><button class="catName" type="button" title="Click to rename">Admin</button>
+          <select><option>30m a day</option></select><button class="rowBtn" type="button" title="Delete category">×</button>
+        </div>
+        <div class="addCat">
+          <input class="field" placeholder="Category name" aria-label="Category name">
+          <button class="btn dark" type="button">Add</button>
+        </div>
+
+        <div class="topicsHead"><b>Topics</b><span>Most recent first</span></div>
+        <div class="topicRow"><span class="topicName">Interview Prep</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="true"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="false"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="false"><i></i>Admin</span>
+        </span></div>
+        <div class="topicRow"><span class="topicName">Research</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="true"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="true"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="false"><i></i>Admin</span>
+        </span></div>
+        <div class="topicRow"><span class="topicName">Scripting</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="false"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="true"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="false"><i></i>Admin</span>
+        </span></div>
+        <div class="topicRow"><span class="topicName">Reading</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="true"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="false"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="false"><i></i>Admin</span>
+        </span></div>
+        <div class="topicRow"><span class="topicName">Expenses</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="false"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="false"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="true"><i></i>Admin</span>
+        </span></div>
+        <div class="topicRow"><span class="topicName">Design notes</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="false"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="false"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="false"><i></i>Admin</span>
+        </span></div>
+      </div>
+    </div>
+
+    <div class="dash">
+      <div class="title"><div><h1>Progress</h1><p>1h 20m focused today. 40m to your goal.</p></div></div>
+
+      <div class="g3">
+        <div class="lvl"><small>Level 6</small><b>High tide</b><div class="xpbar"><i style="width:64%"></i></div><span>2,340 / 3,600 XP</span></div>
+        <div class="panel"><div class="ph"><h2>Daily goal</h2><span>2h a day</span></div>
+          <div class="big"><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="67 100"/></svg><div><b>1h 20m</b><span>40m to go today</span></div></div>
+          <div class="week"><i class="d done"></i><i class="d done"></i><i class="d done"></i><i class="d done"></i><i class="d now"></i><i class="d"></i><i class="d"></i></div>
+        </div>
+        <div class="panel"><div class="sk"><svg viewBox="0 0 24 24"><defs><linearGradient id="cf1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d2e"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#cf1)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#fff3c4"/></svg><div><small>STREAK</small><b>12 <span>DAYS</span></b></div><em>Best 21</em></div>
+          <div class="skwk"><i class="d done"></i><i class="d done"></i><i class="d done"></i><i class="d done"></i><i class="d now"></i><i class="d"></i><i class="d"></i></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><h2>Category goals</h2><span>Today and this week</span></div>
+        <div class="cgRow" style="--c:#2fae5a"><i class="cgDot"></i><b class="cgName">Learning</b><span class="cgBar"><i style="width:67%"></i></span><span class="cgMeta">1h 20m of 2h today</span></div>
+        <div class="cgRow" style="--c:#e8336b"><i class="cgDot"></i><b class="cgName">Content</b><span class="cgBar"><i style="width:63%"></i></span><span class="cgMeta">3h 10m of 5h this week</span></div>
+        <div class="cgRow" style="--c:#5a6a86"><i class="cgDot"></i><b class="cgName">Admin</b><span class="cgBar"><i style="width:100%"></i></span><span class="cgDone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Done</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><h2>Focus</h2><span>This week</span></div>
+        <p class="lweek">14h 20m focused</p>
+        <div class="fbars">
+          <div class="b"><i style="height:62%"></i><small>M</small></div>
+          <div class="b"><i style="height:78%"></i><small>T</small></div>
+          <div class="b"><i style="height:45%"></i><small>W</small></div>
+          <div class="b"><i style="height:88%"></i><small>T</small></div>
+          <div class="b now"><i style="height:52%"></i><small>F</small></div>
+          <div class="b fut"><i style="height:4%"></i><small>S</small></div>
+          <div class="b fut"><i style="height:4%"></i><small>S</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panelWrap">
+      <div class="panelCap">End-of-session question</div>
+      <div class="panelMock">
+        <div class="ask">
+          <h2>What did you work on?</h2>
+          <p>1h 10m of focus, 9:12 to 10:22 AM</p>
+          <input value="Design notes" aria-label="Topic">
+          <div class="chips"><button type="button">Interview Prep</button><button type="button">Research</button><button type="button">Scripting</button><button type="button">Reading</button></div>
+          <div class="catAsk">
+            <span>Category</span>
+            <button class="pchip" type="button" role="switch" aria-checked="true" style="--c:#2fae5a"><i></i>Learning</button>
+            <button class="pchip" type="button" role="switch" aria-checked="false" style="--c:#e8336b"><i></i>Content</button>
+            <button class="pchip" type="button" role="switch" aria-checked="false" style="--c:#5a6a86"><i></i>Admin</button>
+          </div>
+          <div class="duo"><button class="secondary" type="button">Discard</button><button class="primary" type="button">Save</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="mode">
+  <h2>Dark mode</h2>
+  <div class="modeBody dark">
+
+    <div class="dash">
+      <div class="title"><div><h1>Settings</h1><p>Tide lives in the menu bar. Click its time to open the timer.</p></div></div>
+
+      <div class="group"><h3>Streaks and goals</h3>
+        <div class="set"><div><b>Daily focus goal</b><span>Reach it to keep your streak going.</span></div><select><option>2 hours</option></select></div>
+        <div class="set"><div><b>Vacation mode</b><span>Pauses your streak while you're away; missed days won't break it.</span></div><button class="btn" type="button" style="width:38px;height:22px;padding:0;border-radius:99px;background:var(--line);position:relative"><span style="display:block;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);margin-left:2px"></span></button></div>
+      </div>
+
+      <div class="group"><h3>Categories</h3>
+        <div class="catRow first" style="--c:#2fae5a">
+          <i class="catDot"></i><button class="catName" type="button" title="Click to rename">Learning</button>
+          <select><option>2h a day</option></select><button class="rowBtn" type="button" title="Delete category">×</button>
+        </div>
+        <div class="catRow" style="--c:#e8336b">
+          <i class="catDot"></i><button class="catName" type="button" title="Click to rename">Content</button>
+          <select><option>5h a week</option></select><button class="rowBtn" type="button" title="Delete category">×</button>
+        </div>
+        <div class="catRow" style="--c:#5a6a86">
+          <i class="catDot"></i><button class="catName" type="button" title="Click to rename">Admin</button>
+          <select><option>30m a day</option></select><button class="rowBtn" type="button" title="Delete category">×</button>
+        </div>
+        <div class="addCat">
+          <input class="field" placeholder="Category name" aria-label="Category name">
+          <button class="btn dark" type="button">Add</button>
+        </div>
+
+        <div class="topicsHead"><b>Topics</b><span>Most recent first</span></div>
+        <div class="topicRow"><span class="topicName">Interview Prep</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="true"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="false"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="false"><i></i>Admin</span>
+        </span></div>
+        <div class="topicRow"><span class="topicName">Research</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="true"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="true"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="false"><i></i>Admin</span>
+        </span></div>
+        <div class="topicRow"><span class="topicName">Scripting</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="false"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="true"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="false"><i></i>Admin</span>
+        </span></div>
+        <div class="topicRow"><span class="topicName">Reading</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="true"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="false"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="false"><i></i>Admin</span>
+        </span></div>
+        <div class="topicRow"><span class="topicName">Expenses</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="false"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="false"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="true"><i></i>Admin</span>
+        </span></div>
+        <div class="topicRow"><span class="topicName">Design notes</span><span class="tags">
+          <span class="tag" style="--c:#2fae5a" aria-checked="false"><i></i>Learning</span>
+          <span class="tag" style="--c:#e8336b" aria-checked="false"><i></i>Content</span>
+          <span class="tag" style="--c:#5a6a86" aria-checked="false"><i></i>Admin</span>
+        </span></div>
+      </div>
+    </div>
+
+    <div class="dash">
+      <div class="title"><div><h1>Progress</h1><p>1h 20m focused today. 40m to your goal.</p></div></div>
+
+      <div class="g3">
+        <div class="lvl"><small>Level 6</small><b>High tide</b><div class="xpbar"><i style="width:64%"></i></div><span>2,340 / 3,600 XP</span></div>
+        <div class="panel"><div class="ph"><h2>Daily goal</h2><span>2h a day</span></div>
+          <div class="big"><svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14"/><circle class="on" cx="18" cy="18" r="14" pathLength="100" stroke-dasharray="67 100"/></svg><div><b>1h 20m</b><span>40m to go today</span></div></div>
+          <div class="week"><i class="d done"></i><i class="d done"></i><i class="d done"></i><i class="d done"></i><i class="d now"></i><i class="d"></i><i class="d"></i></div>
+        </div>
+        <div class="panel"><div class="sk"><svg viewBox="0 0 24 24"><defs><linearGradient id="cf2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d2e"/></linearGradient></defs><path d="M12 2.5c.6 3.2 4.8 5.6 4.8 10.4A4.8 4.8 0 0 1 12 18a4.8 4.8 0 0 1-4.8-5.1c0-2 1-3.3 2.1-4.5.2 1.6 1 2.6 2.1 2.9-.4-2.8.1-5.6.6-8.8z" fill="url(#cf2)"/><path d="M12 12.3c1.4 1.5 2.3 2.4 2.3 3.6a2.3 2.3 0 0 1-4.6 0c0-1.2.9-2.1 2.3-3.6z" fill="#fff3c4"/></svg><div><small>STREAK</small><b>12 <span>DAYS</span></b></div><em>Best 21</em></div>
+          <div class="skwk"><i class="d done"></i><i class="d done"></i><i class="d done"></i><i class="d done"></i><i class="d now"></i><i class="d"></i><i class="d"></i></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><h2>Category goals</h2><span>Today and this week</span></div>
+        <div class="cgRow" style="--c:#2fae5a"><i class="cgDot"></i><b class="cgName">Learning</b><span class="cgBar"><i style="width:67%"></i></span><span class="cgMeta">1h 20m of 2h today</span></div>
+        <div class="cgRow" style="--c:#e8336b"><i class="cgDot"></i><b class="cgName">Content</b><span class="cgBar"><i style="width:63%"></i></span><span class="cgMeta">3h 10m of 5h this week</span></div>
+        <div class="cgRow" style="--c:#5a6a86"><i class="cgDot"></i><b class="cgName">Admin</b><span class="cgBar"><i style="width:100%"></i></span><span class="cgDone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Done</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><h2>Focus</h2><span>This week</span></div>
+        <p class="lweek">14h 20m focused</p>
+        <div class="fbars">
+          <div class="b"><i style="height:62%"></i><small>M</small></div>
+          <div class="b"><i style="height:78%"></i><small>T</small></div>
+          <div class="b"><i style="height:45%"></i><small>W</small></div>
+          <div class="b"><i style="height:88%"></i><small>T</small></div>
+          <div class="b now"><i style="height:52%"></i><small>F</small></div>
+          <div class="b fut"><i style="height:4%"></i><small>S</small></div>
+          <div class="b fut"><i style="height:4%"></i><small>S</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panelWrap">
+      <div class="panelCap">End-of-session question</div>
+      <div class="panelMock">
+        <div class="ask">
+          <h2>What did you work on?</h2>
+          <p>1h 10m of focus, 9:12 to 10:22 AM</p>
+          <input value="Design notes" aria-label="Topic">
+          <div class="chips"><button type="button">Interview Prep</button><button type="button">Research</button><button type="button">Scripting</button><button type="button">Reading</button></div>
+          <div class="catAsk">
+            <span>Category</span>
+            <button class="pchip" type="button" role="switch" aria-checked="true" style="--c:#2fae5a"><i></i>Learning</button>
+            <button class="pchip" type="button" role="switch" aria-checked="false" style="--c:#e8336b"><i></i>Content</button>
+            <button class="pchip" type="button" role="switch" aria-checked="false" style="--c:#5a6a86"><i></i>Admin</button>
+          </div>
+          <div class="duo"><button class="secondary" type="button">Discard</button><button class="primary" type="button">Save</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</body>
+</html>
