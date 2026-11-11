@@ -33,7 +33,7 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
   (System *notifications* in Notification Center are only used for the idle nudge below and app updates.)
 - **A nudge when you're idle:** after 30 minutes with no timer or break running, a macOS notification (with a sound) suggests starting a session. Hover over it and press **Let's start** to start counting up without opening the panel. Notifications use the **Alerts** style, so they stay on screen until you answer; you can change that in System Settings → Notifications → Tide. There are no notifications between 10 PM and 5 AM.
 - **Fair logging:** a Pomodoro you end early isn't counted, and neither is under a minute of counting up.
-- **Radio:** ten lofi live streams (Lofi Girl, Chillhop and others) in a compact player: the station's cover art, play/pause, previous and next, stop, a volume button that slides a slider open, and the station list when you click the station's name. It keeps playing when the panel is closed.
+- **Radio:** ten lofi live streams (Lofi Girl, Chillhop and others) in a compact player: the station's cover art, play/pause, previous and next, stop, a volume button that slides a slider open, and the station list when you click the station's name. It keeps playing when the panel is closed. In **Settings → Radio** you can add your own YouTube videos, playlists and channels, and reorder, rename or remove any station, built-in ones included. Back and forward skip songs in a playlist or channel, and change station otherwise.
 - **Study log:** every counted session is saved with its topic. Recent topics are one click away.
 - **Daily goal, streak and level:** the panel greets you and shows your streak (days you reach your daily goal, 2 hours by default) and today's progress. Every focused minute is 1 XP; levels go from Drop to King tide. Vacation mode pauses the streak.
 - **Badges:** 16 to unlock for focus hours, streaks and a few specials, in the **Progress** tab of the dashboard. Hover over one to see what it's for.
@@ -67,13 +67,14 @@ Everything is in `~/Library/Application Support/Tide/` (the app was called Focus
 
 - `Study Log.json`: your sessions
 - `studyradio.state.json`: timer mode, station, volume
+- `tide.stations.json`: your station list
 - `tide.game.json`: daily goal, vacation mode
 
 To keep the log somewhere else, such as a synced notes folder, choose a folder in **Settings → Your log**. Your current log is copied there if the folder doesn't have one yet.
 
 ## About the YouTube streams
 
-The radio plays public YouTube live streams through YouTube's official embedded player, shown small as the station art, and finds each stream's current ID by reading the channel's public Live page. It's a personal project, not affiliated with YouTube or the channels. The small player doesn't follow YouTube's size guidelines, and the stream lookup can break when YouTube changes its pages. All music belongs to its creators.
+The radio plays public YouTube live streams through YouTube's official embedded player, shown small as the station art, and finds each stream's current ID by reading the channel's public Live page. Your own stations play the videos, playlists or channel uploads you add through the same player; when you add a channel, the app reads its public page once to find its ID. It's a personal project, not affiliated with YouTube or the channels. The small player doesn't follow YouTube's size guidelines, and the stream lookup can break when YouTube changes its pages. All music belongs to its creators.
 
 ## Build from source
 

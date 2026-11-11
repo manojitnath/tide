@@ -45,7 +45,13 @@
 
 ## Stations
 
-Each station in `STATIONS` (in `panel.html`) stores a channel, title words to match, and a last known video ID. At launch the app reads each channel's `/streams` page, finds the live stream whose title matches, and saves the current ID (`S.ytIds`). If a stream fails, it looks it up again and retries once. The player is created idle at launch, because a freshly created YouTube player starts muted.
+`BUILT_IN` (in `panel.html`) lists each built-in station with its channel, the words from its stream title and a last known video ID. At launch the app reads each channel's `/streams` page, finds the live stream whose title matches, and saves the current ID (`S.ytIds`, keyed by the built-in's original name). If a stream fails, it looks it up again and retries once. The player is created idle at launch, because a freshly created YouTube player starts muted.
+
+`tide.stations` (version 2) is one ordered list of built-in items (`builtIn: '<original name>'`, which can be renamed) and custom items (`kind: 'video' | 'playlist' | 'channel'`). Only the dashboard writes it. Both pages read it through `readStations()`, which upgrades version 1 (`{custom, builtIn}`). `readStations()` is copied in both files and must stay the same, and `BUILT_IN_NAMES` in the dashboard must match `BUILT_IN`. The list is never empty. The panel's station keys are `b:<name>` for built-ins and `c:<id>` for custom ones.
+
+Playing: a video loops when it ends. A playlist uses `loadPlaylist` and `setLoop(true)`. A channel is stored with its `UU…` uploads playlist (`'UU' + channelId.slice(2)`) and plays like a playlist, newest first. Adding a channel looks it up with `findChannel` in `main.swift`, which reads `itemprop="identifier"` and `og:title` from the channel page; only the dashboard can ask for it.
+
+Back and forward skip songs in a playlist or channel, and change station otherwise. You leave a playlist through the station list.
 
 ## Design
 
