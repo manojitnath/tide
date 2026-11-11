@@ -193,6 +193,15 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
 .chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .chips button{background:var(--chip);box-shadow:var(--chipShadow);border-radius:99px;padding:4px 10px;font-size:12px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chips button:hover{color:var(--accent)}
+.askCats{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding-top:1px}
+.askCats>span{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);align-self:flex-start;padding-top:5px}
+.askCatChips{display:flex;flex-wrap:wrap;gap:4px;flex:1 1 0;min-width:0}
+.askCatChip{display:inline-flex;align-items:center;gap:4px;min-height:24px;padding:3px 6px;border-radius:99px;font-size:11px;font-weight:700;line-height:1.5;white-space:nowrap;color:var(--muted);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,var(--line))}
+.askCatChip i{width:7px;height:7px;border-radius:50%;background:var(--c);flex:none}
+.askCatChip[aria-checked="true"]{background:var(--c);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 5px -2px color-mix(in srgb,var(--c) 60%,transparent)}
+.askCatChip[aria-checked="true"] i{background:#fff}
+.askCatChip:hover{color:var(--ink)}
+.askCatChip[aria-checked="true"]:hover{color:#fff}
 
 /* greeting and the streak card */
 .greet{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 0}
@@ -276,6 +285,7 @@ body.preview .panel{border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255
     <input type="text" id="askInput" list="topicList" maxlength="80" placeholder="What did you work on?" hidden autocomplete="off">
     <datalist id="topicList"></datalist>
     <div class="chips" id="askChips"></div>
+    <div class="askCats" id="askCats" hidden><span>Category</span><div class="askCatChips" id="askCatChips"></div></div>
     <div class="duo" id="askBtns"></div>
   </div>
   <div class="today">
@@ -490,6 +500,7 @@ function tick() {
 
 /* ---------- questions: finished blocks and breaks ---------- */
 let notice = null, noticeSeq = 0, pending = null, afterTopic = '', panelOpen = !NATIVE;
+let askCatTouched = false, askCatChoice = new Set(), askCatNotice = 0;
 const btn = (id, label, style) => ({id, label, style: style || 'secondary'});
 const N = {
   done: total => ({title: 'Focus complete', text: `${Math.round(total / MIN)} minutes of deep work. Well done.`, buttons: [btn('log', 'Log it', 'primary'), btn('keep', 'Keep going')]}),
@@ -505,15 +516,39 @@ function present(n) {
   native({type: 'notice', notice});
 }
 window.panelVisible = open => { panelOpen = open; if (!open) menu(false); renderAsk(); if (!open && notice) native({type: 'notice', notice}); };
+function drawAskCats() {
+  $('#askCatChips').innerHTML = G.categories.map(c => {
+    const on = askCatChoice.has(c.id);
+    return `<button class="askCatChip" type="button" role="switch" aria-checked="${on}" data-cat="${esc(c.id)}" style="--c:${esc(c.color)}"><i></i>${esc(c.name)}</button>`;
+  }).join('');
+}
+function fillAskCats(topic) {
+  if (askCatTouched) return;   // typing stops filling once the user has chosen
+  askCatChoice = new Set(Game.categoriesOf(G, topic).map(c => c.id));
+  drawAskCats();
+}
+function saveAskCats(topic) {
+  const key = Game.topicKey(topic), saved = new Set(G.topicCats[key] || []);
+  const same = saved.size === askCatChoice.size && [...askCatChoice].every(id => saved.has(id));
+  if (same) return;
+  if (askCatChoice.size) G.topicCats[key] = G.categories.filter(c => askCatChoice.has(c.id)).map(c => c.id);
+  else delete G.topicCats[key];
+  G = Game.settings(G);
+  saveGame();
+}
 function renderAsk() {
   const show = !!notice && panelOpen;
   $('#ask').hidden = !show; $('#actions').hidden = show;
   if (!show) return;
+  if (askCatNotice !== notice.id) { askCatNotice = notice.id; askCatTouched = false; askCatChoice = new Set(); }
   $('#askTitle').textContent = notice.title; $('#askText').textContent = notice.text || '';
   $('#askInput').hidden = !notice.input;
   $('#askChips').innerHTML = notice.input ? (notice.chips || []).map(t => `<button type="button">${esc(t)}</button>`).join('') : '';
+  const cats = notice.input && G.categories.length > 0;
+  $('#askCats').hidden = !cats;
+  if (cats) drawAskCats();
   $('#askBtns').innerHTML = notice.buttons.map(b => `<button type="button" class="${b.style}" data-id="${b.id}">${esc(b.label)}</button>`).join('');
-  if (notice.input) { $('#topicList').innerHTML = [...new Set(logs.map(l => l.topic))].map(t => `<option value="${esc(t)}">`).join(''); $('#askInput').value = ''; setTimeout(() => $('#askInput').focus(), 60); }
+  if (notice.input) { $('#topicList').innerHTML = [...new Set(logs.map(l => l.topic))].map(t => `<option value="${esc(t)}">`).join(''); $('#askInput').value = ''; if (cats && !askCatTouched) fillAskCats(''); setTimeout(() => $('#askInput').focus(), 60); }
 }
 // Answers come from the panel's buttons or, through the app, from the Island.
 window.noticeAction = (id, topic) => {
@@ -523,6 +558,8 @@ window.noticeAction = (id, topic) => {
     case 'keep': keepGoing(); break;
     case 'save':
     case 'discard':
+      // The Island question has no category chips, so only save choices the panel showed.
+      if (id === 'save' && topic && panelOpen && notice && notice.input && askCatNotice === notice.id) saveAskCats(topic);
       if (pending && id === 'save' && topic) logs.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), start: pending.start, end: pending.end, ms: pending.ms, topic});
       if (id === 'save') { saveLogs(); renderStats(); checkUnlocks(); }
       pending = null;
@@ -567,7 +604,16 @@ function askPress(id) {
   noticeAction(id, topic);
 }
 $('#askBtns').onclick = e => { const b = e.target.closest('button'); if (b) askPress(b.dataset.id); };
-$('#askChips').onclick = e => { const b = e.target.closest('button'); if (b) { $('#askInput').value = b.textContent; $('#askInput').focus(); } };
+$('#askChips').onclick = e => { const b = e.target.closest('button'); if (b) { $('#askInput').value = b.textContent; fillAskCats(b.textContent); $('#askInput').focus(); } };
+$('#askCatChips').onclick = e => {
+  const b = e.target.closest('.askCatChip');
+  if (!b) return;
+  askCatTouched = true;
+  const id = b.dataset.cat;
+  askCatChoice.has(id) ? askCatChoice.delete(id) : askCatChoice.add(id);
+  drawAskCats();
+};
+$('#askInput').addEventListener('input', () => { if (notice && notice.input) fillAskCats($('#askInput').value); });
 $('#askInput').addEventListener('keydown', e => { if (e.key === 'Enter' && notice) askPress(notice.needsTopic); });
 function recentTopics(n) {
   const seen = [];
