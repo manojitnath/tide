@@ -106,6 +106,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         let json = String(data: try! JSONSerialization.data(withJSONObject: saved), encoding: .utf8)!
         let content = WKUserContentController()
         content.add(self, name: "native")
+        content.addUserScript(WKUserScript(source: cssScript, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         content.addUserScript(WKUserScript(source: "window.__NATIVE = true; window.__STORE = \(json); window.__THEME = \(self.json(theme)); window.__USER = \(self.json(firstName)); \(extra)",
                                            injectionTime: .atDocumentStart, forMainFrameOnly: true))
         content.addUserScript(WKUserScript(source: fontScript, injectionTime: .atDocumentStart, forMainFrameOnly: true))
@@ -129,6 +130,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     lazy var gameScript: String = {
         guard let url = Bundle.main.url(forResource: "game", withExtension: "js") else { return "" }
         return (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+    }()
+    // The shared stylesheet (tide.css), injected before the page's own style.
+    lazy var cssScript: String = {
+        guard let url = Bundle.main.url(forResource: "tide", withExtension: "css"),
+              let css = try? String(contentsOf: url, encoding: .utf8) else { return "" }
+        return "(function(){var s=document.createElement('style');s.id='tide-css';s.textContent=\(json(css));(document.head||document.documentElement).appendChild(s);})();"
     }()
     // For the greeting: the first word of the Mac account's full name.
     var firstName: String { (NSFullUserName().split(separator: " ").first.map(String.init) ?? "").capitalized }
