@@ -36,6 +36,7 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 - **Radio:** ten lofi live streams (Lofi Girl, Chillhop and others) in a compact player: the station's cover art, play/pause, previous and next, stop, a volume button that slides a slider open, and the station list when you click the station's name. It keeps playing when the panel is closed. In **Settings → Radio** you can add your own YouTube videos, playlists and channels, and reorder, rename or remove any station, built-in ones included. Back and forward skip songs in a playlist or channel, and change station otherwise.
 - **Study log:** every counted session is saved with its topic. Recent topics are one click away.
 - **Daily goal, streak and level:** the panel greets you and shows your streak (days you reach your daily goal, 2 hours by default) and today's progress. Every focused minute is 1 XP; levels go from Drop to King tide. Vacation mode pauses the streak.
+- **Categories and goals:** group topics into categories like Learning or Content (a topic can be in several), and set a daily or weekly goal for each in **Settings → Categories**. Progress shows in the **Progress** tab, and you can pick or change categories when you save a session. Category chips are only in the panel's end-of-session question, so answering from the Island saves the topic without changing its categories. The streak still depends only on the daily focus goal.
 - **Badges:** 16 to unlock for focus hours, streaks and a few specials, in the **Progress** tab of the dashboard. Hover over one to see what it's for.
 - **Dashboard:** focus time, sessions, streak and top topic for today, 7 days, 30 to 360 days or a custom date range; a focused-time chart; time by topic; the hours you focus best; and a full session list you can tidy up: edit a session's topic, times or focus time (for when you forgot to stop the timer), delete it, or **add** one you did without the timer. Export to CSV, or copy today's hours.
 - **Shortcut:** ⌃⌥Space (Control-Option-Space) starts or pauses the timer from any app.
@@ -68,7 +69,7 @@ Everything is in `~/Library/Application Support/Tide/` (the app was called Focus
 - `Study Log.json`: your sessions
 - `studyradio.state.json`: timer mode, station, volume
 - `tide.stations.json`: your station list
-- `tide.game.json`: daily goal, vacation mode
+- `tide.game.json`: daily goal, vacation mode, categories and goals
 
 To keep the log somewhere else, such as a synced notes folder, choose a folder in **Settings → Your log**. Your current log is copied there if the folder doesn't have one yet.
 
