@@ -77,7 +77,7 @@ Letter-spacing values: `-.01em` (P timer and duo buttons, D titles and donut val
 
 ### 1.2 Proposed type scale
 
-The scale keeps the existing display/metric sizes, which are part of the product's character. It collapses the many half-steps into named sizes and separates size from weight and leading.
+The scale keeps the existing display/metric sizes, which are part of the product's character, and adds the intermediate sizes already in use. It changes only the half-step values and 17/19/20.
 
 | Token | Value | Role |
 |---|---|---|
@@ -87,36 +87,38 @@ The scale keeps the existing display/metric sizes, which are part of the product
 | `--text-metric` | 34 | dashboard stat value |
 | `--text-title` | 30 | page title |
 | `--text-metric-sm` | 26 | streak and daily-goal values |
-| `--text-heading` | 18 | card titles, dialog titles |
-| `--text-subheading` | 15 | group titles, question title, greeting, buttons |
-| `--text-body` | 13 | body text, names, inputs |
+| `--text-heading` | 18 | card titles, dialog titles, large values |
+| `--text-subheading` | 16 | question title, question buttons, × glyphs |
+| `--text-lede` | 15 | greeting, Island buttons and input |
+| `--text-body-lg` | 14 | settings group titles, inputs, promoted 13.5px body text, streak chip, DAYS unit |
+| `--text-body` | 13 | body text, names, small controls |
 | `--text-small` | 12 | secondary text and metadata |
-| `--text-caption` | 11 | labels, table headers, chips |
+| `--text-caption` | 11 | labels, table headers |
 | `--text-micro` | 10 | badges and micro labels |
 
-Weights become `--weight-regular: 580`, `--weight-semibold: 600`, `--weight-bold: 700`, `--weight-heavy: 800`. No element changes weight.
+Weights stay `--weight-regular: 580`, `--weight-semibold: 600`, `--weight-bold: 700`, `--weight-heavy: 800`. No element changes weight.
 
-Leading tokens: `--leading-none: 1`, `--leading-display: 1.05`, `--leading-tight: 1.1`, `--leading-heading: 1.2`, `--leading-snug: 1.3`, `--leading-body: 1.4`. The 15px progress line and 28px timeline label stay fixed component line heights. Tracking becomes `--tracking-tight: -.01em` and `--tracking-wide: .08em`.
+Leading does not change. Panel/Island body stays 1.35, dashboard body stays 1.4, and the existing component leadings (1.05, 1.1, 1.15, 1.2, 1.3, 1.5, 15px, 28px) stay as they are. Tracking also stays as authored.
 
 ### 1.3 Type changes (old → new)
 
 | Old | New | Where |
 |---:|---|---|
 | 9.5 | 10 micro | P station badge; P weekday letters |
-| 10.5 | 10 micro | P STREAK/FOCUS GOAL labels; D donut caption, Topics label |
-| 11.5 | 11 caption | P progress line, station sub line, greeting sub; D axis/legend/topic values, Topics right label, timeline label, badge tooltip, category meta and Done |
-| 12.5 | 12 small | D card headings, settings descriptions, Topics rows, radio restore, Show all, badge names, streak chip, goal/level sub lines, category names, edit dialog description |
-| 13.5 | 13 body | D page description, stat labels, level caption, badge label, category names and inline editor |
-| 14 | 13 body; 15 subheading for D `.group h3` | P question input, streak chip number; D edit input, DAYS unit, settings group title |
-| 16 | 15 subheading | P question title, question buttons; × glyphs stay 16 component-specific |
-| 17 | 18 heading | P goal value; D donut value; week arrow glyphs stay 17 component-specific |
+| 10.5 | 11 caption | P STREAK/FOCUS GOAL labels; D donut caption, Topics label |
+| 11.5 | 12 small | P progress line, station sub line, greeting sub; D axis/legend/topic values, Topics right label, timeline label, badge tooltip, category meta and Done |
+| 12.5 | 13 body | D card subheads, settings descriptions, Topics rows, radio restore, Show all, badge names, streak chip, goal/level sub lines, category names, edit dialog description |
+| 13.5 | 14 body-lg | D page description, stat labels, level caption, badge label, category names and inline editor |
+| 14, 15, 16 | unchanged | body-lg, lede and subheading tokens above |
+| 17 | 18 heading | P goal value; D donut value; D week arrow glyphs |
+| 18 | unchanged | heading token above |
 | 19 | 18 heading | P streak value, D edit dialog title, Island title |
 | 20 | 18 heading | D streak chip number |
 | 24 | — | overridden by 34 in the current cascade; no effective value |
-| 18, 15, 13, 12, 11, 10 | unchanged | heading, subheading, body, small, caption and micro tokens above |
+| 10, 11, 12, 13 | unchanged | micro, caption, small and body tokens above |
 | 26, 30, 34, 40, 44, 52 | unchanged | metric, title and display tokens above |
 
-Leading changes: P/I body 1.35 → 1.4; Island title 1.15 → 1.2; chips/badges 1.5 → 1.4; the `--leading-snug` 1.3 badge tooltip stays. Tracking changes: `.1em` and `.06em` become `.08em`; `0` and `-.01em` stay.
+No leading or tracking values change. Panel/Island body leading stays 1.35.
 
 ## 2. Colour
 
@@ -161,76 +163,83 @@ The three pages already share most of their colour vocabulary, but P and D keep 
 |---|---|---|
 | `#0a0a0a` | P preview dark backdrop | preview-only, stays local |
 | `#0e2a12` | P/D checkmark ink on green | `--on-success` |
-| `#161616` | P dark menu/background; I dark logo | `--bg` dark |
-| `#16181d` | P light state text; D tooltip and bar-label background | `--ink` / `--tooltip-bg` |
-| `#1c1c1c` | P player background; I dark card | `--player-bg` / `--card` dark |
-| `#1d1d1f` | D toast background | `--toast-bg` |
-| `#1f5cf2` | P light timer, primary gradients; I card/logo/button | `--accent` |
-| `#232323` | P dark station list | `--menu-bg` |
+| `#161616` | P dark menu/background; I dark logo | P `--bg` dark; I logo local |
+| `#16181d` | P light state text; D tooltip and bar-label background | `--ink`; D tooltip local |
+| `#1c1c1c` | P player background; I dark card | P player local; I `--card` dark |
+| `#1d1d1f` | D toast background | local to D toast |
+| `#1f5cf2` | P light timer; D light accent; primary gradients; I card/logo/button | `--accent` in light; primary gradient stops and I card/logo stay local |
+| `#232323` | P dark station list | local to P station list |
 | `#2fae5a` | P/D success checks, rings, done gradients | `--success` |
-| `#333` | P cover placeholder | `--media-bg` |
-| `#34c759` | D switch on | `--switch-on` |
-| `#3a3a3e` | D locked badge background, dark | `--locked-bg` |
-| `#3a72ff` | P/D/I primary gradient start | `--accent-fill` |
-| `#4a5068` | D locked badge ink, light | `--locked-ink` |
-| `#5b8cff` | P progress bar gradient end; D week bar start | part of `--accent-fill` / bar recipe |
-| `#5fd068` | P done-day gradient start | part of `--success-fill` |
-| `#6ad874` | D done-streak gradient start | part of `--success-fill` |
+| `#333` | P cover placeholder | local to P cover |
+| `#34c759` | D switch on | local to D switch |
+| `#3a3a3e` | D locked badge background, dark | local to locked badge |
+| `#3a72ff` | P/D/I primary gradient start | local to primary recipe |
+| `#4a5068` | D locked badge ink, light | local to locked badge |
+| `#5b8cff` | P progress bar gradient end; D week bar start | local to bar recipes |
+| `#5fd068` | P done-day gradient start | local to success day |
+| `#6ad874` | D done-streak gradient start | local to success day |
 | `#6cc4f7`, `#9bd6f8` | I preview backdrop | preview-only, stays local |
-| `#9ec2ff` | D toast Undo link | `--toast-link` |
+| `#9ec2ff` | D toast Undo link | local to D toast |
 | `#bdea92` | P light break tag | state token |
 | `#c2dcff` | P light focus tag | state token |
-| `#c3c8d4` | D locked badge background, light | `--locked-bg` |
-| `#c9c9cf` | D locked badge ink, dark | `--locked-ink` |
+| `#c3c8d4` | D locked badge background, light | local to locked badge |
+| `#c9c9cf` | D locked badge ink, dark | local to locked badge |
 | `#dde5f8` | P preview backdrop | preview-only, stays local |
 | `#e5484d` | D form errors | `--danger` |
-| `#eef1f7` | P light menu | `--menu-bg` |
-| `#eef3ff` | I primary button gradient end | primary button recipe |
+| `#eef1f7` | P light menu | local to P menu |
+| `#eef3ff` | I primary button gradient end | local to primary button |
 | `#f6cf7e` | P light ready tag | state token |
-| `#ff4d2e` | P/D streak flame gradient end | `--flame-end` (SVG) |
-| `#ffb347` | P/D streak flame gradient start | `--flame-start` (SVG) |
-| `#fff3c4` | P/D flame inner highlight | `--flame-core` (SVG) |
+| `#ff4d2e` | P/D streak flame gradient end | local to flame SVG |
+| `#ffb347` | P/D streak flame gradient start | local to flame SVG |
+| `#fff3c4` | P/D flame inner highlight | local to flame SVG |
 | `#ff3b30` | D delete hover | `--alert` (value changes to `#ff453a`) |
-| `#ff453a` | P quit hover/live dot | `--alert` (live dot uses `--live` alias) |
-| `#fff` | text on accent/gradient cards, chips, Island, switch knob | `--on-accent` / `--tagInk` / `--white` |
-| `rgba(10,15,30,.28)` | D dialog scrim | `--scrim` |
-| `rgba(128,128,128,.35)` | D scrollbar thumb | `--scrollbar` |
-| `rgba(20,40,90,.07)` | P light control hover | part of shared button recipe |
-| `rgba(20,40,90,.14)` | P light volume track | part of volume recipe |
-| `rgba(240,244,252,.7)` | P light player glass | part of player recipe |
-| `rgba(255,255,255,.04)` | I dark card gradient | part of Island card recipe |
-| `rgba(255,255,255,.045)` | P/I ring pattern | part of card ring recipe |
-| `rgba(255,255,255,.06)` | P/I ring pattern | part of card ring recipe |
-| `rgba(255,255,255,.07)` | P light timer rings; I dark input; D first card rings | part of card/input recipes |
-| `rgba(255,255,255,.08)` | I dark chip background | part of chip recipe |
-| `rgba(255,255,255,.12)` | P light timer rings, control hover; D first card/level rings; I chip hover | part of card/button recipes |
-| `rgba(255,255,255,.14)` | P light timer gradient; D first card/level rings; I input | part of card/input recipes |
-| `rgba(255,255,255,.15)` | I dark chip hover | part of chip recipe |
-| `rgba(255,255,255,.16)` | P light timer rings; D first card/level rings; I card rings/chips | part of card/chip recipes |
-| `rgba(255,255,255,.2)` | D first stat tag, level next pill | part of tag recipe |
-| `rgba(255,255,255,.22)` | P volume track | part of volume recipe |
-| `rgba(255,255,255,.25)` | P light progress track; D XP track | part of progress recipe |
-| `rgba(255,255,255,.26)` | I light chip hover | part of chip recipe |
-| `rgba(255,255,255,.5)` | P light player surface | part of player recipe |
-| `rgba(255,255,255,.6)` | P player gradient; I input placeholder | part of player/field recipes |
-| `rgba(255,255,255,.65)` | I dark description | `--on-dark-muted` |
-| `rgba(255,255,255,.78)` | P light progress meta | `--on-accent-muted` |
-| `rgba(255,255,255,.8)` | I light description | `--on-dark-muted` |
-| `rgba(255,255,255,.82)` | P player glass | part of player recipe |
-| `rgba(255,255,255,0)` | gradients (transparent stop) | part of gradient recipes |
-| `rgba(58,115,255,.28)` | I dark glow | part of Island recipe |
+| `#ff453a` | P quit hover/live dot | `--alert` |
+| `#fff` | text on accent/gradient cards, chips, Island, switch knob | `--white` |
+| `rgba(10,15,30,.28)` | D dialog scrim | local to D dialog |
+| `rgba(128,128,128,.35)` | D scrollbar thumb | local to D scrollbar |
+| `rgba(20,40,90,.07)` | P light control hover | local to P controls |
+| `rgba(20,40,90,.14)` | P light volume track | local to P volume |
+| `rgba(240,244,252,.7)` | P light player glass | local to P player |
+| `rgba(255,255,255,.04)` | I dark card gradient | local to Island card |
+| `rgba(255,255,255,.045)` | P/I ring pattern | local to card rings |
+| `rgba(255,255,255,.06)` | P/I ring pattern | local to card rings |
+| `rgba(255,255,255,.07)` | P light timer rings; I dark input; D first card rings | local to card/input recipes |
+| `rgba(255,255,255,.08)` | I dark chip background | local to chip recipe |
+| `rgba(255,255,255,.12)` | P light timer rings, control hover; D first card/level rings; I chip hover | local to card/button recipes |
+| `rgba(255,255,255,.14)` | P light timer gradient; D first card/level rings; I input | local to card/input recipes |
+| `rgba(255,255,255,.15)` | I dark chip hover | local to chip recipe |
+| `rgba(255,255,255,.16)` | P light timer rings; D first card/level rings; I card rings/chips | local to card/chip recipes |
+| `rgba(255,255,255,.2)` | D first stat tag, level next pill | local to tag recipe |
+| `rgba(255,255,255,.22)` | P volume track | local to volume recipe |
+| `rgba(255,255,255,.25)` | P light progress track; D XP track | local to progress recipe |
+| `rgba(255,255,255,.26)` | I light chip hover | local to chip recipe |
+| `rgba(255,255,255,.5)` | P light player surface | local to player recipe |
+| `rgba(255,255,255,.6)` | P player gradient; I input placeholder | local to player/field recipes |
+| `rgba(255,255,255,.65)` | I dark description | local to Island text |
+| `rgba(255,255,255,.78)` | P light progress meta | local to P progress |
+| `rgba(255,255,255,.8)` | I light description | local to Island text |
+| `rgba(255,255,255,.82)` | P player glass | local to player recipe |
+| `rgba(255,255,255,0)` | gradients (transparent stop) | local to gradient recipes |
+| `rgba(58,115,255,.28)` | I dark glow | local to Island |
 | `rgba(var(--glow), α)` | P timer / D stat glows | keep the `--glow` channel token |
 
 ### 2.3 Proposed colour tokens and changes
 
-Keep the existing names and values, and add semantic roles: `--on-accent`, `--on-accent-muted`, `--on-dark-muted`, `--success`, `--on-success`, `--danger`, `--alert`, `--live`, `--tooltip-bg`, `--tooltip-ink`, `--toast-bg`, `--toast-link`, `--media-bg`, `--player-bg`, `--menu-bg`, `--locked-bg`, `--locked-ink`, `--switch-on`, `--scrim`, `--scrollbar`, `--white`, `--flame-start`, `--flame-end`, `--flame-core`. `--pill`/`--pillInk` become `--accent`/`--on-accent`, and `--blue`/`--blueShadow` become `--accent-deep`/`--shadow-accent`; the values do not change. Decorative translucent whites stay inside the shared card/player/chip/field recipes rather than becoming dozens of global tokens.
+Keep the existing shared tokens and their values. Add a new shared token only where the colour is used on two pages or in three or more places:
+
+- `--white`: `#fff` (P, D and I, many uses).
+- `--success`: `#2fae5a` (P and D).
+- `--on-success`: `#0e2a12` (P and D).
+- `--danger`: `#e5484d` (D; form error, dialog hint and error focus ring).
+- `--alert`: `#ff453a` (P quit/live dot and D delete hover).
+
+Everything else stays local to its component: the flame SVG stops, locked badge colours, scrollbar, toast, tooltip backgrounds, menu/panel surfaces, player and media placeholders, switch green, scrim, preview backgrounds and one-off gradient stops. Existing page-local tokens (`--pBlue`, `--tBlue`, `--blue`, `--purpleFill`, and the per-page `--bg`) also stay where they are.
 
 Actual colour changes:
 
 - D dark `--line` `rgba(255,255,255,.07)` → `rgba(255,255,255,.08)` (all dashboard dividers; matches P).
 - P dark `--field` `#2a2a2a` → `#262626` (panel inputs; matches D `--soft`/field).
 - D delete hover `#ff3b30` → `--alert` `#ff453a` (two buttons).
-- P quit hover `#ff453a` and live dot `#ff453a` keep the same value through `--alert`/`--live`.
 
 Everything else is a rename or a move into a shared component recipe with no visual change.
 
@@ -260,9 +269,9 @@ Everything else is a rename or a move into a shared component recipe with no vis
 
 ### 3.2 Proposed scale
 
-`--radius-sm: 6px`, `--radius-md: 10px`, `--radius-card: 14px`, `--radius-lg: 20px`, `--radius-pill: 99px`, `--radius-round: 50%`. Chart bars, the 2px equalizer caps and `inherit` stay component-specific.
+`--radius-sm: 6px`, `--radius-md: 10px`, `--radius-card: 14px`, `--radius-lg: 16px`, `--radius-xl: 20px`, `--radius-2xl: 24px`, `--radius-pill: 99px`, `--radius-round: 50%`. Chart bars, the 2px equalizer caps and `inherit` stay component-specific.
 
-Owner choices preserved: P cards 20, D cards 14, pills fully round, P card gaps 12.
+Owner choices preserved: P cards 20, D cards 14, pills fully round, P card gaps 12. The P station list stays 16 and the Island card stays 24.
 
 ### 3.3 Radius changes
 
@@ -275,8 +284,8 @@ Owner choices preserved: P cards 20, D cards 14, pills fully round, P card gaps 
 | 12 | 10 | P cover art, question input |
 | 13 | 14 | D unlocked badge label |
 | 14 | 10 | I input (all fields share the input radius) |
-| 16 | 20 | P station list |
-| 24 | 20 | I card |
+| 16 | unchanged | P station list |
+| 24 | unchanged | I card |
 | 18 | — | D card base value is overridden by 14; no effective change |
 | 3/5 chart corners | unchanged | chart-specific |
 
@@ -319,13 +328,13 @@ Spacing is built from these scalar values. Composite shorthands (for example `14
 | calc(var(--top,0px)+8px) | — | I notch spacing | — |
 | -4 / -8 | — | — | P question copy and control bleed; D dialog/week copy |
 
-Notes: the panel's `.panel` gap is 12 (owner choice). The dashboard grid gap and card gaps are 14 and are kept as a named layout step to avoid changing the current density. The settings row inset is 18 and is kept; this is the spacing just approved for Categories.
+Notes: the panel's `.panel` gap is 12 (owner choice). The dashboard grid gap of 14 and the settings/category row inset of 18 are normal steps in the proposed scale.
 
 ### 4.2 Proposed scale
 
-Core steps: `--space-0: 0`, `--space-1: 2px`, `--space-2: 4px`, `--space-3: 8px`, `--space-4: 12px`, `--space-5: 16px`, `--space-6: 20px`, `--space-7: 24px`, `--space-8: 32px`, `--space-9: 40px`.
+Steps: `--space-1: 2px`, `--space-2: 4px`, `--space-3: 6px`, `--space-4: 8px`, `--space-5: 10px`, `--space-6: 12px`, `--space-7: 14px`, `--space-8: 16px`, `--space-9: 18px`, `--space-10: 20px`, `--space-11: 24px`, `--space-12: 32px`, `--space-13: 40px`, plus `--space-0: 0`. Every 6px and 10px value stays on these steps.
 
-Layout constants kept as named roles: `--space-grid: 14px` (dashboard grids) and `--space-row-x: 18px` (settings/category row inset). The 1px Category alignment, 56px chart legend indent, 100% marquee padding and notch `calc()` stay component-specific. Negative spacing uses `calc(-1 * var(--space-n))`.
+The 1px Category alignment, 56px chart legend indent, 100% marquee padding and notch `calc()` stay component-specific. Negative spacing uses `calc(-1 * var(--space-n))`.
 
 ### 4.3 Spacing changes
 
@@ -334,16 +343,14 @@ Layout constants kept as named roles: `--space-grid: 14px` (dashboard grids) and
 | 2.5 | 2 | P equalizer bar gap |
 | 3 | 4 | P streak chip and week dots; D Best Hours and week dots |
 | 5 | 4 | P station dot gap; D streak dots and dialog label gap |
-| 6 | 8 | P menu/chips; D menu dates, bars, legend, x-axis, topic chips, week controls, badge grid, Focus bars, streak chip; I chips; all 6px margins (progress line, goal bar, hours labels, timeline hours) |
 | 7 | 8 | D tab-button and vacation-dot gaps; Add station title margin |
 | 9 | 8 | P question-card gap |
-| 10 | 12 | P today row; D tools, filters, category name, Focus bars, category rows, dialog columns; I action buttons; P timer/progress margins; D card value margins |
 | 11 | 12 | D category topic-row padding |
 | 13 | 12 | P question-card padding |
 | 22 | 24 | D page top padding, edit-dialog padding |
 | 26 | 24 | D tabs bottom margin |
 | 30 | 32 | P preview padding |
-| others | unchanged | 0, 1, 2, 4, 8, 12, 14, 16, 18, 20, 24, 32, 40; `auto`, 100%, `calc()` |
+| others | unchanged | 0, 1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 32, 40; 56 stays a chart-specific inset; `auto`, 100% and `calc()` stay |
 
 ## 5. Shadows
 
@@ -453,10 +460,10 @@ No value needs to change. The old token names map 1:1 to the new names above; po
 
 ## 6. Summary of visual changes to approve
 
-- Text: 9.5/10.5 → 10, 11.5 → 11, 12.5 → 12, 13.5 → 13, most 14 → 13, 16 → 15, 17/19/20 → 18, D group titles 14 → 15. Panel/Island body leading 1.35 → 1.4; Island title 19/1.15 → 18/1.2; chip leading 1.5 → 1.4. Weights stay.
-- Colour: dashboard dark divider `.07` → `.08`; panel dark field `#2a2a2a` → `#262626`; delete hover `#ff3b30` → `#ff453a`. Everything else is a token rename or a shared recipe.
-- Radius: island card 24 → 20; panel station list 16 → 20; small 12/13px radii → 10/14; 7/8/9px controls → 6/10 or pill. Panel cards stay 20; dashboard cards stay 14; pills stay fully round.
-- Spacing: 2.5 → 2, 3 → 4, 5 → 4, 6 → 8, 7 → 8, 9 → 8, 10 → 12, 11 → 12, 13 → 12, 22 → 24, 26 → 24, 30 → 32. Panel card gaps stay 12; dashboard 14px grids and 18px settings-row insets stay.
+- Text: 9.5 → 10, 10.5 → 11, 11.5 → 12, 12.5 → 13, 13.5 → 14; 14 and 16 stay; 17/19/20 → 18. Leading and tracking do not change, so the panel keeps its 1.35 body leading. Weights stay.
+- Colour: dashboard dark divider `.07` → `.08`; panel dark field `#2a2a2a` → `#262626`; delete hover `#ff3b30` → `#ff453a`. New shared tokens only for white, success, on-success, danger and alert; flame, locked, scrollbar, toast, tooltip, menu, media/player, switch, scrim and preview values stay local.
+- Radius: 7 → 6, 8/9 → 10 (bars use pill), 12 → 10, 13 → 14, Island input 14 → 10. Island card 24 and panel station list 16 stay. Panel cards stay 20; dashboard cards stay 14; pills stay fully round.
+- Spacing: 2.5 → 2, 3 → 4, 5 → 4, 7 → 8, 9 → 8, 11 → 12, 13 → 12, 22 → 24, 26 → 24, 30 → 32. Every 6 and 10 stays. Panel card gaps stay 12; dashboard grids 14 and settings-row insets 18 are steps in the scale.
 - Shadows: names only, no value change.
 
 The Categories (`.cat*`) and Progress (`.cg*`) styles are included in the type, colour, radius, spacing and shadow tables above.
