@@ -315,14 +315,44 @@ const store = {
   get(k, d) { try { const v = NATIVE ? (window.__STORE || {})[k] : localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { const s = JSON.stringify(v); if (NATIVE) { native({type: 'store', key: k, value: s}); return; } try { localStorage.setItem(k, s); } catch (e) {} },
 };
-let stations = Object.assign({custom: [], builtIn: true}, store.get('tide.stations', {}));
-if (!Array.isArray(stations.custom)) stations.custom = [];
-if (typeof stations.builtIn !== 'boolean') stations.builtIn = true;
+const BUILT_IN_NAMES = BUILT_IN.map(st => st.name);
+// v1 had separate custom rows and a built-in switch; v2 is one ordered list.
+function readStations(data, BUILT_IN_NAMES) {
+  data = data && typeof data === 'object' ? data : {};
+  const custom = it => ({
+    id: it.id, name: it.name || '', kind: it.kind === 'playlist' ? 'playlist' : it.kind === 'channel' ? 'channel' : 'video',
+    video: it.video || '', list: it.list || '', url: it.url || '',
+    ...(it.channel ? {channel: it.channel} : {})
+  });
+  if (data.v === 2 && Array.isArray(data.list)) {
+    const seen = new Set(), list = [];
+    data.list.forEach(it => {
+      if (!it || typeof it !== 'object') return;
+      if (it.builtIn) {
+        if (!BUILT_IN_NAMES.includes(it.builtIn) || seen.has(it.builtIn)) return;
+        seen.add(it.builtIn);
+        list.push({id: 'b:' + it.builtIn, name: it.name || it.builtIn, kind: 'live', builtIn: it.builtIn});
+      } else if (it.id) list.push(custom(it));
+    });
+    return {v: 2, list};
+  }
+  if (Array.isArray(data.custom)) {
+    const list = data.custom.filter(it => it && it.id).map(custom);
+    if (data.builtIn !== false) list.push(...BUILT_IN_NAMES.map(name => ({id: 'b:' + name, name, kind: 'live', builtIn: name})));
+    return {v: 2, list};
+  }
+  return {v: 2, list: BUILT_IN_NAMES.map(name => ({id: 'b:' + name, name, kind: 'live', builtIn: name}))};
+}
+let stations = readStations(store.get('tide.stations', {}), BUILT_IN_NAMES);
 function stationList() {
-  return [
-    ...(stations.builtIn ? BUILT_IN.map(st => ({...st, key: 'b:' + st.name})) : []),
-    ...stations.custom.map(st => ({key: 'c:' + st.id, name: st.name, kind: st.kind === 'playlist' ? 'playlist' : 'video', video: st.video || '', list: st.list || '', custom: true})),
-  ];
+  return stations.list.map(it => {
+    if (it.builtIn) {
+      const b = BUILT_IN.find(st => st.name === it.builtIn);
+      if (!b) return null;
+      return {...b, key: 'b:' + it.builtIn, builtIn: it.builtIn, name: it.name || it.builtIn};
+    }
+    return {key: 'c:' + it.id, name: it.name, kind: it.kind, video: it.video || '', list: it.list || '', custom: true};
+  }).filter(Boolean);
 }
 let STATIONS = stationList();
 let logs = store.get('studyradio.logs', []);
@@ -344,7 +374,7 @@ if (S.status === 'break' && Date.now() >= S.breakEnds) S.status = 'idle';
 function saveState() { S.lastSeen = Date.now(); store.set('studyradio.state', S); }
 function saveLogs() { store.set('studyradio.logs', logs); }
 function stationIndex(key) { const i = STATIONS.findIndex(s => s.key === key); return i < 0 ? 0 : i; }
-if (!STATIONS.length) { stations.builtIn = true; STATIONS = stationList(); }
+if (!STATIONS.length) { stations = readStations({}, BUILT_IN_NAMES); STATIONS = stationList(); }
 if (!S.stationKey && BUILT_IN[S.station]) S.stationKey = 'b:' + BUILT_IN[S.station].name;
 S.station = stationIndex(S.stationKey);
 S.stationKey = STATIONS[S.station]?.key || '';
@@ -626,7 +656,7 @@ const pauseSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5"
 let radioOn = false, radioPaused = false, yt = null, ytReady = null, ytPlayerReady = null;
 let playlistLoop = false, artKey = '', artId = '';
 const retried = {};
-const ytId = st => (S.ytIds && S.ytIds[st.name]) || st.yt;
+const ytId = st => (S.ytIds && S.ytIds[st.builtIn || st.name]) || st.yt;
 function loadYT() {
   if (!ytReady) ytReady = new Promise(resolve => {
     window.onYouTubeIframeAPIReady = resolve;
@@ -765,13 +795,11 @@ function skipStation(dir) {
   playStation(S.station + dir);
 }
 window.__syncStations = data => {
-  stations = Object.assign({custom: [], builtIn: true}, data || {});
-  if (!Array.isArray(stations.custom)) stations.custom = [];
-  if (typeof stations.builtIn !== 'boolean') stations.builtIn = true;
+  stations = readStations(data, BUILT_IN_NAMES);
   const wasOn = radioOn;
   const oldKey = STATIONS[S.station]?.key || S.stationKey;
   STATIONS = stationList();
-  if (!STATIONS.length) { stations.builtIn = true; STATIONS = stationList(); }
+  if (!STATIONS.length) { stations = readStations({}, BUILT_IN_NAMES); STATIONS = stationList(); }
   const gone = !STATIONS.some(s => s.key === oldKey);
   S.station = stationIndex(oldKey);
   S.stationKey = STATIONS[S.station]?.key || '';

@@ -172,7 +172,8 @@ select{background:var(--card);border:0;border-radius:99px;padding:7px 12px;box-s
 .radioFields input.bad{box-shadow:var(--track),0 0 0 3px color-mix(in srgb,#e5484d 25%,transparent)}
 .radioErr{margin:6px 0 0;color:#e5484d;font-size:12px;font-weight:700}
 .radioAdd .btn{margin-top:24px}
-.radioWarn{margin:-4px 18px 12px;text-align:right;color:#e5484d;font-size:12px;font-weight:700}
+.radioRestore{display:block;margin:0 18px 10px;padding:0;color:var(--accent);font-size:12.5px;font-weight:600}
+.radioRestore:hover{text-decoration:underline}
 .radioEmpty{padding:10px 18px 2px}
 .switch{width:38px;height:22px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .2s}
 .switch::after{content:"";position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .2s}
@@ -389,6 +390,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
     </div>
     <div class="group"><h3>Radio</h3>
       <div id="radioRows"></div>
+      <button class="radioRestore" id="radioRestore" type="button" hidden>Add built-in stations back</button>
       <div class="set radioAdd">
         <div class="radioAddL">
           <b class="radioAddTitle">Add station</b>
@@ -400,8 +402,6 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
         </div>
         <button class="btn dark" id="addStation" type="button">Add</button>
       </div>
-      <div class="set"><div><b>Include built-in stations</b><span>10 lofi live streams</span></div><button class="switch" id="builtInSw" role="switch" aria-checked="true" type="button"></button></div>
-      <p class="radioWarn" id="builtInHint" hidden>Add a station first.</p>
     </div>
     <div class="group"><h3>Streaks and goals</h3>
       <div class="set"><div><b>Daily focus goal</b><span>Reach it to keep your streak going.</span></div><select id="goalSel"><option value="30">30 minutes</option><option value="60">1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option></select></div>
@@ -438,9 +438,37 @@ const store = {
 };
 let logs = store.get('studyradio.logs', []);
 let settings = Object.assign({launchAtLogin: false, logFolder: '~/Library/Application Support/Tide', version: ''}, window.__SETTINGS || {});
-let stations = Object.assign({custom: [], builtIn: true}, store.get('tide.stations', {}));
-if (!Array.isArray(stations.custom)) stations.custom = [];
-if (typeof stations.builtIn !== 'boolean') stations.builtIn = true;
+// Must match BUILT_IN in panel.html.
+const BUILT_IN_NAMES = ['Lofi Girl: Study', 'Lofi Girl: Jazz', 'Lofi Girl: Piano', 'Lofi Girl: Asian', 'Lofi Girl: Rainy', 'Lofi Girl: Synthwave', 'Chillhop: Radio', 'Chillhop: Late Night', 'Steezyasfuck: Lofi', 'Bits & Hits: Gaming'];
+const BUILT_IN_FM = {'Lofi Girl: Study': 88.6, 'Lofi Girl: Jazz': 90.4, 'Lofi Girl: Piano': 92.2, 'Lofi Girl: Asian': 94.0, 'Lofi Girl: Rainy': 95.8, 'Lofi Girl: Synthwave': 97.6, 'Chillhop: Radio': 99.4, 'Chillhop: Late Night': 101.2, 'Steezyasfuck: Lofi': 102.8, 'Bits & Hits: Gaming': 104.4};
+// v1 had separate custom rows and a built-in switch; v2 is one ordered list.
+function readStations(data, BUILT_IN_NAMES) {
+  data = data && typeof data === 'object' ? data : {};
+  const custom = it => ({
+    id: it.id, name: it.name || '', kind: it.kind === 'playlist' ? 'playlist' : it.kind === 'channel' ? 'channel' : 'video',
+    video: it.video || '', list: it.list || '', url: it.url || '',
+    ...(it.channel ? {channel: it.channel} : {})
+  });
+  if (data.v === 2 && Array.isArray(data.list)) {
+    const seen = new Set(), list = [];
+    data.list.forEach(it => {
+      if (!it || typeof it !== 'object') return;
+      if (it.builtIn) {
+        if (!BUILT_IN_NAMES.includes(it.builtIn) || seen.has(it.builtIn)) return;
+        seen.add(it.builtIn);
+        list.push({id: 'b:' + it.builtIn, name: it.name || it.builtIn, kind: 'live', builtIn: it.builtIn});
+      } else if (it.id) list.push(custom(it));
+    });
+    return {v: 2, list};
+  }
+  if (Array.isArray(data.custom)) {
+    const list = data.custom.filter(it => it && it.id).map(custom);
+    if (data.builtIn !== false) list.push(...BUILT_IN_NAMES.map(name => ({id: 'b:' + name, name, kind: 'live', builtIn: name})));
+    return {v: 2, list};
+  }
+  return {v: 2, list: BUILT_IN_NAMES.map(name => ({id: 'b:' + name, name, kind: 'live', builtIn: name}))};
+}
+let stations = readStations(store.get('tide.stations', {}), BUILT_IN_NAMES);
 // The panel sends the log here whenever it saves a session.
 window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderAll(); };
 window.settingsChanged = s => { settings = Object.assign(settings, s); renderSettings(); };
@@ -839,7 +867,7 @@ function parseYouTube(raw) {
 function saveStations() { store.set('tide.stations', stations); }
 let stationEdit = null;
 function nextCustomName() {
-  const used = new Set(stations.custom.map(s => s.name));
+  const used = new Set(stations.list.map(s => s.name));
   let n = 1;
   while (used.has(`Custom ${n}`)) n++;
   return `Custom ${n}`;
@@ -873,42 +901,41 @@ function attachStationName(input, st) {
   input.addEventListener('blur', () => finish(true));
 }
 function renderRadio() {
-  if (!stations.custom.length && !stations.builtIn) { stations.builtIn = true; saveStations(); }
-  if (stationEdit && !stations.custom.some(s => s.id === stationEdit)) stationEdit = null;
+  if (stationEdit && !stations.list.some(s => s.id === stationEdit)) stationEdit = null;
   const host = $('#radioRows');
-  if (!stations.custom.length) {
+  if (!stations.list.length) {
     host.innerHTML = '<div class="empty radioEmpty">Paste a YouTube video, live stream or playlist link.</div>';
   } else {
-    host.innerHTML = stations.custom.map((s, i) => `<div class="set radioRow">
-      <div class="radioWho">${stationEdit === s.id ? `<input class="radioNameInput" id="stationNameInput" value="${esc(s.name)}" maxlength="80" aria-label="Station name">` : `<button class="radioName" type="button" data-rename="${esc(s.id)}" title="Click to rename">${esc(s.name)}</button>`}<span class="badge">${s.kind === 'playlist' ? 'Playlist' : 'Video'}</span></div>
-      <div class="radioTools"><button class="radioBtn" type="button" data-id="${esc(s.id)}" data-move="-1" title="Move up"${i === 0 ? ' disabled' : ''}>↑</button><button class="radioBtn" type="button" data-id="${esc(s.id)}" data-move="1" title="Move down"${i === stations.custom.length - 1 ? ' disabled' : ''}>↓</button><button class="radioBtn del" type="button" data-del="${esc(s.id)}" title="Delete">×</button></div>
-    </div>`).join('');
+    host.innerHTML = stations.list.map((s, i) => {
+      const badge = s.builtIn ? (BUILT_IN_FM[s.builtIn]?.toFixed(1) || 'Live') : s.kind === 'playlist' ? 'Playlist' : s.kind === 'channel' ? 'Channel' : 'Video';
+      return `<div class="set radioRow">
+        <div class="radioWho">${stationEdit === s.id ? `<input class="radioNameInput" id="stationNameInput" value="${esc(s.name)}" maxlength="80" aria-label="Station name">` : `<button class="radioName" type="button" data-rename="${esc(s.id)}" title="Click to rename">${esc(s.name)}</button>`}<span class="badge">${badge}</span></div>
+        <div class="radioTools"><button class="radioBtn" type="button" data-id="${esc(s.id)}" data-move="-1" title="Move up"${i === 0 ? ' disabled' : ''}>↑</button><button class="radioBtn" type="button" data-id="${esc(s.id)}" data-move="1" title="Move down"${i === stations.list.length - 1 ? ' disabled' : ''}>↓</button><button class="radioBtn del" type="button" data-del="${esc(s.id)}" title="Delete">×</button></div>
+      </div>`;
+    }).join('');
   }
-  $('#builtInSw').setAttribute('aria-checked', stations.builtIn);
-  if (stations.custom.length) $('#builtInHint').hidden = true;
+  $('#radioRestore').hidden = !BUILT_IN_NAMES.some(n => !stations.list.some(s => s.builtIn === n));
   if (stationEdit) {
     const input = $('#stationNameInput');
-    if (input) { input.focus(); input.select(); attachStationName(input, stations.custom.find(s => s.id === stationEdit)); }
+    if (input) { input.focus(); input.select(); attachStationName(input, stations.list.find(s => s.id === stationEdit)); }
   }
 }
 function addStation() {
   const url = $('#stationUrl').value.trim(), name = $('#stationName').value.trim();
   const parsed = parseYouTube(url);
   if (!parsed) { stationError("That isn't a YouTube video or playlist link."); return; }
-  const duplicate = stations.custom.some(s => parsed.kind === 'playlist'
+  const duplicate = stations.list.some(s => parsed.kind === 'playlist'
     ? s.kind === 'playlist' && s.list === parsed.list
     : s.kind === 'video' && s.video === parsed.video);
   if (duplicate) { stationError('That station is already in your list.'); return; }
   const st = {id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: name || nextCustomName(), url, kind: parsed.kind, video: parsed.video, list: parsed.list};
-  stations.custom.push(st);
+  stations.list.unshift(st);
   saveStations();
   $('#stationUrl').value = ''; $('#stationName').value = '';
   clearStationError();
-  $('#builtInHint').hidden = true;
   renderRadio();
   toast(`Added ${st.name}`, () => {
-    stations.custom = stations.custom.filter(s => s.id !== st.id);
-    if (!stations.custom.length && !stations.builtIn) stations.builtIn = true;
+    stations.list = stations.list.filter(s => s.id !== st.id);
     saveStations(); renderRadio();
   });
 }
@@ -917,32 +944,37 @@ $('#addStation').onclick = addStation;
   if (e.key === 'Enter') { e.preventDefault(); addStation(); }
 }));
 $('#stationUrl').addEventListener('input', clearStationError);
-$('#builtInSw').onclick = () => {
-  if (stations.builtIn && !stations.custom.length) { $('#builtInHint').hidden = false; return; }
-  stations.builtIn = !stations.builtIn;
-  $('#builtInHint').hidden = true;
+$('#radioRestore').onclick = () => {
+  const missing = BUILT_IN_NAMES.filter(n => !stations.list.some(s => s.builtIn === n));
+  if (!missing.length) return;
+  const added = missing.map(n => ({id: 'b:' + n, name: n, kind: 'live', builtIn: n}));
+  stations.list.push(...added);
   saveStations(); renderRadio();
+  toast(`Added ${plural(added.length, 'station')}`, () => {
+    stations.list = stations.list.filter(s => !added.some(a => a.id === s.id));
+    saveStations(); renderRadio();
+  });
 };
 $('#radioRows').onclick = e => {
   const rename = e.target.closest('[data-rename]');
   if (rename) { stationEdit = rename.dataset.rename; renderRadio(); return; }
   const move = e.target.closest('[data-move]');
   if (move) {
-    const i = stations.custom.findIndex(s => s.id === move.dataset.id), j = i + Number(move.dataset.move);
-    if (i < 0 || j < 0 || j >= stations.custom.length) return;
-    [stations.custom[i], stations.custom[j]] = [stations.custom[j], stations.custom[i]];
+    const i = stations.list.findIndex(s => s.id === move.dataset.id), j = i + Number(move.dataset.move);
+    if (i < 0 || j < 0 || j >= stations.list.length) return;
+    [stations.list[i], stations.list[j]] = [stations.list[j], stations.list[i]];
     saveStations(); renderRadio(); return;
   }
   const del = e.target.closest('[data-del]');
   if (!del) return;
-  const i = stations.custom.findIndex(s => s.id === del.dataset.del);
+  if (stations.list.length <= 1) { toast('Keep at least one station.'); return; }
+  const i = stations.list.findIndex(s => s.id === del.dataset.del);
   if (i < 0) return;
-  const [gone] = stations.custom.splice(i, 1);
-  if (!stations.custom.length && !stations.builtIn) stations.builtIn = true;
+  const [gone] = stations.list.splice(i, 1);
   if (stationEdit === gone.id) stationEdit = null;
-  saveStations(); $('#builtInHint').hidden = true; renderRadio();
+  saveStations(); renderRadio();
   toast(`Deleted ${gone.name}`, () => {
-    stations.custom.splice(Math.min(i, stations.custom.length), 0, gone);
+    stations.list.splice(Math.min(i, stations.list.length), 0, gone);
     saveStations(); renderRadio();
   });
 };
