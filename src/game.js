@@ -1,4 +1,4 @@
-// Tide's game rules (daily goal, streak, levels, badges), shared by the panel and the dashboard.
+// Tide's game rules (daily and category goals, streak, levels, badges), shared by the panel and the dashboard.
 // In the app this file is added to both pages before they load; in a browser preview the pages load it themselves.
 // Everything is worked out from the session log and a few settings (tide.game).
 (function () {
@@ -8,9 +8,25 @@
   const dayStart = ts => { const d = new Date(ts); return +new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
   const dayKey = ts => { const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
   const minutesOf = ts => { const d = new Date(ts); return d.getHours() * 60 + d.getMinutes(); };
+  const PALETTE = ['#1f5cf2', '#8a5cf6', '#2fae5a', '#e0a23a', '#e8336b', '#1fa9d6', '#ff7a3d', '#5a6a86', '#16a3a3', '#c2410c'];
+  const topicKey = topic => String(topic).trim().toLowerCase();
 
-  const DEFAULTS = {goalMin: 120, vacation: []};
-  const settings = g => Object.assign({}, DEFAULTS, g || {}, {vacation: Array.isArray(g && g.vacation) ? g.vacation : []});
+  const DEFAULTS = {goalMin: 120, vacation: [], categories: [], topicCats: {}};
+  function settings(g) {
+    const raw = g && typeof g === 'object' ? g : {};
+    const categories = (Array.isArray(raw.categories) ? raw.categories : [])
+      .filter(c => c && typeof c === 'object' && typeof c.id === 'string' && typeof c.name === 'string');
+    const ids = new Set(categories.map(c => c.id));
+    const topicCats = {};
+    const rawCats = raw.topicCats && typeof raw.topicCats === 'object' && !Array.isArray(raw.topicCats) ? raw.topicCats : {};
+    for (const [topic, list] of Object.entries(rawCats)) {
+      if (!Array.isArray(list)) continue;
+      const keep = [...new Set(list.filter(id => ids.has(id)))];
+      const key = topicKey(topic);
+      if (keep.length) topicCats[key] = [...new Set([...(topicCats[key] || []), ...keep])];
+    }
+    return Object.assign({}, DEFAULTS, raw, {vacation: Array.isArray(raw.vacation) ? raw.vacation : [], categories, topicCats});
+  }
 
   /* ---------- goal and streak ---------- */
   function totals(logs) {
@@ -44,6 +60,35 @@
       return {day: x, ms, p: Math.min(1, ms / goal), state};
     });
     return {current, best, week, today: t.get(today) || 0, goal};
+  }
+
+  /* ---------- categories and their daily or weekly goals ---------- */
+  function categoriesOf(g, topic) {
+    const cfg = settings(g), ids = cfg.topicCats[topicKey(topic)] || [];
+    return cfg.categories.filter(c => ids.includes(c.id));
+  }
+  // A session counts by its start time, in every category its topic is in.
+  function categoryProgress(logs, g, now = Date.now()) {
+    const cfg = settings(g), today = dayStart(now), weekStart = today - ((new Date(now).getDay() + 6) % 7) * DAY;
+    const topicsFor = new Map(cfg.categories.map(c => [c.id, new Set()]));
+    for (const [topic, ids] of Object.entries(cfg.topicCats)) for (const id of ids) topicsFor.get(id)?.add(topic);
+    const out = [];
+    for (const c of cfg.categories) {
+      const goalMin = Number(c.goalMin);
+      if (!(goalMin > 0)) continue;
+      const per = c.per === 'week' ? 'week' : 'day', from = per === 'week' ? weekStart : today;
+      const topics = topicsFor.get(c.id) || new Set();
+      const ms = (Array.isArray(logs) ? logs : []).reduce((n, l) =>
+        n + (l.start >= from && l.start <= now && topics.has(topicKey(l.topic)) ? l.ms : 0), 0);
+      const goal = goalMin * MIN;
+      out.push({id: c.id, name: c.name, color: c.color || '', per, goal, ms, p: Math.min(1, ms / goal), done: ms >= goal});
+    }
+    return out;
+  }
+  function nextColor(g) {
+    const cfg = settings(g);
+    const used = new Set(cfg.categories.map(c => c.color));
+    return PALETTE.find(c => !used.has(c)) || PALETTE[cfg.categories.length % PALETTE.length];
   }
 
   /* ---------- levels: 1 XP for every focused minute ---------- */
@@ -128,5 +173,5 @@
     return name ? `${part}, ${name}` : part;
   };
 
-  window.Game = {MIN, DAY, dayStart, dayKey, settings, streak, level, badges, greeting, onVacation};
+  window.Game = {MIN, DAY, PALETTE, dayStart, dayKey, topicKey, settings, categoriesOf, categoryProgress, nextColor, streak, level, badges, greeting, onVacation};
 })();
