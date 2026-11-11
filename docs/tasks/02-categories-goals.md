@@ -77,7 +77,7 @@ Create `docs/mockups/categories/index.html`, a static picture in **light and dar
   `ms` is the focused time today (`per: 'day'`) or this week, Monday to now (`per: 'week'`), from logs whose topic belongs to that category. A session counts by its `start` time, as the streak does.
 - `Game.nextColor(g)` → the first `PALETTE` colour no category uses, else `PALETTE[g.categories.length % PALETTE.length]`.
 
-Check in the browser console on `dashboard.html?demo`: build a small `g` with 2 categories (one daily, one weekly) and a topic in both, then call `Game.categoryProgress(DEMO_LOGS_OR_logs, g)`. Report the numbers, and confirm by hand that one of them is right.
+Check in the browser console on `dashboard.html?demo`: build a small `g` with 2 categories (one daily, one weekly) and a topic in both, then call `Game.categoryProgress(logs, g)` (in `?demo`, `logs` holds the demo sessions). Report the numbers, and confirm by hand that one of them is right.
 
 **STOP** (commit "Add category rules to the game").
 
