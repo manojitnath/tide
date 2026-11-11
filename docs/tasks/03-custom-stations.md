@@ -99,3 +99,90 @@ In `src/panel.html`:
 1. Commit hash and a 2–4 line summary.
 2. Anything you weren't sure about or left out.
 3. Don't start the next step until told to.
+
+---
+
+# Part 2 · One station list, and channel links
+
+Owner feedback after Step 3: everything works. Two changes:
+1. **One list.** Show the 10 built-in stations by name in **Settings → Radio**, in the same list as the custom ones, under them. Each can be moved up or down and removed, like a custom station. This **replaces** the "Include built-in stations" switch.
+2. **Channel links.** Pasting a YouTube channel link adds a station that plays the channel's videos, newest first, like a playlist: back and forward skip songs, and the cover shows the current song. There's no song picker.
+
+No mockup needed: Settings keeps the same rows, with more of them.
+
+## The new data (`tide.stations`, version 2)
+
+```js
+{v: 2, list: [
+  {id: 'k3x9a1b2', name: 'Coding mix', kind: 'video',    video: 'ID', list: '',      url: '...'},
+  {id: 'k3x9c3d4', name: 'Deep focus', kind: 'playlist', video: '',   list: 'PL...', url: '...'},
+  {id: 'k3x9e5f6', name: 'Some artist', kind: 'channel', video: '',   list: 'UU...', channel: 'UC...', url: '...'},
+  {id: 'b:Lofi Girl: Study', name: 'Lofi Girl: Study', kind: 'live', builtIn: 'Lofi Girl: Study'},
+  ...
+]}
+```
+
+- A built-in item only points at its `BUILT_IN` entry by its original name (`builtIn`). Its `name` can be renamed like any other. `S.ytIds` and the live-stream lookup keep using the original name.
+- Station keys in the panel stay the same (`'b:' + builtIn` and `'c:' + id`), so the saved current station keeps working.
+- **Upgrading from version 1** (`{custom, builtIn}`): `list` = the custom stations in their order, then, if `builtIn` was true, all 10 built-ins in `BUILT_IN` order. If it was false, leave them out. No file yet: all 10 built-ins.
+- Both pages must read either version, because the panel can load before the dashboard saves. Write one small function `readStations(data, BUILT_IN_NAMES)` → version 2, the same in both files. The dashboard has no `BUILT_IN`, so give it a plain array of the 10 names with a comment saying it must match the panel's `BUILT_IN`. Only the dashboard writes the file. The panel never saves `tide.stations`.
+- The list may never be empty: removing the last station is refused with "Keep at least one station."
+
+## Step 4 · One list (dashboard + panel, no Swift)
+
+`src/dashboard.html`, Settings → Radio:
+- The rows show the whole `list` in order: the custom ones you've added, then the built-ins (after an upgrade). Every row has the name (click to rename), a badge, ↑ ↓ and ×, with Undo on delete as now.
+- Badges: `Video`, `Playlist`, `Channel` (Step 5), and for built-ins their FM number (`88.6`) in the same grey pill.
+- New stations are added at the **top** of the list, so they come before the built-ins.
+- Remove the "Include built-in stations" switch, `#builtInHint` and the code that used them.
+- When any built-in is missing from the list, show a small text button under the rows: **Add built-in stations back**. It appends the missing ones at the end, in `BUILT_IN` order, with `toast('Added N stations', undo)`. Hide it when all 10 are there.
+- The duplicate check covers built-ins too (a built-in can only be in the list once).
+
+`src/panel.html`:
+- `stationList()` builds from `readStations(...).list`. Built-in items take `f`, `ch`, `match` and `yt` from `BUILT_IN` (look them up by `builtIn`) and use the item's `name` for display. A `builtIn` name not found in `BUILT_IN` is skipped.
+- Remove the `builtIn` flag handling. Everything else from Step 3 stays (keys, keep the current station after a sync, back/forward rules).
+
+**Done when:** in the preview:
+- A version 1 file upgrades correctly: customs first, then the built-ins, or no built-ins if the switch was off.
+- Built-ins can be moved, renamed and removed, and the list keeps the new order after a reload.
+- **Add built-in stations back** works, and removing the last station is refused.
+- The panel's station list shows the same order and names after `__syncStations(...)`.
+
+**STOP** (commit "Show all stations in one list").
+
+## Step 5 · Channel links
+
+Links to accept (`www.`/`m.`/`music.` hosts as before):
+
+| Paste | What we know |
+|---|---|
+| `youtube.com/channel/UC…` | the channel ID directly |
+| `youtube.com/@handle` (with or without `/videos`, `/featured`, etc. after it), `youtube.com/c/name`, `youtube.com/user/name` | needs a lookup |
+
+`parseYouTube` returns `{kind: 'channel', channel: 'UC…'}` or `{kind: 'channel', path: '@handle' | 'c/name' | 'user/name'}`. Video and playlist links keep winning: a `watch?v=` or `list=` link is never a channel. The error text becomes "That isn't a YouTube video, playlist or channel link." Update the empty-list text to "Paste a YouTube video, playlist or channel link."
+
+**The lookup** (`src/main.swift`, the only Swift change):
+- New message from the **dashboard**: `native({type: 'channel', req, path})`. Fetch `https://www.youtube.com/<path>` with the same User-Agent and Accept-Language as `findLiveStream`. Read the channel ID from `<meta itemprop="identifier" content="UC…">` (fall back to `"externalId":"UC…"`), and the channel's name from `<meta property="og:title" content="…">`. Accept only IDs that match `^UC[\w-]{22}$`.
+- Reply on the main thread to the dashboard: `channelFound(req, id, name)`, or `channelFound(req, null, null)` if nothing was found. Pass the values through `JSONSerialization` (or escape them), never raw string interpolation: the name comes from a web page.
+- For `/channel/UC…` links, skip the lookup but still ask for the name the same way (use the ID even if the name lookup fails).
+
+**Adding** (`src/dashboard.html`):
+- On Add with a channel link: disable Add and show "Looking up the channel…" under the field. On success, save `{kind: 'channel', channel: 'UC…', list: 'UU' + id.slice(2), video: ''}`. The `UU…` list is YouTube's uploads playlist for that channel, newest first. Use the typed name, else the channel's name, else "Custom N". On failure: "Couldn't find that channel. Check the link." Time out after 20 seconds with the same message.
+- Duplicate check by `channel`.
+- In the browser preview there's no Swift. If `NATIVE` is false, pretend the lookup worked after 500 ms, with id `UCSJ4gkVC6NrvII8umztf0Ow` and name "Demo channel", so the flow can be checked.
+
+**Playing** (`src/panel.html`): a `channel` station plays exactly like a `playlist` (it has a `list`): `loadPlaylist`, `setLoop(true)`, back/forward skip songs, cover from the current song. The sub line and the station list show `Channel`. A playback error says "Can't play this channel. Try another station."
+
+**Done when:**
+- In the preview: each channel link form is accepted, a bad link and a failed lookup show their messages, and the badge reads `Channel`.
+- In the app (Claude builds and tests): a channel added by `@handle` plays its newest video, then the next one, and forward/back skip.
+
+**STOP** (commit "Add channel links as stations").
+
+## Step 6 · Docs
+
+- `README.md`, the **Radio** bullet: you can add your own YouTube videos, playlists and channels in Settings → Radio, and reorder or remove any station, built-in ones included.
+- `README.md`, the data file list: add `tide.stations.json: your station list`.
+- `CONTRIBUTING.md`, **Stations**: `BUILT_IN` and `tide.stations` (version 2, upgraded from version 1), how a channel becomes its `UU…` uploads playlist, and the back/forward rules.
+
+**STOP** (commit "Document custom stations").
