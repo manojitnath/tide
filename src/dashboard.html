@@ -171,6 +171,7 @@ select{background:var(--card);border:0;border-radius:99px;padding:7px 12px;box-s
 .radioFields .name{flex:0 1 140px;min-width:120px}
 .radioFields input.bad{box-shadow:var(--track),0 0 0 3px color-mix(in srgb,#e5484d 25%,transparent)}
 .radioErr{margin:6px 0 0;color:#e5484d;font-size:12px;font-weight:700}
+.radioErr.info{color:var(--muted);font-weight:600}
 .radioAdd .btn{margin-top:24px}
 .radioRestore{display:block;margin:0 18px 10px;padding:0;color:var(--accent);font-size:12.5px;font-weight:600}
 .radioRestore:hover{text-decoration:underline}
@@ -294,6 +295,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:99px;padding:
 .btn,select,input[type=time],.round,.switch,.tabs button,.range button,.menu button{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,background-color .18s,color .18s,filter .18s}
 .btn:hover,select:hover,input[type=time]:hover,.round:hover{transform:translateY(-1px);box-shadow:var(--shadow),0 6px 14px -6px rgba(20,40,90,.35);color:var(--accent)}
 .btn.dark:hover{color:#fff;filter:brightness(1.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 16px -6px rgba(31,92,242,.6)}
+.btn:disabled,.btn:disabled:hover{opacity:.5;cursor:default;transform:none;filter:none}
 .switch:hover{filter:brightness(1.08)}
 .tabs button:not([aria-pressed="true"]):hover,.range button:not([aria-pressed="true"]):hover{color:var(--ink);background:var(--soft)}
 .btn:active,select:active,.round:active,.switch:active,.tabs button:active,.range button:active{transform:scale(.97);transition-duration:.08s}
@@ -862,23 +864,35 @@ function parseYouTube(raw) {
   const parts = u.pathname.split('/').filter(Boolean);
   const id = host === 'youtu.be' ? parts[0] : (parts[0] === 'live' || parts[0] === 'shorts') ? parts[1] : '';
   if (id && /^[\w-]{11}$/.test(id)) return {kind: 'video', video: id, list: ''};
+  if (host !== 'youtu.be' && !u.searchParams.has('v') && !u.searchParams.has('list')) {
+    const first = parts[0] || '';
+    if (first === 'channel' && parts[1] && /^UC[A-Za-z0-9_-]{22}$/.test(parts[1])) return {kind: 'channel', channel: parts[1]};
+    if (first.startsWith('@') && first.length > 1) return {kind: 'channel', path: '@' + encodeURIComponent(first.slice(1))};
+    if ((first === 'c' || first === 'user') && parts[1]) return {kind: 'channel', path: first + '/' + encodeURIComponent(parts[1])};
+  }
   return null;
 }
 function saveStations() { store.set('tide.stations', stations); }
 let stationEdit = null;
+let channelSeq = 0, channelWait = null, channelTimer = 0;
 function nextCustomName() {
   const used = new Set(stations.list.map(s => s.name));
   let n = 1;
   while (used.has(`Custom ${n}`)) n++;
   return `Custom ${n}`;
 }
+function stationInfo(text) {
+  const err = $('#stationErr');
+  err.textContent = text; err.hidden = false; err.classList.add('info');
+  $('#stationUrl').classList.remove('bad');
+}
 function stationError(text) {
   const err = $('#stationErr');
-  err.textContent = text; err.hidden = false;
+  err.textContent = text; err.hidden = false; err.classList.remove('info');
   $('#stationUrl').classList.add('bad');
 }
 function clearStationError() {
-  $('#stationErr').hidden = true;
+  $('#stationErr').hidden = true; $('#stationErr').classList.remove('info');
   $('#stationUrl').classList.remove('bad');
 }
 function attachStationName(input, st) {
@@ -904,7 +918,7 @@ function renderRadio() {
   if (stationEdit && !stations.list.some(s => s.id === stationEdit)) stationEdit = null;
   const host = $('#radioRows');
   if (!stations.list.length) {
-    host.innerHTML = '<div class="empty radioEmpty">Paste a YouTube video, live stream or playlist link.</div>';
+    host.innerHTML = '<div class="empty radioEmpty">Paste a YouTube video, playlist or channel link.</div>';
   } else {
     host.innerHTML = stations.list.map((s, i) => {
       const badge = s.builtIn ? (BUILT_IN_FM[s.builtIn]?.toFixed(1) || 'Live') : s.kind === 'playlist' ? 'Playlist' : s.kind === 'channel' ? 'Channel' : 'Video';
@@ -921,9 +935,29 @@ function renderRadio() {
   }
 }
 function addStation() {
+  if ($('#addStation').disabled) return;
   const url = $('#stationUrl').value.trim(), name = $('#stationName').value.trim();
   const parsed = parseYouTube(url);
-  if (!parsed) { stationError("That isn't a YouTube video or playlist link."); return; }
+  if (!parsed) { stationError("That isn't a YouTube video, playlist or channel link."); return; }
+  if (parsed.kind === 'channel') {
+    if (parsed.channel && stations.list.some(s => s.channel === parsed.channel)) { stationError('That station is already in your list.'); return; }
+    const req = ++channelSeq;
+    channelWait = {req, url, name};
+    $('#addStation').disabled = true;
+    stationInfo('Looking up the channel…');
+    clearTimeout(channelTimer);
+    channelTimer = setTimeout(() => {
+      if (!channelWait || channelWait.req !== req) return;
+      channelWait = null;
+      $('#addStation').disabled = false;
+      stationError("Couldn't find that channel. Check the link.");
+    }, 20000);
+    const msg = {type: 'channel', req};
+    if (parsed.channel) msg.channel = parsed.channel; else msg.path = parsed.path;
+    if (NATIVE) native(msg);
+    else setTimeout(() => window.channelFound(req, 'UCSJ4gkVC6NrvII8umztf0Ow', 'Demo channel'), 500);
+    return;
+  }
   const duplicate = stations.list.some(s => parsed.kind === 'playlist'
     ? s.kind === 'playlist' && s.list === parsed.list
     : s.kind === 'video' && s.video === parsed.video);
@@ -939,11 +973,31 @@ function addStation() {
     saveStations(); renderRadio();
   });
 }
+window.channelFound = (req, id, name) => {
+  if (!channelWait || channelWait.req !== req) return;
+  const wait = channelWait;
+  channelWait = null;
+  clearTimeout(channelTimer);
+  $('#addStation').disabled = false;
+  if (!id || !/^UC[A-Za-z0-9_-]{22}$/.test(id)) { stationError("Couldn't find that channel. Check the link."); return; }
+  if (stations.list.some(s => s.channel === id)) { stationError('That station is already in your list.'); return; }
+  const channelName = String(name || '').trim();
+  const st = {id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: wait.name || channelName || nextCustomName(), url: wait.url, kind: 'channel', channel: id, list: 'UU' + id.slice(2), video: ''};
+  stations.list.unshift(st);
+  saveStations();
+  $('#stationUrl').value = ''; $('#stationName').value = '';
+  clearStationError();
+  renderRadio();
+  toast(`Added ${st.name}`, () => {
+    stations.list = stations.list.filter(s => s.id !== st.id);
+    saveStations(); renderRadio();
+  });
+};
 $('#addStation').onclick = addStation;
 ['#stationUrl', '#stationName'].forEach(sel => $(sel).addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); addStation(); }
 }));
-$('#stationUrl').addEventListener('input', clearStationError);
+$('#stationUrl').addEventListener('input', () => { if (!channelWait) clearStationError(); });
 $('#radioRestore').onclick = () => {
   const missing = BUILT_IN_NAMES.filter(n => !stations.list.some(s => s.builtIn === n));
   if (!missing.length) return;

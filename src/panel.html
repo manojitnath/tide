@@ -655,6 +655,8 @@ const playSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l1
 const pauseSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
 let radioOn = false, radioPaused = false, yt = null, ytReady = null, ytPlayerReady = null;
 let playlistLoop = false, artKey = '', artId = '';
+const isList = st => !!st && (st.kind === 'playlist' || st.kind === 'channel');
+const kindLabel = st => st.kind === 'channel' ? 'Channel' : st.kind === 'playlist' ? 'Playlist' : 'Video';
 const retried = {};
 const ytId = st => (S.ytIds && S.ytIds[st.builtIn || st.name]) || st.yt;
 function loadYT() {
@@ -682,7 +684,7 @@ function makePlayer() {
             unmuteYT(); setTimeout(unmuteYT, 600);
             if (st) retried[st.key] = false;
             document.body.classList.add('playing');
-            if (st && st.custom && st.kind === 'playlist') {
+            if (st && st.custom && isList(st)) {
               if (!playlistLoop && yt.setLoop) { yt.setLoop(true); playlistLoop = true; }
               if (yt.getVideoData) { const id = yt.getVideoData().video_id; if (id) setCover(st.key, id, true); }
             }
@@ -738,7 +740,7 @@ function ytResolved(i, id) {
 }
 function ytFailed() {
   const st = STATIONS[S.station]; if (!st) return;
-  if (st.custom) { say("Can't play this video. Try another station."); return; }
+  if (st.custom) { say(`Can't play this ${st.kind === 'channel' ? 'channel' : 'video'}. Try another station.`); return; }
   if (NATIVE && st.ch && !retried[st.key]) {
     retried[st.key] = true;
     say('Finding the live stream…');
@@ -750,17 +752,17 @@ function showStation() {
   const st = STATIONS[S.station]; if (!st) return;
   $('#stName').textContent = st.name;
   if (st.custom) {
-    $('#stSub').textContent = `${st.kind === 'playlist' ? 'Playlist' : 'Video'}${radioOn ? ' · Playing' : ''}`;
+    $('#stSub').textContent = `${kindLabel(st)}${radioOn ? ' · Playing' : ''}`;
   } else {
     $('#stSub').textContent = `FM ${st.f.toFixed(1)}${radioOn ? ' · LIVE' : ''}`;
   }
-  const songs = st.custom && st.kind === 'playlist' && radioOn;
+  const songs = st.custom && isList(st) && radioOn;
   $('#prevSt').title = songs ? 'Previous song' : 'Previous station';
   $('#nextSt').title = songs ? 'Next song' : 'Next station';
   requestAnimationFrame(() => $('#marq').classList.toggle('scroll', $('#stName').offsetWidth > $('#marq').clientWidth));
   $('#radioBtn').innerHTML = radioOn && !radioPaused ? pauseSvg : playSvg;
   if (st.custom) {
-    if (st.kind === 'playlist') {
+    if (isList(st)) {
       if (artKey === st.key && artId) setCover(st.key, artId, true);
       else setCover(st.key, '', true);
     } else setCover(st.key, st.video, true);
@@ -785,7 +787,7 @@ function stopRadio() { radioOn = false; radioPaused = false; if (yt && yt.stopVi
 function playStation(i) { radioOn = true; tuneTo(i); }
 function skipStation(dir) {
   const st = STATIONS[S.station];
-  if (radioOn && st && st.custom && st.kind === 'playlist') {
+  if (radioOn && st && isList(st)) {
     const fn = dir < 0 ? 'previousVideo' : 'nextVideo';
     if (yt && typeof yt[fn] === 'function') yt[fn]();
     radioPaused = false;
@@ -819,7 +821,7 @@ $('#nextSt').onclick = () => skipStation(1);
 $('#stationBtn').onclick = e => {
   e.stopPropagation();
   const list = $('#stations');
-  list.innerHTML = STATIONS.map((s, i) => `<button type="button" data-i="${i}" aria-current="${i === S.station}">${esc(s.name)}<span${s.custom ? ' class="badge"' : ''}>${s.custom ? (s.kind === 'playlist' ? 'Playlist' : 'Video') : s.f.toFixed(1)}</span></button>`).join('');
+  list.innerHTML = STATIONS.map((s, i) => `<button type="button" data-i="${i}" aria-current="${i === S.station}">${esc(s.name)}<span${s.custom ? ' class="badge"' : ''}>${s.custom ? kindLabel(s) : s.f.toFixed(1)}</span></button>`).join('');
   list.style.top = ($('#disc').offsetTop + 58) + 'px';
   list.hidden = !list.hidden;
 };

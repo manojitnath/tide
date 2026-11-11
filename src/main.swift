@@ -374,6 +374,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
                     self?.web.evaluateJavaScript("ytResolved(\(i), '\(id)')")
                 }
             }
+        case "channel":
+            guard fromDash, let req = body["req"] as? Int else { return }
+            if let channel = body["channel"] as? String {
+                findChannel(req: req, path: "channel/\(channel)", channel: channel)
+            } else if let path = body["path"] as? String {
+                findChannel(req: req, path: path, channel: nil)
+            }
         case "openDashboard":
             openDashboard(tab: body["tab"] as? String ?? "stats")
         case "theme":
@@ -630,6 +637,62 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
                 walk(json)
             }
             DispatchQueue.main.async { done(found) }
+        }.resume()
+    }
+
+    // Reads a channel page for its ID and name; a supplied UC ID is kept even if the page fails.
+    func findChannel(req: Int, path: String, channel: String?) {
+        func valid(_ s: String?) -> String? {
+            guard let s, s.range(of: #"^UC[A-Za-z0-9_-]{22}$"#, options: .regularExpression) != nil else { return nil }
+            return s
+        }
+        func first(_ pattern: String, in text: String) -> String? {
+            guard let re = try? NSRegularExpression(pattern: pattern),
+                  let match = re.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+                  match.numberOfRanges > 1,
+                  let range = Range(match.range(at: 1), in: text) else { return nil }
+            return String(text[range])
+        }
+        func decode(_ s: String) -> String {
+            s.replacingOccurrences(of: "&lt;", with: "<")
+                .replacingOccurrences(of: "&gt;", with: ">")
+                .replacingOccurrences(of: "&quot;", with: "\"")
+                .replacingOccurrences(of: "&#39;", with: "'")
+                .replacingOccurrences(of: "&amp;", with: "&")
+        }
+        func js(_ v: Any) -> String {
+            guard let data = try? JSONSerialization.data(withJSONObject: [v]),
+                  let text = String(data: data, encoding: .utf8) else { return "null" }
+            return String(text.dropFirst().dropLast())
+        }
+        func reply(_ id: String?, _ name: String) {
+            let idJS = id.map { js($0) } ?? "null", nameJS = js(name)
+            DispatchQueue.main.async { [weak self] in
+                self?.dashWeb?.evaluateJavaScript("window.channelFound && channelFound(\(req), \(idJS), \(nameJS))")
+            }
+        }
+        guard let url = URL(string: "https://www.youtube.com/\(path)") else {
+            reply(valid(channel), "")
+            return
+        }
+        var request = URLRequest(url: url, timeoutInterval: 20)
+        request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15", forHTTPHeaderField: "User-Agent")
+        request.setValue("en-US,en", forHTTPHeaderField: "Accept-Language")
+        URLSession.shared.dataTask(with: request) { data, _, _ in
+            var id = valid(channel), name = ""
+            if let data, let page = String(data: data, encoding: .utf8) {
+                let metaID = first(#"<meta[^>]*itemprop="identifier"[^>]*content="([^"]+)""#, in: page)
+                    ?? first(#"<meta[^>]*content="([^"]+)"[^>]*itemprop="identifier""#, in: page)
+                if let found = valid(metaID) {
+                    id = found
+                } else if let fallback = valid(first(#""externalId"\s*:\s*"([^"]+)""#, in: page)) {
+                    id = fallback
+                }
+                let title = first(#"<meta[^>]*property="og:title"[^>]*content="([^"]*)""#, in: page)
+                    ?? first(#"<meta[^>]*content="([^"]*)"[^>]*property="og:title""#, in: page)
+                if let title { name = decode(title) }
+            }
+            reply(id, name)
         }.resume()
     }
 
