@@ -507,7 +507,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     func buildStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.button?.image = NSImage(systemSymbolName: "timer", accessibilityDescription: "Tide")?
-            .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 16, weight: .medium))
+            .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 14, weight: .medium))
+        statusItem.button?.imageScaling = .scaleProportionallyDown
         statusItem.button?.imagePosition = .imageLeft
         statusItem.button?.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .medium)
         statusItem.button?.target = self
