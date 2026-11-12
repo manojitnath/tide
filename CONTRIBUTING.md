@@ -8,9 +8,10 @@
 | `src/dashboard.html` | The dashboard window: Stats, Sessions and Settings tabs. |
 | `src/game.js` | The game rules (daily and category goals, streak, levels, badges and their coin pictures), shared by the panel and the dashboard. The app adds it to both pages; in a browser preview they load it themselves. |
 | `src/island.html` | **The Island**: a card that drops from the notch at the top of the screen, blue in light mode and near-black in dark mode. It only displays what the panel sends and reports button presses back. |
+| `src/tide.css` | The shared design tokens and `t-` part styles used by all three pages. The preview pages link it; the app injects it before the page's own style. `build.sh` copies it into the app. |
 | `src/main.swift` | The native app: menu bar item, the panel window, the dashboard window, file storage, YouTube stream lookup, notifications, the global shortcut, open at login, the update check. |
 | `src/AppIcon.icns` | The app icon, made by `docs/icon/make-icns.sh` from `docs/icon/icon.html`. |
-| `build.sh` | Builds `build.noindex/Tide.app`. `--install` copies it to `/Applications` and opens it; `--zip` makes the release zip. |
+| `build.sh` | Builds `build.noindex/Tide.app`, copying the pages, `game.js` and `tide.css` into it. `--install` copies it to `/Applications` and opens it; `--zip` makes the release zip. |
 | `src/fonts/` | Manrope, the bundled font, and its licence. |
 | `docs/screenshots/`, `docs/promo/` | README images, rendered from the pages' `?demo` modes, and the pages that build them. |
 
@@ -56,7 +57,31 @@ Back and forward skip songs in a playlist or channel, and change station otherwi
 
 ## Design
 
-- Manrope for all text; light and dark mode through `prefers-color-scheme`.
+- `src/tide.css` holds the shared design tokens and the `t-` parts. The preview pages link it; the app injects it before the page's own style, and `build.sh` copies it into the app.
+- All text is Manrope, in weights 580, 600, 700 and 800. Light and dark mode follow `prefers-color-scheme`. The type scale:
+
+| Token | px | Use |
+|---|---:|---|
+| `--text-display` | 52 | panel timer |
+| `--text-display-sm` | 44 | long timer |
+| `--text-metric-lg` | 40 | level |
+| `--text-metric` | 34 | dashboard stat |
+| `--text-title` | 30 | page title |
+| `--text-metric-sm` | 26 | streak and goal values |
+| `--text-heading` | 18 | card, dialog and Island titles |
+| `--text-subheading` | 16 | question title and buttons |
+| `--text-lede` | 15 | greeting, Island input and buttons |
+| `--text-body-lg` | 14 | inputs and streak chip |
+| `--text-body` | 13 | body text |
+| `--text-small` | 12 | secondary text |
+| `--text-caption` | 11 | labels |
+| `--text-micro` | 10 | badges |
+
+- Spacing uses `--space-1` to `--space-13`: 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 32 and 40px.
+- Corners use `--radius-sm` 6, `--radius-md` 10, `--radius-card` 14, `--radius-lg` 16, `--radius-xl` 20, `--radius-2xl` 24, `--radius-pill` 99 and `--radius-round` 50%.
+- Shared parts: `t-title`, `t-heading`, `t-body`, `t-small`, `t-caption`, `t-muted`; `t-card` and `t-panel-card`; `t-btn` and `t-primary`; `t-field`; `t-chip`; `t-switch`; `t-seg`; `t-toast`.
+- Use a token or a shared part; don't type sizes.
+- Page-local on purpose: the panel's 20px cards and 12px card gaps (and its 16px station list), the dashboard's 14px cards, the Island's 24px card and blue (`#1f5cf2`) / near-black (`#1c1c1c`) colours, and the panel's compact category chips. The dashboard's Settings chips are sized for the wide page; the 320px panel keeps its smaller chips.
 - Manrope is bundled (`src/fonts/Manrope.ttf`, SIL Open Font License in `src/fonts/OFL.txt`, shipped with the app as `Manrope-OFL.txt`). Pages are loaded from a web address and can't read files, so the app adds the font as data at page start (`fontScript` in `main.swift`); the pages' own `@font-face` ("Manrope Preview") is only for the browser preview. Keep the panel short: it should fit under the menu bar on a small laptop screen.
 - Show a mockup (a PNG rendered with headless Chrome) before building a new screen.
 

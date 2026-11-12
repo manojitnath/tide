@@ -15,6 +15,7 @@ A focus timer and lofi radio in the macOS menu bar. How it fits together, the ti
 - Keep it simple: a focus timer and Pomodoro with lofi radio. No skins. Game features stay quiet (a daily goal, streak, levels, badges), shown in one panel card and the Progress tab.
 - Out of scope: bedtime, sleep and habit tracking. Those belong to a separate accountability app, if it gets built.
 - Font: Manrope (bundled in `src/fonts/`) for all text. Light and dark mode, short and clear text.
+- Use the shared tokens and parts in `src/tide.css`; no hand-typed sizes, colours, spacing or corners.
 - Show a PNG mockup before building any new screen.
 
 ## Working style
