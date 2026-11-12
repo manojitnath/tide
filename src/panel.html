@@ -725,6 +725,7 @@ function makePlayer() {
           if (!radioOn) return;
           const st = STATIONS[S.station];
           if (e.data === YT.PlayerState.PLAYING) {
+            radioPaused = false; updateRadioBtn();
             unmuteYT(); setTimeout(unmuteYT, 600);
             if (st) retried[st.key] = false;
             document.body.classList.add('playing');
@@ -732,7 +733,10 @@ function makePlayer() {
               if (!playlistLoop && yt.setLoop) { yt.setLoop(true); playlistLoop = true; }
               if (yt.getVideoData) { const id = yt.getVideoData().video_id; if (id) setCover(st.key, id, true); }
             }
-          } else if (e.data === YT.PlayerState.BUFFERING || e.data === YT.PlayerState.PAUSED) {
+          } else if (e.data === YT.PlayerState.BUFFERING) {
+            document.body.classList.remove('playing');
+          } else if (e.data === YT.PlayerState.PAUSED) {
+            radioPaused = true; updateRadioBtn();
             document.body.classList.remove('playing');
           } else if (e.data === YT.PlayerState.ENDED) {
             if (st && st.custom && st.kind === 'video') { try { yt.seekTo(0); yt.playVideo(); } catch (err) {} }
@@ -792,6 +796,7 @@ function ytFailed() {
     if (i >= 0) resolveStation(i);
   } else say('Station offline. Try another.');
 }
+function updateRadioBtn() { $('#radioBtn').innerHTML = radioOn && !radioPaused ? pauseSvg : playSvg; }
 function showStation() {
   const st = STATIONS[S.station]; if (!st) return;
   $('#stName').textContent = st.name;
@@ -804,7 +809,7 @@ function showStation() {
   $('#prevSt').title = songs ? 'Previous song' : 'Previous station';
   $('#nextSt').title = songs ? 'Next song' : 'Next station';
   requestAnimationFrame(() => $('#marq').classList.toggle('scroll', $('#stName').offsetWidth > $('#marq').clientWidth));
-  $('#radioBtn').innerHTML = radioOn && !radioPaused ? pauseSvg : playSvg;
+  updateRadioBtn();
   if (st.custom) {
     if (isList(st)) {
       if (artKey === st.key && artId) setCover(st.key, artId, true);
@@ -822,9 +827,15 @@ function tuneTo(i) {
 }
 // Play/pause keeps the stream loaded; stop unloads it.
 function playPause() {
-  if (radioOn && !radioPaused) { radioPaused = true; if (yt && yt.pauseVideo) yt.pauseVideo(); document.body.classList.remove('playing'); }
-  else if (radioOn && radioPaused) { radioPaused = false; if (yt && yt.playVideo) yt.playVideo(); }
-  else { radioOn = true; radioPaused = false; tuneTo(S.station); }
+  if (radioOn) {
+    let playing = !radioPaused;
+    if (yt && yt.getPlayerState) {
+      const ps = yt.getPlayerState();
+      playing = ps === YT.PlayerState.PLAYING || ps === YT.PlayerState.BUFFERING;
+    }
+    if (playing) { radioPaused = true; if (yt && yt.pauseVideo) yt.pauseVideo(); document.body.classList.remove('playing'); }
+    else { radioPaused = false; if (yt && yt.playVideo) yt.playVideo(); }
+  } else { radioOn = true; radioPaused = false; tuneTo(S.station); }
   showStation();
 }
 function stopRadio() { radioOn = false; radioPaused = false; if (yt && yt.stopVideo) { try { yt.stopVideo(); } catch (e) {} } document.body.classList.remove('playing'); showStation(); }
