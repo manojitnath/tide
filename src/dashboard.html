@@ -164,8 +164,6 @@ select{background:var(--cardFill);border:0;border-radius:var(--radius-pill);padd
 .radioErr{margin:var(--space-3) 0 0;color:var(--danger);font-size:var(--text-small);font-weight:var(--weight-bold)}
 .radioErr.info{color:var(--muted);font-weight:var(--weight-semibold)}
 .radioAdd .btn{margin-top:var(--space-11)}
-.radioRestore{display:block;margin:0 var(--space-9) var(--space-5);padding:0;color:var(--accent);font-size:var(--text-body);font-weight:var(--weight-semibold)}
-.radioRestore:hover{text-decoration:underline}
 .radioEmpty{padding:var(--space-5) var(--space-9) var(--space-1)}
 /* categories: one row per category, then one row per topic with its toggle chips */
 .catRow{padding:var(--space-6) var(--space-9);gap:var(--space-6)}
@@ -413,7 +411,6 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:var(--radius-
     </div>
     <div class="group"><h3>Radio</h3>
       <div id="radioRows"></div>
-      <button class="radioRestore" id="radioRestore" type="button" hidden>Add built-in stations back</button>
       <div class="set radioAdd">
         <div class="radioAddL">
           <b class="radioAddTitle">Add station</b>
@@ -960,7 +957,6 @@ function renderRadio() {
       </div>`;
     }).join('');
   }
-  $('#radioRestore').hidden = !BUILT_IN_NAMES.some(n => !stations.list.some(s => s.builtIn === n));
   if (stationEdit) {
     const input = $('#stationNameInput');
     if (input) { input.focus(); input.select(); attachStationName(input, stations.list.find(s => s.id === stationEdit)); }
@@ -1030,17 +1026,6 @@ $('#addStation').onclick = addStation;
   if (e.key === 'Enter') { e.preventDefault(); addStation(); }
 }));
 $('#stationUrl').addEventListener('input', () => { if (!channelWait) clearStationError(); });
-$('#radioRestore').onclick = () => {
-  const missing = BUILT_IN_NAMES.filter(n => !stations.list.some(s => s.builtIn === n));
-  if (!missing.length) return;
-  const added = missing.map(n => ({id: 'b:' + n, name: n, kind: 'live', builtIn: n}));
-  stations.list.push(...added);
-  saveStations(); renderRadio();
-  toast(`Added ${plural(added.length, 'station')}`, () => {
-    stations.list = stations.list.filter(s => !added.some(a => a.id === s.id));
-    saveStations(); renderRadio();
-  });
-};
 $('#radioRows').onclick = e => {
   const rename = e.target.closest('[data-rename]');
   if (rename) { stationEdit = rename.dataset.rename; renderRadio(); return; }
