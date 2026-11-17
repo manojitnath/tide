@@ -87,81 +87,6 @@ body.preview .panel{border-radius:var(--radius-xl);box-shadow:inset 0 1px 0 rgba
 .progmeta #note,.progmeta.noted span{display:none}
 .progmeta.noted #note{display:block;color:var(--ink);font-weight:var(--weight-semibold);overflow:hidden;text-overflow:ellipsis}
 
-/* the radio: a compact card like a music player, the cover on the left and the station and controls beside it. The cover art (its stream thumbnail) sits in a square,
-   and a blurred copy of it tints the card. The YouTube player only provides the sound; its video is never shown. */
-.player{position:relative;isolation:isolate;display:flex;gap:var(--space-6);padding:var(--space-5) var(--space-7) var(--space-5) var(--space-5);border-radius:var(--radius-xl);color:var(--white);background:#1c1c1c;box-shadow:var(--shadow-panel)}
-/* WebKit lets a blurred layer spill past rounded corners, so the blur sits in its own clipped box. */
-.bgclip{position:absolute;inset:0;z-index:-2;border-radius:inherit;overflow:hidden;clip-path:inset(0 round 20px)}
-.bgart{position:absolute;inset:-40px;background-position:center;background-size:cover,auto 136%;opacity:.32;filter:blur(30px) saturate(1.2) brightness(.7)}
-/* a thin light edge, so the dark card doesn't melt into the background */
-@media (prefers-color-scheme: dark){.player::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 1px 0 rgba(255,255,255,.08)}}
-/* light mode: white frosted glass with a faint blur of the cover behind it, dark text and controls */
-@media (prefers-color-scheme: light){
-  .player{background:rgba(255,255,255,.5);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),inset 0 1px 0 var(--white),0 0 0 .5px rgba(20,40,90,.1),0 1px 2px rgba(20,40,90,.06),0 10px 24px -8px rgba(20,40,90,.18)}
-  .bgart{opacity:.22;filter:blur(34px) saturate(1.2)}
-  .player::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.6) 55%,rgba(240,244,252,.7))}
-}
-.pmain{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
-.prow{display:flex;align-items:center;gap:var(--space-4)}
-.art{position:relative;width:68px;height:68px;border-radius:var(--radius-md);overflow:hidden;flex:none;background:#333;box-shadow:0 6px 14px -4px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12)}
-@media (prefers-color-scheme: light){.art{box-shadow:0 6px 14px -5px rgba(20,40,90,.45),inset 0 0 0 1px rgba(0,0,0,.06)}}
-.cover{position:absolute;inset:0;transition:opacity .6s;background-position:center;background-repeat:no-repeat;background-size:cover,auto 136%}
-.ytbox{position:absolute;inset:0;opacity:0;overflow:hidden}
-/* YouTube won't play in a tiny player, so it keeps a normal size, hidden. */
-.ytbox iframe{position:absolute;left:0;top:0;width:470px;height:264px;border:0;pointer-events:none}
-.ptxt{flex:1;min-width:0;text-align:left;color:inherit}
-.marq{width:100%;overflow:hidden;white-space:nowrap;font:var(--weight-semibold) var(--text-body-lg)/1.2 var(--font)}
-.marq span{display:inline-block}
-.marq.scroll span{padding-left:100%;animation:marq 9s linear infinite}
-@keyframes marq{to{transform:translateX(-100%)}}
-.ptxt:hover .marq{text-decoration:underline;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent)}
-.ptxt small{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-small);font-weight:var(--weight-regular);opacity:.7}
-.ptxt small i{width:6px;height:6px;border-radius:var(--radius-round);background:var(--alert);display:none}
-.playing .ptxt small i{display:block}
-/* little level bars that bounce while the radio plays */
-.eq{display:flex;align-items:center;gap:var(--space-1);height:15px;flex:none}
-.eq i{width:3px;height:100%;border-radius:2px;background:var(--white);opacity:.9;transform:scaleY(var(--rest));will-change:transform}
-@media (prefers-color-scheme: light){.eq i{background:var(--accent)}}
-.eq i:nth-child(1){--rest:.4}.eq i:nth-child(2){--rest:.8}.eq i:nth-child(3){--rest:1}.eq i:nth-child(4){--rest:.65}.eq i:nth-child(5){--rest:.35}
-/* While playing, each bar jumps between levels on its own short loop, so together they pulse like a music meter.
-   Only the transform changes, which the GPU animates smoothly at full frame rate. */
-.playing .eq i{animation:eq1 .9s ease-in-out infinite}
-.playing .eq i:nth-child(2){animation-name:eq2;animation-duration:.72s}
-.playing .eq i:nth-child(3){animation-name:eq3;animation-duration:1s}
-.playing .eq i:nth-child(4){animation-name:eq2;animation-duration:.8s;animation-delay:-.28s}
-.playing .eq i:nth-child(5){animation-name:eq1;animation-duration:.94s;animation-delay:-.42s}
-@keyframes eq1{0%,100%{transform:scaleY(.3)}25%{transform:scaleY(.85)}50%{transform:scaleY(.45)}75%{transform:scaleY(1)}}
-@keyframes eq2{0%,100%{transform:scaleY(.7)}30%{transform:scaleY(.25)}60%{transform:scaleY(1)}80%{transform:scaleY(.5)}}
-@keyframes eq3{0%,100%{transform:scaleY(1)}20%{transform:scaleY(.4)}45%{transform:scaleY(.75)}70%{transform:scaleY(.3)}}
-/* volume: the button slides a short slider open beside it, pushing the other controls to the right */
-.volwrap{display:flex;align-items:center;flex:none}
-.volslide{width:0;overflow:hidden;opacity:0;transition:width .3s ease-in-out,opacity .3s ease-in-out}
-.volwrap.open .volslide{width:48px;opacity:1}
-.vbar{width:44px;height:24px;margin-left:var(--space-1);display:flex;align-items:center;cursor:pointer;touch-action:none}
-.vbar div{position:relative;width:100%;height:4px;border-radius:var(--radius-pill);background:rgba(255,255,255,.22);overflow:hidden}
-.vbar i{position:absolute;left:0;top:0;bottom:0;border-radius:var(--radius-pill);background:var(--white)}
-@media (prefers-color-scheme: light){.vbar div{background:rgba(20,40,90,.14)}.vbar i{background:var(--accent)}}
-/* The gaps shrink exactly as the volume slider grows, and stop is pinned to the right edge, so only the middle buttons move. */
-.ctrls{display:flex;align-items:center;gap:var(--space-6);margin:0 calc(-1 * var(--space-2));transition:gap .3s ease-in-out}
-.ctrls.volopen{gap:0}
-#stopRadio{margin-left:auto}
-.ctrls button{flex:none;width:30px;height:30px;border-radius:var(--radius-round);display:grid;place-items:center;color:inherit}
-.ctrls button svg{width:16px;height:16px}
-.ctrls .play svg{width:22px;height:22px}
-.ctrls .side{opacity:.7}
-.ctrls .side svg{width:15px;height:15px}
-#stopRadio svg{width:13px;height:13px}
-#volBtn,#stopRadio{opacity:1}
-.ctrls button:hover{background:rgba(255,255,255,.12);opacity:1}
-@media (prefers-color-scheme: light){.ctrls button:hover{background:rgba(20,40,90,.07)}}
-.stations{position:absolute;left:22px;right:22px;z-index:5;border-radius:var(--radius-lg);padding:var(--space-3);max-height:260px;overflow:auto;background:var(--card);box-shadow:var(--shadow-panel),var(--shadow-popover-strong)}
-@media (prefers-color-scheme: dark){.stations{background:#232323}}
-.stations button{display:flex;justify-content:space-between;width:100%;padding:var(--space-4) var(--space-5);border-radius:var(--radius-md);text-align:left}
-.stations button:hover{background:var(--field)}
-.stations button span{color:var(--muted);font-variant-numeric:tabular-nums}
-.stations button .badge{background:var(--field);color:var(--muted);font-size:var(--text-micro);font-weight:var(--weight-semibold);padding:var(--space-1) var(--space-4);border-radius:var(--radius-pill);line-height:1.4;font-variant-numeric:normal}
-.stations button[aria-current="true"]{font-weight:var(--weight-bold);color:var(--accent)}
-
 /* buttons: the main action solid blue, a second action a raised card-coloured pill beside it */
 .duo{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:var(--space-6)}
 .duo button{min-width:0;height:46px;border-radius:var(--radius-pill);font:var(--weight-semibold) var(--text-subheading) var(--font);letter-spacing:-.01em}
@@ -172,11 +97,11 @@ body.preview .panel{border-radius:var(--radius-xl);box-shadow:inset 0 1px 0 rgba
 .duo button:active{transform:scale(.985)}
 
 /* hover and press: a small lift and a quick press-in, on every button */
-.duo button,.icon,.ctrls button,.chips button,.stations button{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,background-color .18s,color .18s,filter .18s,opacity .18s}
+.duo button,.icon,.chips button{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,background-color .18s,color .18s,filter .18s,opacity .18s}
 .duo button:hover,.icon:hover{transform:translateY(-1px)}
 .duo .primary:hover{filter:brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,40,.15),0 12px 22px -8px rgba(31,92,242,.8)}
 .chips button:hover{transform:translateY(-1px)}
-.duo button:active,.icon:active,.ctrls button:active,.chips button:active{transform:scale(.96);transition-duration:.08s}
+.duo button:active,.icon:active,.chips button:active{transform:scale(.96);transition-duration:.08s}
 
 /* questions (end of a block or break), shown here when the panel is open, otherwise in the Island under the notch */
 .ask{display:flex;flex-direction:column;gap:var(--space-4);border-radius:var(--radius-xl);padding:var(--space-6);background:var(--card);box-shadow:var(--shadow-panel)}
@@ -257,26 +182,6 @@ body.preview .panel{border-radius:var(--radius-xl);box-shadow:inset 0 1px 0 rgba
   <div id="progWrap"><div class="prog"><i id="prog"></i></div><div class="progmeta" id="progmeta"><span id="progA"></span><span id="progB"></span><span id="note"></span></div></div>
   </div>
 
-  <div class="player" id="disc">
-    <div class="bgclip"><div class="bgart"></div></div>
-    <div class="art"><div class="cover"></div><div class="ytbox"><div id="ytFrame"></div></div></div>
-    <div class="pmain">
-      <div class="prow">
-        <button class="ptxt" id="stationBtn" type="button" title="Choose a station"><div class="marq" id="marq"><span id="stName">Lofi Girl: Study</span></div><small><i></i><span id="stSub">FM 88.6</span></small></button>
-        <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-      </div>
-      <div class="ctrls">
-        <div class="volwrap" id="volWrap"><button class="side" id="volBtn" type="button" title="Volume"></button>
-          <div class="volslide"><div class="vbar" id="vol" title="Volume"><div><i id="volFill"></i></div></div></div></div>
-        <button id="prevSt" type="button" title="Previous station"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5h2.6v14H5zm3.8 7L19 5.2v13.6z"/></svg></button>
-        <button class="play" id="radioBtn" type="button" title="Play or pause the radio"></button>
-        <button id="nextSt" type="button" title="Next station"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 5H19v14h-2.6zM5 5.2 15.2 12 5 18.8z"/></svg></button>
-        <button class="side" id="stopRadio" type="button" title="Stop the radio"><svg viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="2" fill="currentColor"/></svg></button>
-      </div>
-    </div>
-  </div>
-  <div class="stations" id="stations" hidden role="menu"></div>
-
   <div class="actions" id="actions"></div>
   <div class="ask" id="ask" hidden>
     <h2 id="askTitle"></h2><p id="askText"></p>
@@ -295,21 +200,6 @@ body.preview .panel{border-radius:var(--radius-xl);box-shadow:inset 0 1px 0 rgba
 
 <script>
 const $ = s => document.querySelector(s);
-// YouTube stations play a channel's live stream. A stream's ID changes when the channel restarts it, so each station
-// also names its channel and words from the stream's title; the app looks up the current ID on launch and whenever
-// a stream fails. yt is the last known ID.
-const BUILT_IN = [
-  {name:'Lofi Girl: Study',     f:88.6,  ch:'LofiGirl',      match:['lofi hip hop radio', 'study'], yt:'rFZHOHl-L8A'},
-  {name:'Lofi Girl: Jazz',      f:90.4,  ch:'LofiGirl',      match:['jazz lofi radio'],           yt:'E2vONfzoyRI'},
-  {name:'Lofi Girl: Piano',     f:92.2,  ch:'LofiGirl',      match:['piano radio'],               yt:'N0snMcR6aaA'},
-  {name:'Lofi Girl: Asian',     f:94.0,  ch:'LofiGirl',      match:['asian lofi radio'],          yt:'1Tl2FtV06qo'},
-  {name:'Lofi Girl: Rainy',     f:95.8,  ch:'LofiGirl',      match:['sad lofi radio'],            yt:'CwPCy1GLS38'},
-  {name:'Lofi Girl: Synthwave', f:97.6,  ch:'LofiGirl',      match:['synthwave radio'],           yt:'4xDzrJKXOOY'},
-  {name:'Chillhop: Radio',      f:99.4,  ch:'ChillhopMusic', match:['chillhop radio'],            yt:'5yx6BWlEVcY'},
-  {name:'Chillhop: Late Night', f:101.2, ch:'ChillhopMusic', match:['late night vibes'],          yt:'i6WzngxTnBA'},
-  {name:'Steezyasfuck: Lofi',   f:102.8, ch:'steezyasfvck',  match:['lofi hip hop radio'],        yt:'uWzSqdcfPZw'},
-  {name:'Bits & Hits: Gaming',  f:104.4, ch:'FantasyLofi',   match:['gaming lofi radio'],         yt:'Fo5BDohM9Fo'},
-];
 const MIN_LOG = 60e3, DAY = 864e5, MIN = 60e3;
 // Pomodoro blocks and the break that follows each.
 const BLOCKS = [30, 60, 90], BREAK_FOR = {30: 5, 60: 15, 90: 20}, KEEP_GOING = 30;
@@ -323,46 +213,6 @@ const store = {
   get(k, d) { try { const v = NATIVE ? (window.__STORE || {})[k] : localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { const s = JSON.stringify(v); if (NATIVE) { native({type: 'store', key: k, value: s}); return; } try { localStorage.setItem(k, s); } catch (e) {} },
 };
-const BUILT_IN_NAMES = BUILT_IN.map(st => st.name);
-// v1 had separate custom rows and a built-in switch; v2 is one ordered list.
-function readStations(data, BUILT_IN_NAMES) {
-  data = data && typeof data === 'object' ? data : {};
-  const custom = it => ({
-    id: it.id, name: it.name || '', kind: it.kind === 'playlist' ? 'playlist' : it.kind === 'channel' ? 'channel' : 'video',
-    video: it.video || '', list: it.list || '', url: it.url || '',
-    ...(it.channel ? {channel: it.channel} : {})
-  });
-  if (data.v === 2 && Array.isArray(data.list)) {
-    const seen = new Set(), list = [];
-    data.list.forEach(it => {
-      if (!it || typeof it !== 'object') return;
-      if (it.builtIn) {
-        if (!BUILT_IN_NAMES.includes(it.builtIn) || seen.has(it.builtIn)) return;
-        seen.add(it.builtIn);
-        list.push({id: 'b:' + it.builtIn, name: it.name || it.builtIn, kind: 'live', builtIn: it.builtIn});
-      } else if (it.id) list.push(custom(it));
-    });
-    return {v: 2, list};
-  }
-  if (Array.isArray(data.custom)) {
-    const list = data.custom.filter(it => it && it.id).map(custom);
-    if (data.builtIn !== false) list.push(...BUILT_IN_NAMES.map(name => ({id: 'b:' + name, name, kind: 'live', builtIn: name})));
-    return {v: 2, list};
-  }
-  return {v: 2, list: BUILT_IN_NAMES.map(name => ({id: 'b:' + name, name, kind: 'live', builtIn: name}))};
-}
-let stations = readStations(store.get('tide.stations', {}), BUILT_IN_NAMES);
-function stationList() {
-  return stations.list.map(it => {
-    if (it.builtIn) {
-      const b = BUILT_IN.find(st => st.name === it.builtIn);
-      if (!b) return null;
-      return {...b, key: 'b:' + it.builtIn, builtIn: it.builtIn, name: it.name || it.builtIn};
-    }
-    return {key: 'c:' + it.id, name: it.name, kind: it.kind, video: it.video || '', list: it.list || '', custom: true};
-  }).filter(Boolean);
-}
-let STATIONS = stationList();
 let logs = store.get('studyradio.logs', []);
 // The dashboard window sends the log back when it deletes or restores a session.
 window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderStats(); };
@@ -372,7 +222,7 @@ window.__syncGame = data => { G = Game.settings(data); render(); };
 const saveGame = () => store.set('tide.game', G);
 const NAME = window.__USER || new URLSearchParams(location.search).get('name') || '';   // ?name= is for previews
 const S = Object.assign({status: 'idle', mode: 'pomo', pomoMin: 30, startedAt: 0, segStart: 0, acc: 0, carry: 0, chained: false, blockMin: 30,
-  breakEnds: 0, breakLeft: 0, breakTotal: 0, station: 0, stationKey: '', vol: .6, lastSeen: 0}, store.get('studyradio.state', {}));
+  breakEnds: 0, breakLeft: 0, breakTotal: 0, lastSeen: 0}, store.get('studyradio.state', {}));
 if (!BLOCKS.includes(S.pomoMin)) S.pomoMin = 30;
 if (!S.blockMin) S.blockMin = S.pomoMin;
 let restored = false;
@@ -381,11 +231,6 @@ if (S.status === 'running') { S.acc += Math.max(0, (S.lastSeen || S.segStart) - 
 if (S.status === 'break' && Date.now() >= S.breakEnds) S.status = 'idle';
 function saveState() { S.lastSeen = Date.now(); store.set('studyradio.state', S); }
 function saveLogs() { store.set('studyradio.logs', logs); }
-function stationIndex(key) { const i = STATIONS.findIndex(s => s.key === key); return i < 0 ? 0 : i; }
-if (!STATIONS.length) { stations = readStations({}, BUILT_IN_NAMES); STATIONS = stationList(); }
-if (!S.stationKey && BUILT_IN[S.station]) S.stationKey = 'b:' + BUILT_IN[S.station].name;
-S.station = stationIndex(S.stationKey);
-S.stationKey = STATIONS[S.station]?.key || '';
 saveState();
 const elapsed = () => S.acc + (S.status === 'running' ? Date.now() - S.segStart : 0);
 
@@ -694,215 +539,6 @@ function chime() {
   } catch (e) {}
 }
 
-/* ---------- radio (official YouTube embed, hidden; it only plays the sound) ---------- */
-const playSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-const pauseSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
-let radioOn = false, radioPaused = false, yt = null, ytReady = null, ytPlayerReady = null;
-let playlistLoop = false, artKey = '', artId = '';
-const isList = st => !!st && (st.kind === 'playlist' || st.kind === 'channel');
-const kindLabel = st => st.kind === 'channel' ? 'Channel' : st.kind === 'playlist' ? 'Playlist' : 'Video';
-const retried = {};
-const ytId = st => (S.ytIds && S.ytIds[st.builtIn || st.name]) || st.yt;
-function loadYT() {
-  if (!ytReady) ytReady = new Promise(resolve => {
-    window.onYouTubeIframeAPIReady = resolve;
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api'; tag.onerror = () => resolve();
-    document.head.append(tag);
-  });
-  return ytReady;
-}
-// YouTube starts a freshly created player muted (autoplay rules) but switches streams in an existing one with sound,
-// so the player is created idle at launch and every play takes the switch-streams path.
-function makePlayer() {
-  if (!ytPlayerReady) ytPlayerReady = loadYT().then(() => new Promise(resolve => {
-    if (!window.YT || !YT.Player) return resolve(null);
-    yt = new YT.Player('ytFrame', {
-      playerVars: {autoplay: 0, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, modestbranding: 1, playsinline: 1, rel: 0},
-      events: {
-        onReady: () => resolve(yt),
-        onStateChange: e => {
-          if (!radioOn) return;
-          const st = STATIONS[S.station];
-          if (e.data === YT.PlayerState.PLAYING) {
-            radioPaused = false; updateRadioBtn();
-            unmuteYT(); setTimeout(unmuteYT, 600);
-            if (st) retried[st.key] = false;
-            document.body.classList.add('playing');
-            if (st && st.custom && isList(st)) {
-              if (!playlistLoop && yt.setLoop) { yt.setLoop(true); playlistLoop = true; }
-              if (yt.getVideoData) { const id = yt.getVideoData().video_id; if (id) setCover(st.key, id, true); }
-            }
-          } else if (e.data === YT.PlayerState.BUFFERING) {
-            document.body.classList.remove('playing');
-          } else if (e.data === YT.PlayerState.PAUSED) {
-            radioPaused = true; updateRadioBtn();
-            document.body.classList.remove('playing');
-          } else if (e.data === YT.PlayerState.ENDED) {
-            if (st && st.custom && st.kind === 'video') { try { yt.seekTo(0); yt.playVideo(); } catch (err) {} }
-          }
-        },
-        onError: () => { if (radioOn) ytFailed(); },
-      },
-    });
-  }));
-  return ytPlayerReady;
-}
-function unmuteYT() { if (!yt || !yt.isMuted) return; if (yt.isMuted()) yt.unMute(); yt.setVolume(Math.round(S.vol * 100)); }
-async function playYT(id) {
-  const player = await makePlayer();
-  if (!radioOn) return;
-  if (!player) { say('Radio didn’t load. Check your connection.'); return; }
-  player.unMute(); player.setVolume(Math.round(S.vol * 100));
-  if (player.setLoop) player.setLoop(false);
-  playlistLoop = false;
-  player.loadVideoById(id);
-}
-function setCover(key, id, hqOnly) {
-  artKey = key; artId = id || '';
-  const img = id ? (hqOnly ? `url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)` : `url(https://i.ytimg.com/vi/${id}/maxresdefault.jpg), url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`) : '';
-  document.querySelectorAll('.cover, .bgart').forEach(e => e.style.backgroundImage = img);
-}
-function playCurrent() {
-  const st = STATIONS[S.station]; if (!st) return;
-  if (!st.custom) { playYT(ytId(st)); return; }
-  if (st.kind === 'video') { playYT(st.video); return; }
-  setCover(st.key, '', true);
-  makePlayer().then(player => {
-    if (!radioOn || !player || STATIONS[S.station]?.key !== st.key) {
-      if (!player && radioOn) say('Radio didn’t load. Check your connection.');
-      return;
-    }
-    player.unMute(); player.setVolume(Math.round(S.vol * 100));
-    playlistLoop = false;
-    player.loadPlaylist({list: st.list, listType: 'playlist', index: 0});
-  });
-}
-function resolveStation(i) { const st = BUILT_IN[i]; if (st && st.ch) native({type: 'resolve', i, ch: st.ch, match: st.match}); }
-function ytResolved(i, id) {
-  const st = BUILT_IN[i]; if (!st || !id) return;
-  const key = 'b:' + st.name;
-  const changed = id !== ytId(st);
-  S.ytIds = Object.assign({}, S.ytIds, {[st.name]: id}); saveState();
-  if (changed && STATIONS[S.station]?.key === key && radioOn && retried[key]) playYT(id);
-}
-function ytFailed() {
-  const st = STATIONS[S.station]; if (!st) return;
-  if (st.custom) { say(`Can't play this ${st.kind === 'channel' ? 'channel' : 'video'}. Try another station.`); return; }
-  if (NATIVE && st.ch && !retried[st.key]) {
-    retried[st.key] = true;
-    say('Finding the live stream…');
-    const i = BUILT_IN.findIndex(b => 'b:' + b.name === st.key);
-    if (i >= 0) resolveStation(i);
-  } else say('Station offline. Try another.');
-}
-function updateRadioBtn() { $('#radioBtn').innerHTML = radioOn && !radioPaused ? pauseSvg : playSvg; }
-function showStation() {
-  const st = STATIONS[S.station]; if (!st) return;
-  $('#stName').textContent = st.name;
-  if (st.custom) {
-    $('#stSub').textContent = `${kindLabel(st)}${radioOn ? ' · Playing' : ''}`;
-  } else {
-    $('#stSub').textContent = `FM ${st.f.toFixed(1)}${radioOn ? ' · LIVE' : ''}`;
-  }
-  const songs = st.custom && isList(st) && radioOn;
-  $('#prevSt').title = songs ? 'Previous song' : 'Previous station';
-  $('#nextSt').title = songs ? 'Next song' : 'Next station';
-  requestAnimationFrame(() => $('#marq').classList.toggle('scroll', $('#stName').offsetWidth > $('#marq').clientWidth));
-  updateRadioBtn();
-  if (st.custom) {
-    if (isList(st)) {
-      if (artKey === st.key && artId) setCover(st.key, artId, true);
-      else setCover(st.key, '', true);
-    } else setCover(st.key, st.video, true);
-  } else setCover(st.key, ytId(st), false);
-}
-function tuneTo(i) {
-  if (!STATIONS.length) return;
-  S.station = (i + STATIONS.length) % STATIONS.length;
-  S.stationKey = STATIONS[S.station].key;
-  saveState();
-  if (radioOn) { radioPaused = false; document.body.classList.remove('playing'); playCurrent(); }
-  showStation();
-}
-// Play/pause keeps the stream loaded; stop unloads it.
-function playPause() {
-  if (radioOn) {
-    let playing = !radioPaused;
-    if (yt && yt.getPlayerState) {
-      const ps = yt.getPlayerState();
-      playing = ps === YT.PlayerState.PLAYING || ps === YT.PlayerState.BUFFERING;
-    }
-    if (playing) { radioPaused = true; if (yt && yt.pauseVideo) yt.pauseVideo(); document.body.classList.remove('playing'); }
-    else { radioPaused = false; if (yt && yt.playVideo) yt.playVideo(); }
-  } else { radioOn = true; radioPaused = false; tuneTo(S.station); }
-  showStation();
-}
-function stopRadio() { radioOn = false; radioPaused = false; if (yt && yt.stopVideo) { try { yt.stopVideo(); } catch (e) {} } document.body.classList.remove('playing'); showStation(); }
-function playStation(i) { radioOn = true; tuneTo(i); }
-function skipStation(dir) {
-  const st = STATIONS[S.station];
-  if (radioOn && st && isList(st)) {
-    const fn = dir < 0 ? 'previousVideo' : 'nextVideo';
-    if (yt && typeof yt[fn] === 'function') yt[fn]();
-    radioPaused = false;
-    showStation();
-    return;
-  }
-  playStation(S.station + dir);
-}
-window.__syncStations = data => {
-  stations = readStations(data, BUILT_IN_NAMES);
-  const wasOn = radioOn;
-  const oldKey = STATIONS[S.station]?.key || S.stationKey;
-  STATIONS = stationList();
-  if (!STATIONS.length) { stations = readStations({}, BUILT_IN_NAMES); STATIONS = stationList(); }
-  const gone = !STATIONS.some(s => s.key === oldKey);
-  S.station = stationIndex(oldKey);
-  S.stationKey = STATIONS[S.station]?.key || '';
-  saveState();
-  $('#stations').hidden = true;
-  if (wasOn && gone) {
-    radioPaused = false;
-    document.body.classList.remove('playing');
-    playCurrent();
-  }
-  showStation();
-};
-$('#radioBtn').onclick = playPause;
-$('#stopRadio').onclick = stopRadio;
-$('#prevSt').onclick = () => skipStation(-1);
-$('#nextSt').onclick = () => skipStation(1);
-$('#stationBtn').onclick = e => {
-  e.stopPropagation();
-  const list = $('#stations');
-  list.innerHTML = STATIONS.map((s, i) => `<button type="button" data-i="${i}" aria-current="${i === S.station}">${esc(s.name)}<span${s.custom ? ' class="badge"' : ''}>${s.custom ? kindLabel(s) : s.f.toFixed(1)}</span></button>`).join('');
-  list.style.top = ($('#disc').offsetTop + 58) + 'px';
-  list.hidden = !list.hidden;
-};
-$('#stations').onclick = e => { const b = e.target.closest('button'); if (b) { $('#stations').hidden = true; playStation(+b.dataset.i); } };
-addEventListener('click', e => { if (!e.target.closest('#stations, #stationBtn')) $('#stations').hidden = true; });
-
-// Volume: a button that slides a short slider open beside it. Scrolling over either also changes it.
-const VOL_ICONS = ['<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="m16 9.5 5 5m0-5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-  '<path d="M4 9h4l5-4v14l-5-4H4zm12.5-1.5a6 6 0 0 1 0 9l-1.2-1.2a4.3 4.3 0 0 0 0-6.6z"/>',
-  '<path d="M4 9h4l5-4v14l-5-4H4zm12.5-1.5a6 6 0 0 1 0 9l-1.2-1.2a4.3 4.3 0 0 0 0-6.6zM19 5a9.5 9.5 0 0 1 0 14l-1.2-1.2a7.8 7.8 0 0 0 0-11.6z"/>'];
-function drawVol() {
-  $('#volFill').style.width = (S.vol * 100).toFixed(1) + '%';
-  $('#volBtn').innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor">${VOL_ICONS[S.vol < .01 ? 0 : S.vol < .5 ? 1 : 2]}</svg>`;
-  $('#volBtn').title = `Volume ${Math.round(S.vol * 100)}%`;
-}
-function setVol(v) { S.vol = Math.min(1, Math.max(0, v)); if (yt && yt.setVolume) yt.setVolume(Math.round(S.vol * 100)); drawVol(); }
-const volFrom = e => { const r = $('#vol div').getBoundingClientRect(); setVol((e.clientX - r.left) / r.width); };
-$('#vol').addEventListener('pointerdown', e => { e.currentTarget.setPointerCapture(e.pointerId); volFrom(e); });
-$('#vol').addEventListener('pointermove', e => { if (e.buttons) volFrom(e); });
-$('#vol').addEventListener('pointerup', saveState);
-const volOpen = open => { $('#volWrap').classList.toggle('open', open); $('.ctrls').classList.toggle('volopen', open); };
-$('#volBtn').onclick = e => { e.stopPropagation(); volOpen(!$('#volWrap').classList.contains('open')); };
-$('.volwrap').addEventListener('wheel', e => { e.preventDefault(); setVol(S.vol - e.deltaY / 400); clearTimeout(volSave); volSave = setTimeout(saveState, 400); }, {passive: false});
-let volSave;
-addEventListener('click', e => { if (!e.target.closest('.volwrap')) volOpen(false); });
-
 /* ---------- controls ---------- */
 $('#time').onclick = cycleMode;
 // The menu: round buttons that drop down under the corner button.
@@ -923,15 +559,14 @@ addEventListener('click', e => { if (!e.target.closest('#menu')) menu(false); })
 addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
   if (e.code === 'Space') { e.preventDefault(); start(); }
-  if (e.key === 'Escape') { if ($('#volWrap').classList.contains('open')) volOpen(false); else if ($('#menu').classList.contains('open')) menu(false); else native({type: 'hidePanel'}); }
+  if (e.key === 'Escape') { if ($('#menu').classList.contains('open')) menu(false); else native({type: 'hidePanel'}); }
 });
 // The app's window follows the panel's height.
 new ResizeObserver(() => native({type: 'resize', h: Math.ceil($('#panel').getBoundingClientRect().height)})).observe($('#panel'));
 
 /* ---------- boot ---------- */
-showStation(); drawVol(); render(); checkUnlocks(true);
+render(); checkUnlocks(true);
 if (restored) say('Paused while the app was closed.', 10000);
-if (NATIVE) { BUILT_IN.forEach((st, i) => { if (st.ch) setTimeout(() => resolveStation(i), 400 * i); }); makePlayer(); }
 setInterval(tick, 250);
 setInterval(() => { if (S.status === 'running') saveState(); }, 5000);
 addEventListener('pagehide', saveState);
@@ -945,8 +580,6 @@ if (params.has('demo')) {
   if (kind === 'focus' || kind === 'paused') Object.assign(S, {status: 'running', startedAt: Date.now() - 23 * MIN - 47e3, segStart: Date.now() - 23 * MIN - 47e3, acc: 0});
   if (kind === 'paused') pauseFocus();
   if (kind === 'break') Object.assign(S, {status: 'break', breakTotal: 15 * MIN, breakEnds: Date.now() + 11 * MIN + 12e3});
-  // The video only plays in the app, so a browser preview keeps the blue cover.
-  radioOn = kind !== 'idle'; document.body.classList.toggle('playing', radioOn && NATIVE); showStation();
   render();
   if (kind === 'done') { pending = {start: Date.now() - 60 * MIN, end: Date.now(), ms: 60 * MIN}; afterTopic = 'next'; present(N.done(60 * MIN)); }
   if (kind === 'topic') { pending = {start: Date.now() - 60 * MIN, end: Date.now(), ms: 60 * MIN}; afterTopic = 'next'; present(N.topic()); }
