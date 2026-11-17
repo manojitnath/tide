@@ -142,29 +142,6 @@ select{background:var(--cardFill);border:0;border-radius:var(--radius-pill);padd
 .set code{font:var(--text-small) ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);word-break:break-all}
 .badge{display:inline-flex;align-items:center;border-radius:var(--radius-pill);padding:var(--space-1) var(--space-4);background:var(--soft);box-shadow:inset 0 0 0 .5px var(--line);color:var(--muted);font-size:var(--text-micro);font-weight:var(--weight-bold);line-height:1.5;white-space:nowrap;flex:none}
 .set .badge{font-size:var(--text-micro)}
-.radioRow{padding:var(--space-5) var(--space-9)}
-.radioWho{display:flex;align-items:center;gap:var(--space-4);flex:1;min-width:0}
-.radioName{font:var(--weight-semibold) var(--text-body) var(--font);color:var(--ink);background:none;border:0;padding:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;cursor:pointer}
-.radioName:hover{color:var(--accent)}
-.radioNameInput{width:200px;max-width:100%;font:var(--weight-semibold) var(--text-body) var(--font);color:var(--ink);background:var(--soft);border:0;border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);box-shadow:var(--shadow-track),var(--shadow-focus);outline:none}
-.radioTools{display:flex;align-items:center;gap:var(--space-1);flex:none}
-.radioBtn{width:24px;height:24px;border-radius:var(--radius-sm);color:var(--muted);font-size:var(--text-body);line-height:1;display:grid;place-items:center;transition:background-color .15s,color .15s}
-.radioBtn:hover:not(:disabled){background:var(--soft);color:var(--ink)}
-.radioBtn:disabled{opacity:.25;cursor:default}
-.radioBtn.del{font-size:var(--text-subheading)}
-.radioBtn.del:hover{color:var(--alert)}
-.radioAdd{align-items:flex-start}
-.radioAddL{flex:1;min-width:0}
-.radioAddTitle{display:block;margin-bottom:var(--space-4);font-weight:var(--weight-semibold)}
-.radioFields{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap}
-.radioFields input{width:auto;flex:1 1 auto}
-.radioFields .url{flex:1 1 250px;min-width:190px}
-.radioFields .name{flex:0 1 140px;min-width:120px}
-.radioFields input.bad{box-shadow:var(--shadow-track),var(--shadow-focus-danger)}
-.radioErr{margin:var(--space-3) 0 0;color:var(--danger);font-size:var(--text-small);font-weight:var(--weight-bold)}
-.radioErr.info{color:var(--muted);font-weight:var(--weight-semibold)}
-.radioAdd .btn{margin-top:var(--space-11)}
-.radioEmpty{padding:var(--space-5) var(--space-9) var(--space-1)}
 /* categories: one row per category, then one row per topic with its toggle chips */
 .catRow{padding:var(--space-6) var(--space-9);gap:var(--space-6)}
 .catWho{display:flex;align-items:center;gap:var(--space-5);flex:1;min-width:0}
@@ -409,20 +386,6 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:var(--radius-
       <div class="set"><div><b>Open at login</b><span>Start Tide when you log in to your Mac.</span></div><button class="t-switch" id="loginSw" role="switch" aria-checked="false" type="button"></button></div>
       <div class="set"><div><b>Start or pause from anywhere</b><span>Works in any app.</span></div><kbd>⌃ ⌥ Space</kbd></div>
     </div>
-    <div class="group"><h3>Radio</h3>
-      <div id="radioRows"></div>
-      <div class="set radioAdd">
-        <div class="radioAddL">
-          <b class="radioAddTitle">Add station</b>
-          <div class="radioFields">
-            <input class="t-field url" id="stationUrl" type="text" placeholder="Paste a YouTube link" autocomplete="off">
-            <input class="t-field name" id="stationName" type="text" placeholder="Name (optional)" maxlength="80" autocomplete="off">
-          </div>
-          <p class="radioErr" id="stationErr" hidden></p>
-        </div>
-        <button class="btn dark" id="addStation" type="button">Add</button>
-      </div>
-    </div>
     <div class="group"><h3>Streaks and goals</h3>
       <div class="set"><div><b>Daily focus goal</b><span>Reach it to keep your streak going.</span></div><select id="goalSel"><option value="30">30 minutes</option><option value="60">1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option></select></div>
       <div class="set"><div><b>Vacation mode</b><span>Pauses your streak while you're away; missed days won't break it.</span></div><button class="t-switch" id="vacSw" role="switch"></button></div>
@@ -444,7 +407,7 @@ input[type=time]{background:var(--cardFill);border:0;border-radius:var(--radius-
       <div class="set"><div><b>Export</b><span>Save every session as a CSV file in the log folder.</span></div><button class="btn" type="button" data-export>Export CSV</button></div>
     </div>
     <div class="group"><h3>About</h3>
-      <div class="set"><div><b>Tide <span id="ver"></span></b><span>A focus timer and lofi radio for your menu bar.</span></div><button class="btn" id="updates" type="button">Check for Updates</button></div>
+      <div class="set"><div><b>Tide <span id="ver"></span></b><span>A focus timer for your menu bar.</span></div><button class="btn" id="updates" type="button">Check for Updates</button></div>
     </div>
   </section>
 </div>
@@ -470,37 +433,6 @@ const store = {
 };
 let logs = store.get('studyradio.logs', []);
 let settings = Object.assign({launchAtLogin: false, logFolder: '~/Library/Application Support/Tide', version: ''}, window.__SETTINGS || {});
-// Must match BUILT_IN in panel.html.
-const BUILT_IN_NAMES = ['Lofi Girl: Study', 'Lofi Girl: Jazz', 'Lofi Girl: Piano', 'Lofi Girl: Asian', 'Lofi Girl: Rainy', 'Lofi Girl: Synthwave', 'Chillhop: Radio', 'Chillhop: Late Night', 'Steezyasfuck: Lofi', 'Bits & Hits: Gaming'];
-const BUILT_IN_FM = {'Lofi Girl: Study': 88.6, 'Lofi Girl: Jazz': 90.4, 'Lofi Girl: Piano': 92.2, 'Lofi Girl: Asian': 94.0, 'Lofi Girl: Rainy': 95.8, 'Lofi Girl: Synthwave': 97.6, 'Chillhop: Radio': 99.4, 'Chillhop: Late Night': 101.2, 'Steezyasfuck: Lofi': 102.8, 'Bits & Hits: Gaming': 104.4};
-// v1 had separate custom rows and a built-in switch; v2 is one ordered list.
-function readStations(data, BUILT_IN_NAMES) {
-  data = data && typeof data === 'object' ? data : {};
-  const custom = it => ({
-    id: it.id, name: it.name || '', kind: it.kind === 'playlist' ? 'playlist' : it.kind === 'channel' ? 'channel' : 'video',
-    video: it.video || '', list: it.list || '', url: it.url || '',
-    ...(it.channel ? {channel: it.channel} : {})
-  });
-  if (data.v === 2 && Array.isArray(data.list)) {
-    const seen = new Set(), list = [];
-    data.list.forEach(it => {
-      if (!it || typeof it !== 'object') return;
-      if (it.builtIn) {
-        if (!BUILT_IN_NAMES.includes(it.builtIn) || seen.has(it.builtIn)) return;
-        seen.add(it.builtIn);
-        list.push({id: 'b:' + it.builtIn, name: it.name || it.builtIn, kind: 'live', builtIn: it.builtIn});
-      } else if (it.id) list.push(custom(it));
-    });
-    return {v: 2, list};
-  }
-  if (Array.isArray(data.custom)) {
-    const list = data.custom.filter(it => it && it.id).map(custom);
-    if (data.builtIn !== false) list.push(...BUILT_IN_NAMES.map(name => ({id: 'b:' + name, name, kind: 'live', builtIn: name})));
-    return {v: 2, list};
-  }
-  return {v: 2, list: BUILT_IN_NAMES.map(name => ({id: 'b:' + name, name, kind: 'live', builtIn: name}))};
-}
-let stations = readStations(store.get('tide.stations', {}), BUILT_IN_NAMES);
 // The panel sends the log here whenever it saves a session.
 window.__syncLogs = data => { logs = Array.isArray(data) ? data : []; renderAll(); };
 window.settingsChanged = s => { settings = Object.assign(settings, s); renderSettings(); };
@@ -879,178 +811,7 @@ $$('[data-export]').forEach(b => b.onclick = () => {
 });
 
 /* ---------- settings ---------- */
-function parseYouTube(raw) {
-  let s = String(raw || '').trim();
-  if (!s) return null;
-  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) s = 'https://' + s;
-  let u; try { u = new URL(s); } catch (e) { return null; }
-  const host = u.hostname.toLowerCase();
-  if (!['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com', 'youtu.be'].includes(host)) return null;
-  const list = u.searchParams.get('list');
-  if (list) return {kind: 'playlist', list, video: u.searchParams.get('v') || ''};
-  const v = u.searchParams.get('v');
-  if (v && /^[\w-]{11}$/.test(v)) return {kind: 'video', video: v, list: ''};
-  const parts = u.pathname.split('/').filter(Boolean);
-  const id = host === 'youtu.be' ? parts[0] : (parts[0] === 'live' || parts[0] === 'shorts') ? parts[1] : '';
-  if (id && /^[\w-]{11}$/.test(id)) return {kind: 'video', video: id, list: ''};
-  if (host !== 'youtu.be' && !u.searchParams.has('v') && !u.searchParams.has('list')) {
-    const first = parts[0] || '';
-    if (first === 'channel' && parts[1] && /^UC[A-Za-z0-9_-]{22}$/.test(parts[1])) return {kind: 'channel', channel: parts[1]};
-    if (first.startsWith('@') && first.length > 1) return {kind: 'channel', path: '@' + encodeURIComponent(first.slice(1))};
-    if ((first === 'c' || first === 'user') && parts[1]) return {kind: 'channel', path: first + '/' + encodeURIComponent(parts[1])};
-  }
-  return null;
-}
-function saveStations() { store.set('tide.stations', stations); }
-let stationEdit = null;
-let channelSeq = 0, channelWait = null, channelTimer = 0;
-function nextCustomName() {
-  const used = new Set(stations.list.map(s => s.name));
-  let n = 1;
-  while (used.has(`Custom ${n}`)) n++;
-  return `Custom ${n}`;
-}
-function stationInfo(text) {
-  const err = $('#stationErr');
-  err.textContent = text; err.hidden = false; err.classList.add('info');
-  $('#stationUrl').classList.remove('bad');
-}
-function stationError(text) {
-  const err = $('#stationErr');
-  err.textContent = text; err.hidden = false; err.classList.remove('info');
-  $('#stationUrl').classList.add('bad');
-}
-function clearStationError() {
-  $('#stationErr').hidden = true; $('#stationErr').classList.remove('info');
-  $('#stationUrl').classList.remove('bad');
-}
-function attachStationName(input, st) {
-  if (!input || !st) return;
-  let done = false;
-  const finish = save => {
-    if (done) return;
-    done = true;
-    if (save) {
-      const name = input.value.trim();
-      if (name && name !== st.name) { st.name = name; saveStations(); }
-    }
-    stationEdit = null;
-    renderRadio();
-  };
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
-    else if (e.key === 'Escape') finish(false);
-  });
-  input.addEventListener('blur', () => finish(true));
-}
-function renderRadio() {
-  if (stationEdit && !stations.list.some(s => s.id === stationEdit)) stationEdit = null;
-  const host = $('#radioRows');
-  if (!stations.list.length) {
-    host.innerHTML = '<div class="empty radioEmpty">Paste a YouTube video, playlist or channel link.</div>';
-  } else {
-    host.innerHTML = stations.list.map((s, i) => {
-      const badge = s.builtIn ? (BUILT_IN_FM[s.builtIn]?.toFixed(1) || 'Live') : s.kind === 'playlist' ? 'Playlist' : s.kind === 'channel' ? 'Channel' : 'Video';
-      return `<div class="set radioRow">
-        <div class="radioWho">${stationEdit === s.id ? `<input class="radioNameInput" id="stationNameInput" value="${esc(s.name)}" maxlength="80" aria-label="Station name">` : `<button class="radioName" type="button" data-rename="${esc(s.id)}" title="Click to rename">${esc(s.name)}</button>`}<span class="badge">${badge}</span></div>
-        <div class="radioTools"><button class="radioBtn" type="button" data-id="${esc(s.id)}" data-move="-1" title="Move up"${i === 0 ? ' disabled' : ''}>↑</button><button class="radioBtn" type="button" data-id="${esc(s.id)}" data-move="1" title="Move down"${i === stations.list.length - 1 ? ' disabled' : ''}>↓</button><button class="radioBtn del" type="button" data-del="${esc(s.id)}" title="Delete">×</button></div>
-      </div>`;
-    }).join('');
-  }
-  if (stationEdit) {
-    const input = $('#stationNameInput');
-    if (input) { input.focus(); input.select(); attachStationName(input, stations.list.find(s => s.id === stationEdit)); }
-  }
-}
-function addStation() {
-  if ($('#addStation').disabled) return;
-  const url = $('#stationUrl').value.trim(), name = $('#stationName').value.trim();
-  const parsed = parseYouTube(url);
-  if (!parsed) { stationError("That isn't a YouTube video, playlist or channel link."); return; }
-  if (parsed.kind === 'channel') {
-    if (parsed.channel && stations.list.some(s => s.channel === parsed.channel)) { stationError('That station is already in your list.'); return; }
-    const req = ++channelSeq;
-    channelWait = {req, url, name};
-    $('#addStation').disabled = true;
-    stationInfo('Looking up the channel…');
-    clearTimeout(channelTimer);
-    channelTimer = setTimeout(() => {
-      if (!channelWait || channelWait.req !== req) return;
-      channelWait = null;
-      $('#addStation').disabled = false;
-      stationError("Couldn't find that channel. Check the link.");
-    }, 20000);
-    const msg = {type: 'channel', req};
-    if (parsed.channel) msg.channel = parsed.channel; else msg.path = parsed.path;
-    if (NATIVE) native(msg);
-    else setTimeout(() => window.channelFound(req, 'UCSJ4gkVC6NrvII8umztf0Ow', 'Demo channel'), 500);
-    return;
-  }
-  const duplicate = stations.list.some(s => parsed.kind === 'playlist'
-    ? s.kind === 'playlist' && s.list === parsed.list
-    : s.kind === 'video' && s.video === parsed.video);
-  if (duplicate) { stationError('That station is already in your list.'); return; }
-  const st = {id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: name || nextCustomName(), url, kind: parsed.kind, video: parsed.video, list: parsed.list};
-  stations.list.unshift(st);
-  saveStations();
-  $('#stationUrl').value = ''; $('#stationName').value = '';
-  clearStationError();
-  renderRadio();
-  toast(`Added ${st.name}`, () => {
-    stations.list = stations.list.filter(s => s.id !== st.id);
-    saveStations(); renderRadio();
-  });
-}
-window.channelFound = (req, id, name) => {
-  if (!channelWait || channelWait.req !== req) return;
-  const wait = channelWait;
-  channelWait = null;
-  clearTimeout(channelTimer);
-  $('#addStation').disabled = false;
-  if (!id || !/^UC[A-Za-z0-9_-]{22}$/.test(id)) { stationError("Couldn't find that channel. Check the link."); return; }
-  if (stations.list.some(s => s.channel === id)) { stationError('That station is already in your list.'); return; }
-  const channelName = String(name || '').trim();
-  const st = {id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: wait.name || channelName || nextCustomName(), url: wait.url, kind: 'channel', channel: id, list: 'UU' + id.slice(2), video: ''};
-  stations.list.unshift(st);
-  saveStations();
-  $('#stationUrl').value = ''; $('#stationName').value = '';
-  clearStationError();
-  renderRadio();
-  toast(`Added ${st.name}`, () => {
-    stations.list = stations.list.filter(s => s.id !== st.id);
-    saveStations(); renderRadio();
-  });
-};
-$('#addStation').onclick = addStation;
-['#stationUrl', '#stationName'].forEach(sel => $(sel).addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); addStation(); }
-}));
-$('#stationUrl').addEventListener('input', () => { if (!channelWait) clearStationError(); });
-$('#radioRows').onclick = e => {
-  const rename = e.target.closest('[data-rename]');
-  if (rename) { stationEdit = rename.dataset.rename; renderRadio(); return; }
-  const move = e.target.closest('[data-move]');
-  if (move) {
-    const i = stations.list.findIndex(s => s.id === move.dataset.id), j = i + Number(move.dataset.move);
-    if (i < 0 || j < 0 || j >= stations.list.length) return;
-    [stations.list[i], stations.list[j]] = [stations.list[j], stations.list[i]];
-    saveStations(); renderRadio(); return;
-  }
-  const del = e.target.closest('[data-del]');
-  if (!del) return;
-  if (stations.list.length <= 1) { toast('Keep at least one station.'); return; }
-  const i = stations.list.findIndex(s => s.id === del.dataset.del);
-  if (i < 0) return;
-  const [gone] = stations.list.splice(i, 1);
-  if (stationEdit === gone.id) stationEdit = null;
-  saveStations(); renderRadio();
-  toast(`Deleted ${gone.name}`, () => {
-    stations.list.splice(Math.min(i, stations.list.length), 0, gone);
-    saveStations(); renderRadio();
-  });
-};
 function renderSettings() {
-  renderRadio();
   renderCategories();
   renderTopicCats();
   $('#loginSw').setAttribute('aria-checked', !!settings.launchAtLogin);
