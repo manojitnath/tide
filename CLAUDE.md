@@ -1,6 +1,6 @@
 # Tide: notes for Claude Code
 
-A focus timer and lofi radio in the macOS menu bar. How it fits together, the timer rules and testing are in **`CONTRIBUTING.md`**: read it before changing anything.
+A focus timer in the macOS menu bar. How it fits together, the timer rules and testing are in **`CONTRIBUTING.md`**: read it before changing anything.
 
 ## Build and run
 - `./build.sh --install` builds `build.noindex/Tide.app`, copies it to `/Applications` and opens it. `--zip` also makes the release zip.
@@ -12,8 +12,8 @@ A focus timer and lofi radio in the macOS menu bar. How it fits together, the ti
 - User data lives in `~/Library/Application Support/Tide/` (`Study Log.json`, `studyradio.state.json`, `tide.game.json`). Never overwrite it in tests; back it up first and restore it after.
 
 ## Rules from the owner
-- Keep it simple: a focus timer and Pomodoro with lofi radio. No skins. Game features stay quiet (a daily goal, streak, levels, badges), shown in one panel card and the Progress tab.
-- Out of scope: bedtime, sleep and habit tracking. Those belong to a separate accountability app, if it gets built.
+- Keep it simple: a focus timer and Pomodoro. No skins. Game features stay quiet (a daily goal, streak, levels, badges), shown in one panel card and the Progress tab.
+- Out of scope: bedtime, sleep and habit tracking. Those belong to a separate accountability app, if it gets built. Music: use a separate app.
 - Font: Manrope (bundled in `src/fonts/`) for all text. Light and dark mode, short and clear text.
 - Use the shared tokens and parts in `src/tide.css`; no hand-typed sizes, colours, spacing or corners.
 - Show a PNG mockup before building any new screen.

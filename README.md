@@ -1,6 +1,6 @@
 # Tide
 
-A focus timer and lofi radio that lives in your Mac's menu bar. Click the time in the menu bar to open the timer: Pomodoro or count-up, a live lofi station, and your streak and daily goal at a glance. Every session is logged by topic, a dashboard shows where your time went, and a daily goal, streak and badges keep you coming back.
+A focus timer that lives in your Mac's menu bar. Click the time in the menu bar to open the timer: Pomodoro or count-up, and your streak and daily goal at a glance. Every session is logged by topic, a dashboard shows where your time went, and a daily goal, streak and badges keep you coming back.
 
 **[Download Tide for macOS](https://github.com/manojitnath/tide/releases/latest/download/Tide.zip)** (macOS 13 or later, see [Install](#install))
 
@@ -14,7 +14,7 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
 </p>
 
 <p>
-  <img src="docs/screenshots/panel-focus.png" width="32%" alt="The menu bar panel while focusing: the greeting, the clock card, the radio and the streak card">
+  <img src="docs/screenshots/panel-focus.png" width="32%" alt="The menu bar panel while focusing: the greeting, the clock card and the streak card">
   <img src="docs/screenshots/panel-paused.png" width="32%" alt="The panel when paused: Resume and End focus">
   <img src="docs/screenshots/panel-break.png" width="32%" alt="The panel in dark mode during a break">
 </p>
@@ -33,10 +33,10 @@ A focus timer and lofi radio that lives in your Mac's menu bar. Click the time i
   (System *notifications* in Notification Center are only used for the idle nudge below and app updates.)
 - **A nudge when you're idle:** after 30 minutes with no timer or break running, a macOS notification (with a sound) suggests starting a session. Hover over it and press **Let's start** to start counting up without opening the panel. Notifications use the **Alerts** style, so they stay on screen until you answer; you can change that in System Settings → Notifications → Tide. There are no notifications between 10 PM and 5 AM.
 - **Fair logging:** a Pomodoro you end early isn't counted, and neither is under a minute of counting up.
-- **Radio:** ten lofi live streams (Lofi Girl, Chillhop and others) in a compact player: the station's cover art, play/pause, previous and next, stop, a volume button that slides a slider open, and the station list when you click the station's name. It keeps playing when the panel is closed. In **Settings → Radio** you can add your own YouTube videos, playlists and channels, and reorder, rename or remove any station, built-in ones included. Back and forward skip songs in a playlist or channel, and change station otherwise.
 - **Study log:** every counted session is saved with its topic. Recent topics are one click away.
 - **Daily goal, streak and level:** the panel greets you and shows your streak (days you reach your daily goal, 2 hours by default) and today's progress. Every focused minute is 1 XP; levels go from Drop to King tide. Vacation mode pauses the streak.
 - **Categories and goals:** group topics into categories like Learning or Content (a topic can be in several), and set a daily or weekly goal for each in **Settings → Categories**. Progress shows in the **Progress** tab, and you can pick or change categories when you save a session. Category chips are only in the panel's end-of-session question, so answering from the Island saves the topic without changing its categories. The streak still depends only on the daily focus goal.
+- **Music** isn't built in: play it from any music app alongside Tide.
 - **Badges:** 16 to unlock for focus hours, streaks and a few specials, in the **Progress** tab of the dashboard. Hover over one to see what it's for.
 - **Dashboard:** focus time, sessions, streak and top topic for today, 7 days, 30 to 360 days or a custom date range; a focused-time chart; time by topic; the hours you focus best; and a full session list you can tidy up: edit a session's topic, times or focus time (for when you forgot to stop the timer), delete it, or **add** one you did without the timer. Export to CSV, or copy today's hours.
 - **Shortcut:** ⌃⌥Space (Control-Option-Space) starts or pauses the timer from any app.
@@ -67,15 +67,10 @@ Tide checks for a new release when it opens and once a day, and tells you with a
 Everything is in `~/Library/Application Support/Tide/` (the app was called Focus MN before; on first launch Tide copies your data from the old `Focus MN` folder and leaves that folder as a backup):
 
 - `Study Log.json`: your sessions
-- `studyradio.state.json`: timer mode, station, volume
-- `tide.stations.json`: your station list
+- `studyradio.state.json`: timer mode and settings
 - `tide.game.json`: daily goal, vacation mode, categories and goals
 
 To keep the log somewhere else, such as a synced notes folder, choose a folder in **Settings → Your log**. Your current log is copied there if the folder doesn't have one yet.
-
-## About the YouTube streams
-
-The radio plays public YouTube live streams through YouTube's official embedded player, shown small as the station art, and finds each stream's current ID by reading the channel's public Live page. Your own stations play the videos, playlists or channel uploads you add through the same player; when you add a channel, the app reads its public page once to find its ID. It's a personal project, not affiliated with YouTube or the channels. The small player doesn't follow YouTube's size guidelines, and the stream lookup can break when YouTube changes its pages. All music belongs to its creators.
 
 ## Build from source
 

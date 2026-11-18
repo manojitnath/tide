@@ -4,12 +4,12 @@
 
 | Path | What it is |
 |---|---|
-| `src/panel.html` | The menu bar panel: timer, radio, today's stats, and the end-of-session questions. Markup, styles and script in one file. |
+| `src/panel.html` | The menu bar panel: timer, today's stats, and the end-of-session questions. Markup, styles and script in one file. |
 | `src/dashboard.html` | The dashboard window: Stats, Sessions and Settings tabs. |
 | `src/game.js` | The game rules (daily and category goals, streak, levels, badges and their coin pictures), shared by the panel and the dashboard. The app adds it to both pages; in a browser preview they load it themselves. |
 | `src/island.html` | **The Island**: a card that drops from the notch at the top of the screen, blue in light mode and near-black in dark mode. It only displays what the panel sends and reports button presses back. |
 | `src/tide.css` | The shared design tokens and `t-` part styles used by all three pages. The preview pages link it; the app injects it before the page's own style. `build.sh` copies it into the app. |
-| `src/main.swift` | The native app: menu bar item, the panel window, the dashboard window, file storage, YouTube stream lookup, notifications, the global shortcut, open at login, the update check. |
+| `src/main.swift` | The native app: menu bar item, the panel window, the dashboard window, file storage, notifications, the global shortcut, open at login, the update check. |
 | `src/AppIcon.icns` | The app icon, made by `docs/icon/make-icns.sh` from `docs/icon/icon.html`. |
 | `build.sh` | Builds `build.noindex/Tide.app`, copying the pages, `game.js` and `tide.css` into it. `--install` copies it to `/Applications` and opens it; `--zip` makes the release zip. |
 | `src/fonts/` | Manrope, the bundled font, and its licence. |
@@ -17,21 +17,20 @@
 
 ## How it fits together
 
-- **The panel** is a borderless window with 20pt rounded corners (an `NSVisualEffectView` masked to the corners, with a `WKWebView` on top; the page paints its own background) placed under the menu bar item. It hides when it loses focus, like a menu, but is never closed, so the timer keeps running and the radio keeps playing.
+- **The panel** is a borderless window with 20pt rounded corners (an `NSVisualEffectView` masked to the corners, with a `WKWebView` on top; the page paints its own background) placed under the menu bar item. It hides when it loses focus, like a menu, but is never closed, so the timer keeps running.
 - **Keeping the hidden page alive:** WebKit suspends pages in hidden windows, which froze the timer. The app sets `inactiveSchedulingPolicy = .none`, holds a `ProcessInfo` activity against App Nap, and calls `tick()` every second as a backstop. Keep all three.
 - **Questions** (block done, break done, the topic, what next) are built by the panel page (`present()`, the `N` object). With the panel open they show in it; when it closes, the app shows the same question in the Island (`notice` message), and the Island's answer comes back through `noticeAction(id, topic)`.
-- **Both pages** are loaded with base URL `https://localhost/`, because YouTube's player refuses file pages. The app injects `window.__NATIVE` and the saved files (`window.__STORE`) before the page's script runs; the dashboard also gets `window.__SETTINGS` and `window.__TAB`.
+- **Both pages** are loaded with base URL `https://localhost/`, so the pages' storage stays in one place. The app injects `window.__NATIVE` and the saved files (`window.__STORE`) before the page's script runs; the dashboard also gets `window.__SETTINGS` and `window.__TAB`.
 - **Page to app:** `window.webkit.messageHandlers.native.postMessage({type, ...})`. Types:
   - `store`: save a key to disk. Log saves are mirrored to the other page via `__syncLogs`.
   - `resize` (panel or Island height), `showPanel`, `hidePanel`, `clock` (menu bar text), `notice` (show or clear the Island), `notify`.
-  - `resolve`: find a YouTube stream ID; answered with `ytResolved(i, id)`.
   - `openDashboard` (with a `tab`), `quit`, `copy`, `csv`.
   - Dashboard settings: `setLaunchAtLogin`, `chooseLogFolder`, `revealLogFolder`, `checkUpdates`; answered with `settingsChanged({...})`.
-- **App to page:** `start()` (the ⌃⌥Space shortcut), `tick()`, `panelVisible()`, `noticeAction()`, `ytResolved()`, `__syncLogs()`, `settingsChanged()`, `showTab()`.
+- **App to page:** `start()` (the ⌃⌥Space shortcut), `tick()`, `panelVisible()`, `noticeAction()`, `__syncLogs()`, `settingsChanged()`, `showTab()`.
 
 ## Timer rules
 
-- Look: light mode is a soft blue-grey; the clock card is bright blue (`#1f5cf2`) with rings in the corner; the state shows in its pill, progress line and a soft glow (none when ready, light blue focusing, amber paused, green on a break). Dark mode is near-black (`#161616`), the clock card black with a soft glow of the state's colour. The radio is a compact card: the station's cover art (its YouTube thumbnail) in a square on the left, the station name (click for the list) and controls beside it, with a blurred copy of the cover tinting the card. Volume is a button that slides a short slider open beside it, pushing the other controls right (scrolling over it works too). Cards use 20px corners, the same as the panel. The YouTube player only plays the sound: it stays a normal size but hidden, since YouTube won't play in a tiny player. Every gap between cards is 12px. Both use the same bevel: a lit top edge, a soft lower edge and a shadow below each card. All text uses Manrope (`--font`), except the log folder path (system monospace).
+- Look: light mode is a soft blue-grey; the clock card is bright blue (`#1f5cf2`) with rings in the corner; the state shows in its pill, progress line and a soft glow (none when ready, light blue focusing, amber paused, green on a break). Dark mode is near-black (`#161616`), the clock card black with a soft glow of the state's colour. Cards use 20px corners, the same as the panel. Every gap between cards is 12px. Both use the same bevel: a lit top edge, a soft lower edge and a shadow below each card. All text uses Manrope (`--font`), except the log folder path (system monospace).
 - Game (`game.js`), all worked out from the log: the **streak** counts days that reach the daily goal (`goalMin`, 120 by default); vacation days (`vacation` date ranges) are skipped, and today can still be closed. **Levels**: 1 XP per focused minute, level n needs 150·(n−1)² XP. **Badges**: focus hours (10 to 1,000), best streak (7 to 365) and specials; a new one, a new level or a reached goal shows in the Island once nothing else is asked (`checkUnlocks`, remembered in the state as `badgesSeen`, `levelSeen`, `goalSeen`).
 - **Categories** are in `tide.game` as `categories` (`{id, name, color, goalMin, per}`, where `per` is `'day'` or `'week'`) and `topicCats` (`{topicKey: [categoryId]}`, keyed by `Game.topicKey`). `Game.categoryProgress(logs, g, now)` counts a session toward every category its topic belongs to, by start time: daily goals count today, weekly goals count from Monday. `Game.PALETTE` (in `game.js`) holds the shared 10 colours for topics and categories. Category chips appear only in the panel's end-of-session question; answering from the Island saves the topic but leaves `topicCats` unchanged.
 - macOS notifications (the idle nudge, update notices) stay quiet from 10 PM to 5 AM (`quietHours`); a manual Check for Updates still answers.
@@ -44,16 +43,6 @@
 - Ending a Pomodoro early isn't logged; count-up under a minute isn't logged; breaks aren't logged. A finished break asks *Start Focus / +5 min*.
 - A session running when the app quits comes back paused, counting time up to the last save.
 - After 30 minutes idle (no timer, no break, no open question) the panel sends a `nudge`; the app posts a notification in the `NUDGE` category, whose **Let's start** action calls `startCountUp()`. It repeats every 30 minutes while idle.
-
-## Stations
-
-`BUILT_IN` (in `panel.html`) lists each built-in station with its channel, the words from its stream title and a last known video ID. At launch the app reads each channel's `/streams` page, finds the live stream whose title matches, and saves the current ID (`S.ytIds`, keyed by the built-in's original name). If a stream fails, it looks it up again and retries once. The player is created idle at launch, because a freshly created YouTube player starts muted.
-
-`tide.stations` (version 2) is one ordered list of built-in items (`builtIn: '<original name>'`, which can be renamed) and custom items (`kind: 'video' | 'playlist' | 'channel'`). Only the dashboard writes it. Both pages read it through `readStations()`, which upgrades version 1 (`{custom, builtIn}`). `readStations()` is copied in both files and must stay the same, and `BUILT_IN_NAMES` in the dashboard must match `BUILT_IN`. The list is never empty. The panel's station keys are `b:<name>` for built-ins and `c:<id>` for custom ones.
-
-Playing: a video loops when it ends. A playlist uses `loadPlaylist` and `setLoop(true)`. A channel is stored with its `UU…` uploads playlist (`'UU' + channelId.slice(2)`) and plays like a playlist, newest first. Adding a channel looks it up with `findChannel` in `main.swift`, which reads `itemprop="identifier"` and `og:title` from the channel page; only the dashboard can ask for it.
-
-Back and forward skip songs in a playlist or channel, and change station otherwise. You leave a playlist through the station list.
 
 ## Design
 
@@ -81,7 +70,7 @@ Back and forward skip songs in a playlist or channel, and change station otherwi
 - Corners use `--radius-sm` 6, `--radius-md` 10, `--radius-card` 14, `--radius-lg` 16, `--radius-xl` 20, `--radius-2xl` 24, `--radius-pill` 99 and `--radius-round` 50%.
 - Shared parts: `t-title`, `t-heading`, `t-body`, `t-small`, `t-caption`, `t-muted`; `t-card` and `t-panel-card`; `t-btn` and `t-primary`; `t-field`; `t-chip`; `t-switch`; `t-seg`; `t-toast`.
 - Use a token or a shared part; don't type sizes.
-- Page-local on purpose: the panel's 20px cards and 12px card gaps (and its 16px station list), the dashboard's 14px cards, the Island's 24px card and blue (`#1f5cf2`) / near-black (`#1c1c1c`) colours, and the panel's compact category chips. The dashboard's Settings chips are sized for the wide page; the 320px panel keeps its smaller chips.
+- Page-local on purpose: the panel's 20px cards and 12px card gaps, the dashboard's 14px cards, the Island's 24px card and blue (`#1f5cf2`) / near-black (`#1c1c1c`) colours, and the panel's compact category chips. The dashboard's Settings chips are sized for the wide page; the 320px panel keeps its smaller chips.
 - Manrope is bundled (`src/fonts/Manrope.ttf`, SIL Open Font License in `src/fonts/OFL.txt`, shipped with the app as `Manrope-OFL.txt`). Pages are loaded from a web address and can't read files, so the app adds the font as data at page start (`fontScript` in `main.swift`); the pages' own `@font-face` ("Manrope Preview") is only for the browser preview. Keep the panel short: it should fit under the menu bar on a small laptop screen.
 - Show a mockup (a PNG rendered with headless Chrome) before building a new screen.
 
@@ -97,9 +86,9 @@ Back and forward skip songs in a playlist or channel, and change station otherwi
   ```
   - `dashboard.html?demo` (two weeks of sample sessions), `&tab=sessions`, `&tab=settings`
 - In a browser, data is kept in localStorage, not in your real log.
-- After `./build.sh --install`, check the real app: the panel opens from the menu bar, a session logs, the radio keeps playing with the panel closed.
+- After `./build.sh --install`, check the real app: the panel opens from the menu bar, a session logs, and the timer keeps running with the panel closed.
 - README images: serve the project root (`python3 -m http.server 8765`) and render with headless Chrome.
-  - Screenshots go through `docs/promo/shot.html`, which shows one demo page at a set size and puts an original cover (`docs/promo/cover.js`) in the radio instead of a station's artwork. `&name=` sets the greeting's name. For example:
+  - Screenshots go through `docs/promo/shot.html`, which shows one demo page at a set size. `&name=` sets the greeting's name. For example:
 
     ```bash
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars --force-device-scale-factor=2 --blink-settings=preferredColorScheme=1 --window-size=380,560 --screenshot=docs/screenshots/panel-focus.png "http://127.0.0.1:8765/docs/promo/shot.html?w=380&h=560&src=..%2F..%2Fsrc%2Fpanel.html%3Fdemo%3Dfocus%26name%3DManojit"
