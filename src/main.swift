@@ -1,6 +1,6 @@
-// Tide: a focus timer and lofi radio in the menu bar.
+// Tide: a focus timer in the menu bar.
 // Clicking the menu bar time opens a panel (panel.html); Open Log and Settings open the dashboard (dashboard.html).
-// The study log and the timer and radio settings are saved in ~/Library/Application Support/Tide.
+// The study log and the timer settings are saved in ~/Library/Application Support/Tide.
 // To keep the log somewhere else, choose a folder in Settings, or:
 //   defaults write local.focusmn.app LogFolder ~/path/to/folder
 import Cocoa
@@ -100,7 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     // Both pages get the saved data before their script runs; the dashboard also gets its settings and first tab.
     func pageConfig(extra: String = "") -> WKWebViewConfiguration {
         var saved: [String: String] = [:]
-        for key in ["studyradio.logs", "studyradio.state", "tide.game", "tide.stations"] {
+        for key in ["studyradio.logs", "studyradio.state", "tide.game"] {
             if let text = try? String(contentsOf: fileURL(for: key), encoding: .utf8) { saved[key] = text }
         }
         let json = String(data: try! JSONSerialization.data(withJSONObject: saved), encoding: .utf8)!
@@ -113,8 +113,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         content.addUserScript(WKUserScript(source: gameScript, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         let config = WKWebViewConfiguration()
         config.userContentController = content
-        config.mediaTypesRequiringUserActionForPlayback = []
-        // Keep pages running while their window is hidden, so the timer and radio don't stop when the panel closes.
+        // Keep pages running while their window is hidden, so the timer doesn't stop when the panel closes.
         if #available(macOS 14.0, *) { config.preferences.inactiveSchedulingPolicy = .none }
         return config
     }
@@ -147,7 +146,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
 
     func loadPage(_ name: String, into view: WKWebView) {
         let html = Bundle.main.url(forResource: name, withExtension: "html")!
-        // Served from a web address rather than a file, because YouTube's player refuses to run inside file pages.
+        // Served from a web address rather than a file, so the pages' storage stays in one place.
         let page = (try? String(contentsOf: html, encoding: .utf8)) ?? ""
         view.loadHTMLString(page, baseURL: URL(string: "https://localhost/"))
     }
@@ -159,7 +158,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
     // MARK: the panel
 
     // A frosted, rounded window that drops down from the menu bar time. It stays alive while hidden,
-    // so the timer keeps ticking and the radio keeps playing.
+    // so the timer keeps ticking.
     func buildPanel() {
         panel = PanelWindow(contentRect: NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight),
                             styleMask: [.borderless], backing: .buffered, defer: false)
@@ -187,7 +186,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         web.layer?.masksToBounds = true
         blur.addSubview(web)
         loadPage("panel", into: web)
-        // Off screen until first opened; the page runs from the start so the timer and radio work.
+        // Off screen until first opened; the page runs from the start so the timer works.
         panel.setFrameOrigin(NSPoint(x: -10000, y: -10000))
         panel.orderFront(nil)
         panel.orderOut(nil)
@@ -334,15 +333,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         switch type {
         case "store":
             if let key = body["key"] as? String, let value = body["value"] as? String {
-                if fromDash && key != "studyradio.logs" && key != "tide.game" && key != "tide.stations" { return }
+                if fromDash && key != "studyradio.logs" && key != "tide.game" { return }
                 try? value.write(to: fileURL(for: key), atomically: true, encoding: .utf8)
-                // Keep the other page's copy of the log, the game settings and the stations in step.
+                // Keep the other page's copy of the log, and the game settings in step.
                 if key == "studyradio.logs" {
                     (fromDash ? web : dashWeb)?.evaluateJavaScript("window.__syncLogs && __syncLogs(\(value))")
                 } else if key == "tide.game" {
                     (fromDash ? web : dashWeb)?.evaluateJavaScript("window.__syncGame && __syncGame(\(value))")
-                } else if key == "tide.stations" {
-                    web.evaluateJavaScript("window.__syncStations && __syncStations(\(value))")
                 }
             }
         case "resize":
@@ -374,20 +371,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
         case "notify":
             notify(title: body["title"] as? String ?? "Tide", body: body["body"] as? String ?? "")
             if body["show"] as? Bool ?? false { showPanel() }
-        case "resolve":
-            if let i = body["i"] as? Int, let channel = body["ch"] as? String, let match = body["match"] as? [String] {
-                findLiveStream(channel: channel, match: match) { [weak self] id in
-                    guard let id else { return }
-                    self?.web.evaluateJavaScript("ytResolved(\(i), '\(id)')")
-                }
-            }
-        case "channel":
-            guard fromDash, let req = body["req"] as? Int else { return }
-            if let channel = body["channel"] as? String {
-                findChannel(req: req, path: "channel/\(channel)", channel: channel)
-            } else if let path = body["path"] as? String {
-                findChannel(req: req, path: path, channel: nil)
-            }
         case "openDashboard":
             openDashboard(tab: body["tab"] as? String ?? "stats")
         case "theme":
@@ -609,99 +592,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKSc
             showPanel()
         }
         completionHandler()
-    }
-
-    // Reads a channel's Live tab and returns the live stream whose title contains every match phrase.
-    // YouTube lists each stream as a "lockupViewModel"; live ones show a "watching" count.
-    func findLiveStream(channel: String, match: [String], done: @escaping (String?) -> Void) {
-        guard let url = URL(string: "https://www.youtube.com/@\(channel)/streams") else { return done(nil) }
-        var request = URLRequest(url: url, timeoutInterval: 20)
-        request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15", forHTTPHeaderField: "User-Agent")
-        request.setValue("en-US,en", forHTTPHeaderField: "Accept-Language")
-        URLSession.shared.dataTask(with: request) { data, _, _ in
-            var found: String?
-            if let data, let page = String(data: data, encoding: .utf8),
-               let start = page.range(of: "var ytInitialData = "),
-               let end = page.range(of: ";</script>", range: start.upperBound..<page.endIndex),
-               let json = try? JSONSerialization.jsonObject(with: Data(page[start.upperBound..<end.lowerBound].utf8)) {
-                let wanted = match.map { $0.lowercased() }
-                func walk(_ node: Any) {
-                    if found != nil { return }
-                    if let dict = node as? [String: Any] {
-                        if let lockup = dict["lockupViewModel"] as? [String: Any], let id = lockup["contentId"] as? String,
-                           let meta = (lockup["metadata"] as? [String: Any])?["lockupMetadataViewModel"] as? [String: Any],
-                           let title = ((meta["title"] as? [String: Any])?["content"] as? String)?.lowercased(),
-                           let raw = try? JSONSerialization.data(withJSONObject: lockup),
-                           String(decoding: raw, as: UTF8.self).contains(" watching"),
-                           wanted.allSatisfy({ title.contains($0) }) {
-                            found = id
-                            return
-                        }
-                        dict.values.forEach(walk)
-                    } else if let list = node as? [Any] {
-                        list.forEach(walk)
-                    }
-                }
-                walk(json)
-            }
-            DispatchQueue.main.async { done(found) }
-        }.resume()
-    }
-
-    // Reads a channel page for its ID and name; a supplied UC ID is kept even if the page fails.
-    func findChannel(req: Int, path: String, channel: String?) {
-        func valid(_ s: String?) -> String? {
-            guard let s, s.range(of: #"^UC[A-Za-z0-9_-]{22}$"#, options: .regularExpression) != nil else { return nil }
-            return s
-        }
-        func first(_ pattern: String, in text: String) -> String? {
-            guard let re = try? NSRegularExpression(pattern: pattern),
-                  let match = re.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
-                  match.numberOfRanges > 1,
-                  let range = Range(match.range(at: 1), in: text) else { return nil }
-            return String(text[range])
-        }
-        func decode(_ s: String) -> String {
-            s.replacingOccurrences(of: "&lt;", with: "<")
-                .replacingOccurrences(of: "&gt;", with: ">")
-                .replacingOccurrences(of: "&quot;", with: "\"")
-                .replacingOccurrences(of: "&#39;", with: "'")
-                .replacingOccurrences(of: "&amp;", with: "&")
-        }
-        func js(_ v: Any) -> String {
-            guard let data = try? JSONSerialization.data(withJSONObject: [v]),
-                  let text = String(data: data, encoding: .utf8) else { return "null" }
-            return String(text.dropFirst().dropLast())
-        }
-        func reply(_ id: String?, _ name: String) {
-            let idJS = id.map { js($0) } ?? "null", nameJS = js(name)
-            DispatchQueue.main.async { [weak self] in
-                self?.dashWeb?.evaluateJavaScript("window.channelFound && channelFound(\(req), \(idJS), \(nameJS))")
-            }
-        }
-        guard let url = URL(string: "https://www.youtube.com/\(path)") else {
-            reply(valid(channel), "")
-            return
-        }
-        var request = URLRequest(url: url, timeoutInterval: 20)
-        request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15", forHTTPHeaderField: "User-Agent")
-        request.setValue("en-US,en", forHTTPHeaderField: "Accept-Language")
-        URLSession.shared.dataTask(with: request) { data, _, _ in
-            var id = valid(channel), name = ""
-            if let data, let page = String(data: data, encoding: .utf8) {
-                let metaID = first(#"<meta[^>]*itemprop="identifier"[^>]*content="([^"]+)""#, in: page)
-                    ?? first(#"<meta[^>]*content="([^"]+)"[^>]*itemprop="identifier""#, in: page)
-                if let found = valid(metaID) {
-                    id = found
-                } else if let fallback = valid(first(#""externalId"\s*:\s*"([^"]+)""#, in: page)) {
-                    id = fallback
-                }
-                let title = first(#"<meta[^>]*property="og:title"[^>]*content="([^"]*)""#, in: page)
-                    ?? first(#"<meta[^>]*content="([^"]*)"[^>]*property="og:title""#, in: page)
-                if let title { name = decode(title) }
-            }
-            reply(id, name)
-        }.resume()
     }
 
     // Updates: ask GitHub for the latest release and compare it with this build's version.
